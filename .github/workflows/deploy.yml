@@ -1,0 +1,36 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-22.04
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Next.js app
+        run: npm run build
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: out
+          clean: true
+          repository-name: 'nguyen-tri-nhan/nguyen-tri-nhan.github.io'
+          git-config-name: 'Nguyen Tri Nhan'
+          git-config-email: 'nguyentrinhan.dev@gmail.com'
+          branch: 'master'
+          token: ${{ secrets.ACCESS_TOKEN }}
