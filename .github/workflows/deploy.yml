@@ -23,7 +23,7 @@ jobs:
 
       - name: Build Next.js app
         env:
-          NEXT_PUBLIC_GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          NEXT_PUBLIC_GITHUB_TOKEN: ${{ secrets.READONLY_TOKEN }}
         run: npm run static
 
       - name: Deploy to GitHub Pages
