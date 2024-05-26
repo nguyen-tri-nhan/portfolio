@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'webapp/**'
 
 jobs:
   build-and-deploy:
@@ -19,9 +21,11 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
+        working-directory: ./webapp
         run: npm install
 
       - name: Build Next.js app
+        working-directory: ./webapp
         env:
           NEXT_PUBLIC_GITHUB_TOKEN: ${{ secrets.READONLY_TOKEN }}
         run: npm run static
@@ -29,7 +33,7 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: out
+          folder: webapp/out
           clean: true
           repository-name: 'nguyen-tri-nhan/nguyen-tri-nhan.github.io'
           git-config-name: 'Nguyen Tri Nhan'
