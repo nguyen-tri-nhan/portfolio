@@ -1,5 +1,9 @@
 import axios from "axios";
+import dotenv from 'dotenv';
 import { GithubFile } from "../model/github";
+
+// Load environment variables from .env file
+dotenv.config();
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN ?? "";
 const GITHUB_USERNAME = process.env.GITHUB_USERNAME;

@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
-import axios from 'axios';
 import dotenv from 'dotenv';
 import { fetchGitHubContent } from './apis/githubApis';
+import { GITHUB_BLOG } from './apis/path';
 
 // Load environment variables from .env file
 dotenv.config();
