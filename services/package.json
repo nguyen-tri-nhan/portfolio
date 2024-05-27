@@ -8,7 +8,8 @@
     "start": "ts-node src/index.ts",
     "build": "tsc",
     "serve": "node dist/index.js",
-    "build:ci": "yarn build"
+    "clean": "rm -rf dist",
+    "build:ci": "yarn clean && yarn && yarn build"
   },
   "dependencies": {
     "axios": "^1.7.2",
