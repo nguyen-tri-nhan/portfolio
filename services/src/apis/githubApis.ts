@@ -1,6 +1,7 @@
 import axios from "axios";
 import dotenv from 'dotenv';
 import { GithubFile } from "../model/github";
+import { resolveImagePaths } from "../utils/markdownHandler";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -17,17 +18,31 @@ const headers = {
 
 export const fetchGitHubContent = async (
   path: string
-): Promise<GithubFile[]> => {
-  const res = await axios.get(`${BASE_URL}/${path}`, {
-    headers,
-  });
-  return res.data;
+): Promise<GithubFile[] | undefined> => {
+  try {
+    const res = await axios.get(`${BASE_URL}/${path}`, {
+      headers,
+    });
+    return res.data;
+  } catch (error) {
+    return;
+  }
 };
 
-export const fetchFileContent = async (path: string): Promise<string> => {
-  const res = await axios.get(`${BASE_URL}/${path}`, {
-    headers,
-  });
-  const file = res.data;
-  return Buffer.from(file.content, "base64").toString("utf-8");
+export const fetchFileContent = async (path: string): Promise<string | undefined> => {
+  try {
+    const res = await axios.get(`${BASE_URL}/${path}`, {
+      headers,
+    });
+    const file: GithubFile = res.data;
+    if (file.type !== "file" || !file.download_url) {
+      return;
+    }
+    const content = await axios.get(file.download_url);
+    const markdown = content.data;
+    const resolvedMarkdown = resolveImagePaths(markdown);
+    return resolvedMarkdown;
+  } catch (error) {
+    return;
+  }
 };

@@ -1,4 +1,6 @@
-const API_V1 = '/api/v1';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+const API_V1 = `${BASE_URL}/api/v1`;
 
 export const GITHUB = `${API_V1}/github/:category`;
 
