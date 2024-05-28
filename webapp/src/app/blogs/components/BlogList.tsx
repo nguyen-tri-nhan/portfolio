@@ -1,5 +1,5 @@
 "use client";
-import { fetchGitHubContent } from '@/app/apis/github';
+import { fetchGitHubContent } from '@/app/apis';
 import { GithubFile } from '@/app/apis/model/github';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';

@@ -4,5 +4,6 @@ export type GithubFile = {
     sha: string;
     type: string;
     content?: string;
+    download_url?: string;
   };
   

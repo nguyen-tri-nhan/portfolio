@@ -1,10 +1,13 @@
 import Layout from "@/components/Layout";
+import GithubContent from "./components/GithubContent";
+
+const category = "blogs";
 
 export default function Page({ params }: { params: { slug: string } }) {
-  const filename = decodeURIComponent(params.slug);
+  const fileName = decodeURIComponent(params.slug);
   return (
     <Layout>
-      <h1>{filename}</h1>
+      <GithubContent fileName={fileName} category={category}/>
     </Layout>
   );
 }

@@ -27,7 +27,7 @@ jobs:
       - name: Build Next.js app
         working-directory: ./webapp
         env:
-          NEXT_PUBLIC_GITHUB_TOKEN: ${{ secrets.READONLY_TOKEN }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.API_URL }}
         run: npm run static
 
       - name: Deploy to GitHub Pages
