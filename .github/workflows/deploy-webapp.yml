@@ -22,18 +22,18 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./webapp
-        run: npm install
+        run: yarn
 
       - name: Build Next.js app
         working-directory: ./webapp
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.API_URL }}
-        run: npm run static
+        run: 
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: webapp/out
+          folder: webapp/dist
           clean: true
           repository-name: 'nguyen-tri-nhan/nguyen-tri-nhan.github.io'
           git-config-name: 'Nguyen Tri Nhan'
