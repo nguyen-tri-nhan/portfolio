@@ -1,12 +1,15 @@
-import style from './App.module.scss';
+import React from 'react';
 
-function App() {
+import AppProvider from './AppProvider';
+import { RouteProvider } from './AppProvider/RouteProvider';
 
+const App: React.FC = () => {
   return (
-    <div className={style.appTest}>
-      hello world
-    </div>
-  )
-}
+    <AppProvider>
+      <RouteProvider />
+    </AppProvider>
+  );
+};
+
 
 export default App;
