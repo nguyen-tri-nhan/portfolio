@@ -1,9 +1,9 @@
 import express, { NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
-import { fetchFileContent, fetchGitHubContent } from "./apis/githubApis";
 import { GITHUB, GITHUB_FILE } from "./apis/path";
 import cors from "cors";
 import { errorLogger, requestLogger } from "./middleware/logger";
+import { getGithubFiles, getGithubFileContent } from "./service/githubService";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -27,7 +27,7 @@ app.use(cors(corsOptions));
 app.get(GITHUB, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { category } = req.params;
-    fetchGitHubContent(category)
+    getGithubFiles(category)
       .then((blogs) => {
         res.send(blogs);
       })
@@ -43,7 +43,7 @@ app.get(GITHUB_FILE, async (req: Request, res: Response, next: NextFunction) => 
   try {
     const { category } = req.params;
     const { fileName } = req.query;
-    fetchFileContent(`${category}/${fileName}`)
+    getGithubFileContent(`${category}/${fileName}`)
       .then((file) => {
         res.send(file);
       })

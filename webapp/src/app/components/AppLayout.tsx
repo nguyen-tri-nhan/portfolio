@@ -2,6 +2,7 @@ import { PropsWithChildren } from "react";
 import Navigationbar from "./Navigationbar";
 import { Container, styled } from "@mui/material";
 import useMediaQuery from '@mui/material/useMediaQuery';
+import Footer from "./Footer";
 
 
 export const AppLayout: React.FC<PropsWithChildren> = ({ children }) => {
@@ -10,6 +11,7 @@ export const AppLayout: React.FC<PropsWithChildren> = ({ children }) => {
 
   const AppContainer = styled('div')`
     margin-top: 64px;
+    min-height: calc(100vh - 64px);
   `;
   return (
     <div>
@@ -19,6 +21,7 @@ export const AppLayout: React.FC<PropsWithChildren> = ({ children }) => {
           {children}
         </Container>
       </AppContainer>
+      <Footer />
     </div>
   )
 };
