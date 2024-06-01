@@ -28,7 +28,7 @@ jobs:
       - name: Build Next.js app
         working-directory: ./webapp
         env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.API_URL }}
+          VITE_API_URL: ${{ secrets.API_URL }}
         run: yarn build
 
       - name: Deploy to GitHub Pages
