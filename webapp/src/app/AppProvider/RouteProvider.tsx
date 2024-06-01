@@ -7,8 +7,6 @@ const createRouter = () => {
 }
 
 export const RouteProvider: React.FC = () => {
-
   const [router] = useState(createRouter());
-
-    return <RouterProvider router={router}/>;
+  return <RouterProvider router={router} />;
 }
