@@ -3,12 +3,16 @@ import dotenv from "dotenv";
 import { fetchFileContent, fetchGitHubContent } from "./apis/githubApis";
 import { GITHUB, GITHUB_FILE } from "./apis/path";
 import cors from "cors";
+import { errorLogger, requestLogger } from "./middleware/logger";
 
 // Load environment variables from .env file
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+app.use(requestLogger);
+app.use(errorLogger);
 
 // Middleware to parse JSON
 app.use(express.json());
