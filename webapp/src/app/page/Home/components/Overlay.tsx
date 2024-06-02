@@ -31,15 +31,15 @@ const ColorSquare = styled(Box) <{ color: string; delay: number; startX: string;
   height: 100px;
   background: ${({ color }) => color};
   position: absolute;
-  animation: ${({ startX, startY, endX, endY }) => moveColorToPosition(startX, startY, endX, endY)} 2s forwards, ${fadeOut} 4s forwards;
+  animation: ${({ startX, startY, endX, endY }) => moveColorToPosition(startX, startY, endX, endY)} ${({ delay }) => delay}s forwards, ${fadeOut} ${({ delay }) => 3 * delay}s forwards;
 `;
 
 const colorsBinding = [
   colors.primaryBlue,
   colors.secondaryBlue,
-  colors.accentBlue,
+  colors.headingBlue,
   colors.whiteBackground,
-  colors.buttonHoverBlue,
+  colors.primaryBlueWithOpacity,
   colors.blackText,
 ]
 
@@ -49,15 +49,15 @@ const initialColorData = colorsBinding.map((color, index) => ({
   startY: '0',
   endX: `${-100 + index * 50}px`,
   endY: '0',
-  delay: index / 5,
+  delay: (index + 1) * 0.5,
 }));
 
 const colorData = [
   ...[{ ...initialColorData[0], endX: '-800px', endY: '-400px' }], //colors.primaryBlue
   ...[{ ...initialColorData[1], endX: '100px', endY: '100px' }], //colors.secondaryBlue
-  ...[{ ...initialColorData[2], endX: '200px', endY: '200px' }], //colors.accentBlue
+  ...[{ ...initialColorData[2], endX: '200px', endY: '200px' }], //colors.headingBlue
   ...[{ ...initialColorData[3], endX: '200px', endY: '800px' }], //colors.whiteBackground
-  ...[{ ...initialColorData[4], endX: '400px', endY: '400px' }], //colors.buttonHoverBlue
+  ...[{ ...initialColorData[4], endX: '400px', endY: '400px' }], //colors.primaryBlueWithOpacity
   ...[{ ...initialColorData[5], endX: '-400px', endY: '-200px' }], //colors.blackText
 ];
 
