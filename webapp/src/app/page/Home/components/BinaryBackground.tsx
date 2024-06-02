@@ -27,7 +27,7 @@ const BinaryText = styled(Box)<{ duration: number; delay: number; left: number }
   font-family: 'Courier New', Courier, monospace;
   white-space: nowrap;
   font-size: 3rem; /* Make binary text larger */
-  opacity: 0.1; /* Make binary text more subtle */
+  opacity: 0.25; /* Make binary text more subtle */
   filter: blur(2px); /* Apply blur effect */
   animation: ${moveBinary} ${({ duration }) => duration}s linear infinite;
   animation-delay: ${({ delay }) => delay}s;
