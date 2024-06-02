@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { RouterProvider, createHashRouter } from 'react-router-dom';
 import { routes } from '../router/routes';
 
 const createRouter = () => {
-  return createBrowserRouter(routes);
+  return createHashRouter(routes);
 }
 
 export const RouteProvider: React.FC = () => {
