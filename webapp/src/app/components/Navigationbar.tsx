@@ -25,7 +25,9 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { name: 'Home', path: '/' },
+  { name: 'Projects', path: '/projects' },
   { name: 'Blogs', path: '/blogs' },
+  { name: 'About', path: '/about' },
 ];
 
 function Navigationbar() {
@@ -77,7 +79,7 @@ function Navigationbar() {
       color: colors.lightBlueText,
     },
     '&:not(:last-child)': {
-      marginRight: '10px',
+      marginRight: '16px',
     },
   }));
 

@@ -47,6 +47,9 @@ const theme = createTheme({
     body2: {
       color: colors.lightBlueText,
     },
+    subtitle1: {
+      color: colors.lightBlueText,
+    },
   },
   components: {
     MuiButton: {

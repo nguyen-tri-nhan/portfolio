@@ -3,6 +3,8 @@ import Home from "../page/Home";
 import Blogs from "../page/Blogs";
 import { RootRoutes } from "./RootRoutes";
 import BlogDetails from "../page/BlogDetails";
+import Projects from "../page/Projects";
+import About from "../page/About";
 
 const contentRoutes: RouteObject[] = [
   {
@@ -16,6 +18,14 @@ const contentRoutes: RouteObject[] = [
   {
     path: '/blogs/:name',
     Component: BlogDetails,
+  },
+  {
+    path: '/projects',
+    Component: Projects,
+  },
+  {
+    path: '/about',
+    Component: About,
   }
 ];
 

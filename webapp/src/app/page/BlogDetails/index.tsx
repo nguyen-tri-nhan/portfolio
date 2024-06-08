@@ -1,15 +1,10 @@
 import React, { useCallback, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { getPostContent } from '../../apis';
-import ReactMarkdown from 'react-markdown';
-import { styled } from '@mui/material';
-import ContentSkeleton from './components/ContentSkeleton';
 
-const Markdown = styled(ReactMarkdown)({
-  img: {
-    maxWidth: '100%',
-  },
-});
+import ContentSkeleton from './components/ContentSkeleton';
+import Markdown from '../../components/Markdown';
+import { Category } from '../../utils/contants';
 
 const BlogDetails: React.FC = () => {
   const { name } = useParams<{ name: string }>();
@@ -18,7 +13,7 @@ const BlogDetails: React.FC = () => {
 
   const fetchBlogContent = useCallback(async () => {
     if (!name) return;
-    const res = await getPostContent({ category: 'blogs', fileName: name });
+    const res = await getPostContent({ category: Category.BLOGS, fileName: name });
     if (!res) return;
     setContent(res);
     setLoading(false);

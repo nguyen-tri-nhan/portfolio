@@ -16,7 +16,7 @@ const StyledBox = styled(Box)`
 
   & .text {
     max-width: 0;
-    animation: typing 3s steps(var(--characters)) forwards;
+    animation: typing 1.5s steps(var(--characters)) forwards;
     white-space: nowrap;
     overflow: hidden;
     position: relative;
@@ -81,7 +81,7 @@ const Typewriter: React.FC<TypewriterProps> = ({ text, delay = 0, onTypingComple
         if (onTypingComplete) {
           onTypingComplete();
         }
-      }, 3000); // 3 seconds typing animation duration
+      }, 1500); // 3 seconds typing animation duration
       return () => clearTimeout(typingTimer);
     }, delay);
     return () => clearTimeout(timer);
