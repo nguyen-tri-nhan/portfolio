@@ -13,7 +13,7 @@ const BlogCardSkeleton: React.FC = () => {
   return (
     <StyledCard sx={{ maxWidth: 345 }}>
       <CardActionArea>
-        <Skeleton variant="rectangular" width={250} height={150} />
+        <Skeleton variant="rectangular" width={250} height={150} animation="wave" />
         <CardContent>
           <Skeleton variant="text" width={150} height={30} />
         </CardContent>
