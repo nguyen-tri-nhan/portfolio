@@ -29,6 +29,9 @@ jobs:
         working-directory: ./webapp
         env:
           VITE_API_URL: ${{ secrets.API_URL }}
+          VITE_FACEBOOK_URL: https://www.facebook.com/nguyentrinhan.dev
+          VITE_GITHUB_URL: https://github.com/nguyen-tri-nhan
+          VITE_LINKEDIN_URL: https://www.linkedin.com/in/nguyen-tri-nhan
         run: yarn build
 
       - name: Deploy to GitHub Pages
