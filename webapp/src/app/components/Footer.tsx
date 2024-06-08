@@ -3,6 +3,7 @@ import { Button, Typography, styled } from '@mui/material';
 import { Facebook, GetApp, GitHub, LinkedIn } from '@mui/icons-material';
 import { ProfileEnv } from '../model/env';
 import colors from '../utils/token';
+import CV from '../../assets/CV/CV_NhanNguyen_FullStack.pdf';
 
 const FooterContainer = styled('footer')`
     background-color: ${({ theme }) => theme.palette.primary.main};
@@ -57,6 +58,7 @@ const Footer: React.FC = () => {
         <StyledButton
           color="inherit"
           startIcon={<GetApp />}
+          href={CV}
         >
           Download my CV
         </StyledButton>
