@@ -12,10 +12,10 @@ type BlogCardProps = GithubFile;
 export default function BlogCard({ name, thumbnail }: BlogCardProps) {
 
   const StyledCard = styled(Card)`
-  margin: 16px 0;
-  &:not(:last-child) {
-    margin-right: 16px;
-  }
+    margin: 16px 0;
+    &:not(:last-child) {
+      margin-right: 16px;
+    }
   `;
 
   const [thumnailSrc, setThumbnailSrc] = useState<string>(thumbnail?.thumbnail ?? thumbnail?.fallback ?? '');

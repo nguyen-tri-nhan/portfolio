@@ -1,38 +1,45 @@
 import React, { useCallback, useEffect } from 'react';
 import { GithubFile } from '../../model/github';
-import { getPosts } from '../../apis';
-import { Category } from '../../utils/contants';
 import { Helmet } from 'react-helmet';
 import BlogCard from './components/BlogCard';
 import { Typography, styled } from '@mui/material';
+import { useAppDispatch, useAppSelector } from '../../redux/hook';
+import { selectBlogs, selectBlogsLoading } from '../../redux/selectors/blogSelector';
+import { fetchBlogs } from '../../redux/slices/blogSlice';
+import BlogCardSkeleton from './components/BlogCardSkeleton';
 
 const Blogs: React.FC = () => {
-  const [blogs, setBlogs] = React.useState<GithubFile[]>([]);
-
-
-  const getBlogs = useCallback(async () => {
-    const res = await getPosts({ category: Category.BLOGS });
-    if (res) {
-      setBlogs(res);
-    }
-  }, []);
+  const dispatch = useAppDispatch();
+  const blogs = useAppSelector(selectBlogs);
+  const loading = useAppSelector(selectBlogsLoading);
 
   useEffect(() => {
-    getBlogs();
-  }, [getBlogs]);
+    dispatch(fetchBlogs());
+  }, [dispatch]);
 
-  // for debug and styling
-  // const duplicateBlogs = Array.from({ length: 20 }, (_, index) => index + 1).map((index) => (
-  //   <BlogCard key={index} {...blogs[index % blogs.length]} />
-  // ));
+  const renderBlogs = useCallback(() => {
+    return blogs.map((blog: GithubFile) => (
+      <BlogCard {...blog} />
+    ));
+  }, [blogs]);
 
-  const renderBlogs = blogs.map((blog: GithubFile) => (
-    <BlogCard {...blog} />
-  ));
+  const renderBlogsLoading = useCallback(() => {
+    return Array.from({ length: 8 }).map((_, index) => (
+      <BlogCardSkeleton key={index} />
+    ));
+  }, []);
+
+  const renderContent = useCallback(() => {
+    if (!loading) {
+      return renderBlogs();
+    }
+    return renderBlogsLoading();
+  }, [loading, renderBlogs, renderBlogsLoading]);
+
 
   const BlogsContainer = styled('div')`
-  display: flex;
-  flex-wrap: wrap;
+    display: flex;
+    flex-wrap: wrap;
   `
 
   return (
@@ -58,7 +65,7 @@ const Blogs: React.FC = () => {
         </ul>
       </>
       <BlogsContainer>
-        {renderBlogs}
+        {renderContent()}
       </BlogsContainer>
     </div >
   );

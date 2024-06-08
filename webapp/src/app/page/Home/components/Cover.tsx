@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import BinaryBackground from './BinaryBackground';
 import Typewriter from './Typewriter';
 
-const Home: React.FC = () => {
+const HomeCover: React.FC = () => {
   const [line1Complete, setLine1Complete] = useState(false);
   const [line2Complete, setLine2Complete] = useState(false);
 
@@ -54,4 +54,4 @@ const Home: React.FC = () => {
   );
 };
 
-export default Home;
+export default HomeCover;
