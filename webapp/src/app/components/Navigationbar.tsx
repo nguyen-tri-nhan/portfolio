@@ -14,21 +14,10 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { Link, useNavigate } from 'react-router-dom';
 import colors from '../utils/token';
-import { styled } from '@mui/material';
+import { TabsNavigation } from './TabsNavigation';
+import { NavItem, navItems } from '../model/navigation';
 
 const drawerWidth = 240;
-
-type NavItem = {
-  name: string;
-  path: string;
-};
-
-const navItems: NavItem[] = [
-  { name: 'Home', path: '/' },
-  { name: 'Projects', path: '/projects' },
-  { name: 'Blogs', path: '/blogs' },
-  { name: 'About', path: '/about' },
-];
 
 function Navigationbar() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -74,25 +63,6 @@ function Navigationbar() {
 
   const container = window !== undefined ? () => window.document.body : undefined;
 
-  const StyledNavItems = styled(Typography)(() => ({
-    '&:hover': {
-      color: colors.lightBlueText,
-    },
-    '&:not(:last-child)': {
-      marginRight: '16px',
-    },
-  }));
-
-  const renderNavItems = () => navItems.map(({ name, path }: NavItem) => (
-    <StyledNavItems
-      variant="h6"
-    >
-      <Link to={path} style={{ textDecoration: 'none', color: 'white' }}>
-        {name}
-      </Link>
-    </StyledNavItems>
-  ))
-
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
@@ -120,7 +90,8 @@ function Navigationbar() {
             </Link>
           </Typography>
           <Box sx={{ display: { xs: 'none', sm: 'block', md: 'flex' } }}>
-            {renderNavItems()}
+            <TabsNavigation />
+            {/* {renderNavItems()} */}
           </Box>
         </Toolbar>
       </AppBar>

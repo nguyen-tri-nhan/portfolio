@@ -9,6 +9,7 @@ const baseColors = {
   blueBorder: "#3399FF",
   buttonBlue: "#0066CC",
   buttonHoverBlue: "#004C99",
+  lightGray: "#F1F1F1",
 };
 
 const colors = {
