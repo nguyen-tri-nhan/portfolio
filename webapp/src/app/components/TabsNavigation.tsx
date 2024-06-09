@@ -21,7 +21,7 @@ function LinkTab(props: { label: string; href: string; selected?: boolean }) {
 export const TabsNavigation: React.FC = () => {
   const [value, setValue] = React.useState(0);
 
-  const handleChange = (event: React.SyntheticEvent<Element, Event>, newValue: React.SetStateAction<number>) => {
+  const handleChange = (_event: React.SyntheticEvent<Element, Event>, newValue: React.SetStateAction<number>) => {
     setValue(newValue);
   };
 
@@ -52,7 +52,12 @@ export const TabsNavigation: React.FC = () => {
         role="navigation"
       >
         {navItems.map((navItem, index) => (
-          <StyledTab key={index} label={navItem.name} href={navItem.path} selected={value === index} />
+          <StyledTab
+            key={index}
+            label={navItem.name}
+            href={navItem.path}
+            selected={value === index}
+          />
         ))}
       </StyledTabs>
     </Box>
