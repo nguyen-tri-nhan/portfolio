@@ -91,7 +91,6 @@ function Navigationbar() {
           </Typography>
           <Box sx={{ display: { xs: 'none', sm: 'block', md: 'flex' } }}>
             <TabsNavigation />
-            {/* {renderNavItems()} */}
           </Box>
         </Toolbar>
       </AppBar>

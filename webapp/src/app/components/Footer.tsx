@@ -46,7 +46,7 @@ const Footer: React.FC = () => {
       <div>
         {ProfileButtons.map((button) => (
           <StyledButton
-            key={button.label}
+            key={button.url}
             color="inherit"
             startIcon={button.icon}
             href={button.url}

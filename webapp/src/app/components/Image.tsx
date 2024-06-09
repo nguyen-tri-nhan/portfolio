@@ -1,7 +1,13 @@
 import { Skeleton, Typography } from "@mui/material";
 import { useState } from "react";
 
-const LazyLoadImage: React.FC<{ src?: string, alt?: string }> = ({ src, alt }) => {
+type LazyLoadImageProps = {
+  src?: string;
+  alt?: string;
+  hideCaption?: boolean;
+};
+
+const LazyLoadImage: React.FC<LazyLoadImageProps> = ({ src, alt, hideCaption = false }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   return (
@@ -18,13 +24,17 @@ const LazyLoadImage: React.FC<{ src?: string, alt?: string }> = ({ src, alt }) =
         alt={alt}
         onLoad={() => setImageLoaded(true)}
         style={{ display: imageLoaded ? 'block' : 'none' }} />
-      <Typography
-        variant="subtitle1"
-        style={{
-          textAlign: 'center',
-        }}>
-        {alt}
-      </Typography>
+      {
+        !hideCaption && (
+          <Typography
+            variant="subtitle1"
+            style={{
+              textAlign: 'center',
+            }}>
+            {alt}
+          </Typography>
+        )
+      }
     </>
   )
 }

@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { navItems } from '../model/navigation';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import colors from '../utils/token';
 import { styled } from '@mui/material';
 
@@ -19,7 +19,13 @@ function LinkTab(props: { label: string; href: string; selected?: boolean }) {
 }
 
 export const TabsNavigation: React.FC = () => {
-  const [value, setValue] = React.useState(0);
+  const location = useLocation();
+
+  // Determine the value based on the current path
+  const currentPath = location.pathname;
+  const currentIndex = navItems.findIndex(navItem => navItem.path === currentPath);
+
+  const [value, setValue] = React.useState(currentIndex !== -1 ? currentIndex : 0);
 
   const handleChange = (_event: React.SyntheticEvent<Element, Event>, newValue: React.SetStateAction<number>) => {
     setValue(newValue);

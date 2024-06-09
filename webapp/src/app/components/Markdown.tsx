@@ -6,6 +6,7 @@ import LazyLoadImage from "./Image";
 const StyledMarkdown = styled(ReactMarkdown)({
   img: {
     maxWidth: '100%',
+    borderRadius: '8px',
   },
 });
 
