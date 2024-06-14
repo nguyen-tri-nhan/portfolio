@@ -1,0 +1,27 @@
+{
+  "brand": "Nhan Nguyen",
+  "navigation": {
+    "home": "Home",
+    "blogs": "Blogs",
+    "projects": "Projects",
+    "about": "About"
+  },
+  "homePage": {
+    "cover": {
+      "line1": "Hello, I'm Nhan Nguyen",
+      "line2": "Welcome to my personal website",
+      "line3": "I'm passionate about building software that makes a difference"
+    }
+  },
+  "aboutPage": {
+    "title": "About Me",
+    "cover": {
+      "line1": "Hi, I'm Nhan Nguyen.",
+      "line2": "I live in Ho Chi Minh City, Vietnam.",
+      "line3": "Scroll down to see my information."
+    },
+    "experience": {
+      "title": "Experience"
+    }
+  }
+}

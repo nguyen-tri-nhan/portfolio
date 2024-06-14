@@ -1,0 +1,27 @@
+{
+  "brand": "Nhân Nguyễn",
+  "navigation": {
+    "home": "Trang chủ",
+    "blogs": "Blogs",
+    "projects": "Projects",
+    "about": "Về tôi"
+  },
+  "homePage": {
+    "cover": {
+      "line1": "Xin chào, tôi là Nhân Nguyễn",
+      "line2": "Chào mừng đến với trang web cá nhân của tôi",
+      "line3": "Cùng xem có gì thú vị nhé!"
+    }
+  },
+  "aboutPage": {
+    "title": "Thông tin của tôi",
+    "cover": {
+      "line1": "Xin chào, tôi là Nhân Nguyễn",
+      "line2": "Tôi sống tại Thành phố Hồ Chí Minh, Việt Nam",
+      "line3": "Kéo xuống để biết thêm thông tin về tôi nhé!"
+    },
+    "experience": {
+      "title": "Kinh nghiệm làm việc"
+    }
+  }
+}

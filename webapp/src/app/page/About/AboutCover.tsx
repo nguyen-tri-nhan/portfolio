@@ -4,10 +4,12 @@ import Avatar from '../../../assets/Images/ava.jpeg';
 import LazyLoadImage from '../../components/Image';
 import Typewriter from '../Home/components/Typewriter';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const AboutCover: React.FC = React.memo(() => {
   const [line1Complete, setLine1Complete] = useState(false);
   const [line2Complete, setLine2Complete] = useState(false);
+  const { t } = useTranslation();
   return (
     <Grid container spacing={2}>
       <Grid item xs={12} sm={6}>
@@ -25,7 +27,7 @@ export const AboutCover: React.FC = React.memo(() => {
         >
           <Box mb={2}>
             <Typewriter
-              text="Hi, I am Nhan Nguyen"
+              text={t('aboutPage.cover.line1')}
               variant="h4"
               delay={0}
               onTypingComplete={() => setLine1Complete(true)}
@@ -35,7 +37,7 @@ export const AboutCover: React.FC = React.memo(() => {
           {line1Complete && (
             <Box mb={2}>
               <Typewriter
-                text="I am a Full Stack Software Engineer"
+                text={t('aboutPage.cover.line2')}
                 variant="h5"
                 delay={0}
                 onTypingComplete={() => setLine2Complete(true)}
@@ -46,7 +48,7 @@ export const AboutCover: React.FC = React.memo(() => {
           {line2Complete && (
             <Box mb={2}>
               <Typewriter
-                text="Welcome to my portfolio!"
+                text={t('aboutPage.cover.line3')}
                 variant="h5"
                 delay={0}
                 isLastLine={true}

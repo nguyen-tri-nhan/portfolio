@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Box } from '@mui/material';
 import BinaryBackground from './BinaryBackground';
 import Typewriter from './Typewriter';
+import { useTranslation } from 'react-i18next';
 
 const HomeCover: React.FC = () => {
   const [line1Complete, setLine1Complete] = useState(false);
   const [line2Complete, setLine2Complete] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <Box position="relative" height="100vh" width="100%">
@@ -21,7 +23,7 @@ const HomeCover: React.FC = () => {
       >
         <Box mb={2}>
           <Typewriter
-            text="Hi, I am Nhan Nguyen"
+            text={t('homePage.cover.line1')}
             variant="h3"
             delay={0}
             onTypingComplete={() => setLine1Complete(true)}
@@ -31,7 +33,7 @@ const HomeCover: React.FC = () => {
         {line1Complete && (
           <Box mb={2}>
             <Typewriter
-              text="Welcome to my portfolio"
+              text={t('homePage.cover.line2')}
               variant="h4"
               delay={0}
               onTypingComplete={() => setLine2Complete(true)}
@@ -42,7 +44,7 @@ const HomeCover: React.FC = () => {
         {line2Complete && (
           <Box mb={2}>
             <Typewriter
-              text="Let's build something amazing!"
+              text={t('homePage.cover.line3')}
               variant="h5"
               delay={0}
               isLastLine={true}

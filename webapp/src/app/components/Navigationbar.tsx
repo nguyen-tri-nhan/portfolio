@@ -16,12 +16,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import colors from '../utils/token';
 import { TabsNavigation } from './TabsNavigation';
 import { NavItem, navItems } from '../model/navigation';
+import { useTranslation } from 'react-i18next';
+import LanguageSelector from './LanguageSelector';
 
 const drawerWidth = 240;
 
 function Navigationbar() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState<boolean>(false);
+
+  const { t } = useTranslation();
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -46,7 +50,7 @@ function Navigationbar() {
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
       <Typography variant="h6" sx={{ my: 2 }}>
-        Nhan Nguyen
+        {t('brand')}
       </Typography>
       <Divider />
       <List>
@@ -86,11 +90,12 @@ function Navigationbar() {
             sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}
           >
             <Link to="/" style={{ textDecoration: 'none', color: 'white' }}>
-              Nhan Nguyen
+              {t('brand')}
             </Link>
           </Typography>
           <Box sx={{ display: { xs: 'none', sm: 'block', md: 'flex' } }}>
             <TabsNavigation />
+            <LanguageSelector />
           </Box>
         </Toolbar>
       </AppBar>

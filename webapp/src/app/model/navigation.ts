@@ -5,19 +5,19 @@ export type NavItem = {
 
 export const navItems: NavItem[] = [
   {
-    name: "Home",
+    name: "navigation.home",
     path: "/",
   },
   {
-    name: "Projects",
+    name: "navigation.projects",
     path: "/projects",
   },
   {
-    name: "Blogs",
+    name: "navigation.blogs",
     path: "/blogs",
   },
   {
-    name: "About",
+    name: "navigation.about",
     path: "/about",
   },
 ];

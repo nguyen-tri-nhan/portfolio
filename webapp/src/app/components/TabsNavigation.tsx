@@ -6,6 +6,7 @@ import { navItems } from '../model/navigation';
 import { Link, useLocation } from 'react-router-dom';
 import colors from '../utils/token';
 import { styled } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 function LinkTab(props: { label: string; href: string; selected?: boolean }) {
   return (
@@ -18,12 +19,18 @@ function LinkTab(props: { label: string; href: string; selected?: boolean }) {
   );
 }
 
-export const TabsNavigation: React.FC = () => {
+export const TabsNavigation = React.memo(() => {
   const location = useLocation();
+  const { t } = useTranslation();
 
   // Determine the value based on the current path
   const currentPath = location.pathname;
   const currentIndex = navItems.findIndex(navItem => navItem.path === currentPath);
+
+  React.useEffect(() => {
+    const newIndex = navItems.findIndex(navItem => navItem.path === currentPath);
+    setValue(newIndex !== -1 ? newIndex : 0);
+  }, [currentPath]);
 
   const [value, setValue] = React.useState(currentIndex !== -1 ? currentIndex : 0);
 
@@ -60,7 +67,7 @@ export const TabsNavigation: React.FC = () => {
         {navItems.map((navItem, index) => (
           <StyledTab
             key={index}
-            label={navItem.name}
+            label={t(navItem.name)}
             href={navItem.path}
             selected={value === index}
           />
@@ -68,4 +75,4 @@ export const TabsNavigation: React.FC = () => {
       </StyledTabs>
     </Box>
   );
-};
+});
