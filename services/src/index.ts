@@ -27,7 +27,9 @@ app.use(cors(corsOptions));
 app.get(GITHUB, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { category } = req.params;
-    getGithubFiles(category)
+    const { language } = req.query;
+    const path = `posts/${language}/${category}`;
+    getGithubFiles(path)
       .then((blogs) => {
         res.send(blogs);
       })
@@ -42,8 +44,9 @@ app.get(GITHUB, async (req: Request, res: Response, next: NextFunction) => {
 app.get(GITHUB_FILE, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { category } = req.params;
-    const { fileName } = req.query;
-    getGithubFileContent(`${category}/${fileName}`)
+    const { fileName, language } = req.query;
+    const path = `posts/${language}/${category}/${fileName}`;
+    getGithubFileContent(path)
       .then((file) => {
         res.send(file);
       })

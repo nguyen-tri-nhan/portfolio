@@ -10,7 +10,8 @@ export function resolveImagePaths(markdown: string): string {
       return match;
     }
     // Construct the absolute URL for the image
-    const absoluteUrl = `${repoUrl}/${p1.replace("../", "")}`;
+    const relativePath = p1.replace(/\.\.\//g, ""); // Remove all "../" from the path
+    const absoluteUrl = `${repoUrl}/${relativePath}`;
     return match.replace(p1, absoluteUrl);
   });
 }
