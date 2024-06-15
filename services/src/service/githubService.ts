@@ -3,21 +3,22 @@ import { GithubFile } from "../model/github";
 import { getGithubMarkdownThumbnail } from "../utils/githubFileHelper";
 
 export const getGithubFiles = async (
+  path: string,
   category: string
 ): Promise<GithubFile[] | undefined> => {
-  const githubFiles = await fetchGitHubContent(category);
+  const githubFiles = await fetchGitHubContent(`${path}/${category}`);
   if (!githubFiles) {
     return;
   }
 
-  const transferedFile = githubFiles.filter(
-    (file: GithubFile) => file.type === "file"
-  ).map((file: GithubFile) => {
-    return {
+  const transferedFile = githubFiles
+    .filter((file: GithubFile) => file.type === "file")
+    .map((file: GithubFile) => ({
       ...file,
-      thumbnail: getGithubMarkdownThumbnail({ path: file.path }),
-    };
-  });
+      thumbnail: getGithubMarkdownThumbnail({
+        path: `${category}/${file.name}`,
+      }),
+    }));
 
   return transferedFile;
 };

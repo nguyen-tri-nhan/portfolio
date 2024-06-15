@@ -28,8 +28,8 @@ app.get(GITHUB, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { category } = req.params;
     const { language } = req.query;
-    const path = `posts/${language}/${category}`;
-    getGithubFiles(path)
+    const path = `posts/${language}`;
+    getGithubFiles(path, category)
       .then((blogs) => {
         res.send(blogs);
       })
