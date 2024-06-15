@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import {
   FormControl,
   Select,
@@ -10,7 +10,10 @@ import {
 import { SelectChangeEvent } from '@mui/material';
 import colors from '../utils/token';
 import { useTranslation } from 'react-i18next';
-import { LocalStorageKey, getLocalStorage, setLocalStorage } from '../utils/localStorage';
+import { getLanguage, setLanguage } from '../utils/localStorage';
+import { useAppDispatch, useAppSelector } from '../redux/hook';
+import { fetchBlogs } from '../redux/slices/blogSlice';
+import { selectBlogs } from '../redux/selectors/blogSelector';
 
 const LanguageSelectorWrapper = styled('div')(() => ({
   display: 'flex',
@@ -40,8 +43,15 @@ const StyledSelect = styled(Select)(() => ({
 }));
 
 const LanguageSelector = React.memo(() => {
-  const language = useRef(getLocalStorage(LocalStorageKey.language) ?? 'en');
+  const language: React.MutableRefObject<string> = useRef(getLanguage());
   const { i18n } = useTranslation();
+  const dispatch = useAppDispatch();
+  const blogs = useAppSelector(selectBlogs);
+
+  const onLanguageChange = useCallback(() => {
+    if (blogs.length === 0) return;
+    dispatch(fetchBlogs());
+  }, [blogs.length, dispatch]);
 
   useEffect(() => {
     i18n.changeLanguage(language.current);
@@ -50,8 +60,8 @@ const LanguageSelector = React.memo(() => {
   const handleChange = (event: SelectChangeEvent<unknown>) => {
     const newLanguage = event.target.value as string;
     language.current = newLanguage;
-    i18n.changeLanguage(newLanguage);
-    setLocalStorage(LocalStorageKey.language, newLanguage);
+    i18n.changeLanguage(newLanguage).then(onLanguageChange);
+    setLanguage(newLanguage);
   };
 
   return (

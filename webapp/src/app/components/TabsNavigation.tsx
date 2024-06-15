@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -23,14 +23,34 @@ export const TabsNavigation = React.memo(() => {
   const location = useLocation();
   const { t } = useTranslation();
 
-  // Determine the value based on the current path
-  const currentPath = location.pathname;
-  const currentIndex = navItems.findIndex(navItem => navItem.path === currentPath);
+
+
+
+  const findBestMatchIndex = React.useMemo(() => {
+    return (): number => {
+      const currentPath = location.pathname;
+      let bestMatchIndex = -1;
+      let longestMatchLength = 0;
+    
+      navItems.forEach((navItem, index) => {
+        if (currentPath.startsWith(navItem.path) && navItem.path.length > longestMatchLength) {
+          bestMatchIndex = index;
+          longestMatchLength = navItem.path.length;
+        }
+      });
+    
+      return bestMatchIndex;
+    };
+  }, [location.pathname]);
+
+  const currentIndex = findBestMatchIndex();
+
+
 
   React.useEffect(() => {
-    const newIndex = navItems.findIndex(navItem => navItem.path === currentPath);
+    const newIndex = findBestMatchIndex();
     setValue(newIndex !== -1 ? newIndex : 0);
-  }, [currentPath]);
+  }, [findBestMatchIndex]);
 
   const [value, setValue] = React.useState(currentIndex !== -1 ? currentIndex : 0);
 

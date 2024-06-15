@@ -2,10 +2,18 @@ export const LocalStorageKey = {
   language: "language",
 };
 
-export const getLocalStorage = (key: string): string | null => {
+const getLocalStorage = (key: string): string | null => {
   return localStorage.getItem(key);
 };
 
-export const setLocalStorage = (key: string, value: string): void => {
+const setLocalStorage = (key: string, value: string): void => {
   localStorage.setItem(key, value);
 };
+
+export const getLanguage = (): string => {
+  return getLocalStorage(LocalStorageKey.language) ?? "en";
+}
+
+export const setLanguage = (language: string): void => {
+  setLocalStorage(LocalStorageKey.language, language);
+}
