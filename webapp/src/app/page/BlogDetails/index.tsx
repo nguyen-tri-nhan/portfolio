@@ -5,6 +5,7 @@ import { getPostContent } from '../../apis';
 import ContentSkeleton from './components/ContentSkeleton';
 import Markdown from '../../components/Markdown';
 import { Category } from '../../utils/contants';
+import { useLanguageChangeEffect } from '../../../hook';
 
 const BlogDetails: React.FC = () => {
   const { name } = useParams<{ name: string }>();
@@ -18,6 +19,8 @@ const BlogDetails: React.FC = () => {
     setContent(res);
     setLoading(false);
   }, [name]);
+
+  useLanguageChangeEffect(fetchBlogContent);
 
   useEffect(() => {
     fetchBlogContent();
