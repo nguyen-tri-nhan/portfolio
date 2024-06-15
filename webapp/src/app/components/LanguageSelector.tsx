@@ -18,29 +18,38 @@ const LanguageSelectorWrapper = styled('div')(() => ({
   alignItems: 'center',
 }));
 
-const StyledSelect = styled(Select)(() => ({
-  color: colors.whiteBackground,
-  padding: 0,
-  [`.${selectClasses.select}`]: {
-    padding: '0 12px',
-  },
-  [`.${outlinedInputClasses.notchedOutline}`]: {
-    border: 0,
-  },
-  [`.${outlinedInputClasses.root}`]: {
-    [`&:hover .${outlinedInputClasses.notchedOutline}`]: {
-      border: 0,
-    },
-    [`&.Mui-focused .${outlinedInputClasses.notchedOutline}`]: {
-      border: 0,
-    },
-  },
-  [`.${selectClasses.icon}`]: {
-    color: colors.whiteBackground,
-  },
-}));
 
-const LanguageSelector = React.memo(() => {
+
+type TextColor = 'black' | 'white';
+type LanguageSelectorProps = {
+  textColor?: TextColor;
+};
+
+const LanguageSelector = React.memo(({ textColor }: LanguageSelectorProps) => {
+
+  const StyledSelect = styled(Select)(() => ({
+    color: textColor === 'white' ? colors.whiteBackground : colors.blackText,
+    padding: 0,
+    [`.${selectClasses.select}`]: {
+      padding: '0 12px',
+    },
+    [`.${outlinedInputClasses.notchedOutline}`]: {
+      border: 0,
+    },
+    [`.${outlinedInputClasses.root}`]: {
+      [`&:hover .${outlinedInputClasses.notchedOutline}`]: {
+        border: 0,
+      },
+      [`&.Mui-focused .${outlinedInputClasses.notchedOutline}`]: {
+        border: 0,
+      },
+    },
+    [`.${selectClasses.icon}`]: {
+      color: textColor === 'white' ? colors.whiteBackground : colors.blackText,
+    },
+  }));
+
+
   const language: React.MutableRefObject<string> = useRef(getLanguage());
   const { i18n } = useTranslation();
 

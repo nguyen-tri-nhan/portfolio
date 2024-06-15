@@ -57,11 +57,13 @@ function Navigationbar() {
         {navItems.map(({ name, path }: NavItem) => (
           <ListItem key={name} disablePadding>
             <ListItemButton onClick={() => navigate(path)} sx={{ textAlign: 'center' }}>
-              <ListItemText primary={name} />
+              <ListItemText primary={t(name)} />
             </ListItemButton>
           </ListItem>
         ))}
       </List>
+      <Divider />
+      <LanguageSelector textColor="black" />
     </Box>
   );
 
@@ -80,7 +82,7 @@ function Navigationbar() {
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
+            sx={{ mr: 2, display: { md: 'none' } }}
           >
             <MenuIcon />
           </IconButton>
@@ -93,9 +95,9 @@ function Navigationbar() {
               {t('brand')}
             </Link>
           </Typography>
-          <Box sx={{ display: { xs: 'none', sm: 'block', md: 'flex' } }}>
+          <Box sx={{ display: { xs: 'none', sm: 'none', md: 'flex' } }}>
             <TabsNavigation />
-            <LanguageSelector />
+            <LanguageSelector textColor="white" />
           </Box>
         </Toolbar>
       </AppBar>
@@ -109,7 +111,7 @@ function Navigationbar() {
             keepMounted: true, // Better open performance on mobile.
           }}
           sx={{
-            display: { xs: 'block', sm: 'none' },
+            display: { xs: 'block', md: 'none' },
             '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
             height: '48px'
           }}
