@@ -4,6 +4,7 @@ import { Facebook, GetApp, GitHub, LinkedIn } from '@mui/icons-material';
 import { ProfileEnv } from '../model/env';
 import colors from '../utils/token';
 import CV from '../../assets/CV/CV_NhanNguyen_FullStack.pdf';
+import { useTranslation } from 'react-i18next';
 
 const FooterContainer = styled('footer')`
     background-color: ${({ theme }) => theme.palette.primary.main};
@@ -38,10 +39,18 @@ const ProfileButtons = [
   },
 ];
 const Footer: React.FC = () => {
+
+  const { t } = useTranslation();
+
   return (
     <FooterContainer>
       <div>
-        <Typography variant="h4" color={colors.whiteBackground}>Get in touch</Typography>
+        <Typography
+          variant="h4"
+          color={colors.whiteBackground}
+        >
+          {t('footer.getInTouch')}
+        </Typography>
       </div>
       <div>
         {ProfileButtons.map((button) => (
@@ -60,7 +69,7 @@ const Footer: React.FC = () => {
           startIcon={<GetApp />}
           href={CV}
         >
-          Download my CV
+          {t('footer.downloadResume')}
         </StyledButton>
       </div>
     </FooterContainer>

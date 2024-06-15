@@ -6,6 +6,10 @@
     "projects": "Projects",
     "about": "About"
   },
+  "footer": {
+    "getInTouch": "Get in touch",
+    "downloadResume": "Download my Resume"
+  },
   "homePage": {
     "cover": {
       "line1": "Hello, I'm Nhan Nguyen",

@@ -6,6 +6,10 @@
     "projects": "Projects",
     "about": "Về tôi"
   },
+  "footer": {
+    "getInTouch": "Liên hệ",
+    "downloadResume": "Tải CV"
+  },
   "homePage": {
     "cover": {
       "line1": "Xin chào, tôi là Nhân Nguyễn",
