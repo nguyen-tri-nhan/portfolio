@@ -23,7 +23,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./webapp
-        run: npm install
+        run: npm i
 
       - name: Build Vite app
         working-directory: ./webapp
