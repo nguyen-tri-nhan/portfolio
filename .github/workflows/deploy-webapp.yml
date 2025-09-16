@@ -37,7 +37,5 @@ jobs:
           folder: webapp/dist
           clean: true
           repository-name: 'nguyen-tri-nhan/nguyen-tri-nhan.github.io'
-          git-config-name: 'Nguyen Tri Nhan'
-          git-config-email: 'nguyentrinhan.dev@gmail.com'
           branch: 'master'
           token: ${{ secrets.ACCESS_TOKEN }}
