@@ -21,9 +21,11 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies
+      - name: Clean install dependencies
         working-directory: ./webapp
-        run: npm i
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
 
       - name: Build Vite app
         working-directory: ./webapp
