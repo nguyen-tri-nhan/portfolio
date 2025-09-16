@@ -23,16 +23,11 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./webapp
-        run: yarn
+        run: npm install
 
-      - name: Build Next.js app
+      - name: Build Vite app
         working-directory: ./webapp
-        env:
-          VITE_API_URL: ${{ secrets.API_URL }}
-          VITE_FACEBOOK_URL: https://www.facebook.com/nguyentrinhan.dev
-          VITE_GITHUB_URL: https://github.com/nguyen-tri-nhan
-          VITE_LINKEDIN_URL: https://www.linkedin.com/in/nguyen-tri-nhan
-        run: yarn build
+        run: npm run build
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4

@@ -1,30 +1,81 @@
-# React + TypeScript + Vite
+# Interactive Developer Portfolio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, interactive portfolio website built with React, TypeScript, and Tailwind CSS.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🎨 Interactive terminal hero section with typing animation
+- 🌧️ Subtle binary rain background animation
+- 📱 Fully responsive design
+- 🌙 Dark/light theme toggle
+- 🚀 Project showcase with GitHub integration
+- 📧 Contact form with validation
+- ⚡ Fast loading with Vite
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- **Frontend**: React 18, TypeScript
+- **Styling**: Tailwind CSS
+- **Build Tool**: Vite
+- **Icons**: Lucide React
+- **Animations**: Framer Motion
 
-- Configure the top-level `parserOptions` property like this:
+## Getting Started
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
+1. Install dependencies:
+```bash
+npm install
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+2. Start development server:
+```bash
+npm run dev
+```
+
+3. Build for production:
+```bash
+npm run build
+```
+
+## Project Structure
+
+```
+src/
+├── components/          # React components
+│   ├── Navigation.tsx   # Navigation bar
+│   ├── Hero.tsx        # Hero section with terminal
+│   ├── Projects.tsx    # Project showcase
+│   ├── Contact.tsx     # Contact form
+│   └── BinaryRain.tsx  # Background animation
+├── App.tsx             # Main app component
+├── main.tsx           # Entry point
+└── index.css          # Global styles
+```
+
+## User Stories Implemented
+
+### Phase 1: Core Sections
+- ✅ US-001: Interactive Terminal Introduction
+- ✅ US-002: Live Code Snippets Display  
+- ✅ US-003: Binary Rain Background
+- ✅ US-004: Call-to-Action Navigation
+- ✅ US-005: Project Cards Layout
+- ✅ US-006: Live Demo Access
+- ✅ US-007: GitHub Integration
+- ✅ US-008: Technology Stack Display
+- ✅ US-009: Contact Form
+- ✅ US-010: Social Media Integration
+- ✅ US-011: Resume Download
+- ✅ US-018: Dark/Light Theme Toggle
+- ✅ US-019: Smooth Scroll Navigation
+
+## Customization
+
+1. Update personal information in components
+2. Replace project data in `Projects.tsx`
+3. Update social links in `Contact.tsx`
+4. Add your resume PDF to `public/resume.pdf`
+
+## License
+
+MIT License
