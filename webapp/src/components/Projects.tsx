@@ -10,7 +10,7 @@ interface Project {
   githubUrl: string
   stars: number
   forks: number
-  image: string
+  image?: string
 }
 
 const projects: Project[] = [
@@ -24,7 +24,7 @@ const projects: Project[] = [
     githubUrl: 'https://github.com/obsidiandynamics/kafdrop',
     stars: 5200,
     forks: 900,
-    image: '/kafdrop.jpg'
+    image: 'https://raw.githubusercontent.com/wiki/obsidiandynamics/kafdrop/images/kafdrop-logo.png'
   },
   {
     id: 'portfolio',
@@ -32,11 +32,10 @@ const projects: Project[] = [
     description: 'Modern portfolio website with terminal animations and interactive features',
     longDescription: 'Built with React, TypeScript, and Tailwind CSS featuring terminal UI and smooth animations.',
     technologies: ['React', 'TypeScript', 'Tailwind CSS', 'Vite', 'Framer Motion'],
-    liveUrl: 'https://nguyen-tri-nhan.dev',
+    liveUrl: '/',
     githubUrl: 'https://github.com/nguyen-tri-nhan/portfolio',
     stars: 12,
     forks: 3,
-    image: '/portfolio.jpg'
   }
 ]
 
@@ -57,9 +56,19 @@ export default function Projects() {
           {projects.map((project) => (
             <div key={project.id} className="project-card group">
               <div className="aspect-video bg-gray-800 rounded-lg mb-4 overflow-hidden">
-                <div className="w-full h-full bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center">
-                  <span className="text-2xl font-mono">{project.title.split(' ').map(word => word[0]).join('')}</span>
-                </div>
+                {project.image ? (
+                  <div className="w-full h-full bg-white flex items-center justify-center p-4">
+                    <img 
+                      src={project.image} 
+                      alt={project.title}
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center">
+                    <span className="text-2xl font-mono">{project.title.split(' ').map(word => word[0]).join('')}</span>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-4">

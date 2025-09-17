@@ -1,4 +1,4 @@
-import { ExternalLink, Building2, Calendar, ChevronRight } from 'lucide-react'
+import { ExternalLink, Calendar, ChevronRight } from 'lucide-react'
 
 interface ExperienceItem {
   period: string
@@ -38,10 +38,10 @@ const experiences: ExperienceItem[] = [
     title: 'Katalon AI - True Test',
     projects: [
       {
-        name: 'AI-powered Regression Testing',
+        name: 'AI-powered Autonomous Testing',
         responsibilities: [
           'Crafted Micro-frontend library for seamless team collaboration (TypeScript)',
-          'Contributed to TrueTest AI-powered regression testing software',
+          'Contributed to TrueTest AI-powered autonomous testing software',
           'Developed UI for Child app integrated into TestOps (ReactJs)',
           'Collaborated on CRUD Back-End development (Quarkus)',
           'Generated Katalon Automation Scripts (Python, JavaScript, Java)',
@@ -85,8 +85,12 @@ export default function Experience() {
         <div className="max-w-5xl mx-auto">
           <div className="mb-8">
             <div className="flex items-center space-x-4 mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-blue-500/20 rounded-lg flex items-center justify-center">
-                <Building2 size={32} className="text-primary" />
+              <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center p-2 shadow-sm">
+                <img 
+                  src="https://2465122.fs1.hubspotusercontent-na1.net/hub/2465122/hubfs/g_fNa7d1_400x400%20(1).jpg?width=108&height=108" 
+                  alt="Katalon Logo" 
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div>
                 <h3 className="text-2xl font-bold text-primary">Software Engineer</h3>
