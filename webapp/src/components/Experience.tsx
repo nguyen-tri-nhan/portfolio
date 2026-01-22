@@ -12,6 +12,22 @@ interface ExperienceItem {
 
 const experiences: ExperienceItem[] = [
   {
+    period: '2025 - Present',
+    title: 'Katalon Platform',
+    projects: [
+      {
+        name: 'Manual Test Runner & Test Case Generator Agents',
+        responsibilities: [
+          'Partnered with CloudOps to define deployment pipelines and own release execution',
+          'Made technical decisions for deployment and rollout strategy',
+          'Supported the DevOps team in managing team infrastructure and operations',
+          'Develop backend features and integrate with orchestration agent via A2A protocol'
+        ]
+      }
+    ],
+    technologies: ['Docker', 'Python', 'Grafana', 'Microservices', 'Kotlin', 'Quarkus']
+  },
+  {
     period: '2024 - Present',
     title: 'Katalon TestOps Gen3',
     projects: [
@@ -31,7 +47,7 @@ const experiences: ExperienceItem[] = [
         ]
       }
     ],
-    technologies: ['Quarkus', 'Kotlin', 'Microservices', 'Grafana']
+    technologies: ['Quarkus', 'Kotlin', 'Microservices', 'Grafana', 'TypeScript', 'React']
   },
   {
     period: '2022 - 2024',
@@ -78,7 +94,7 @@ export default function Experience() {
             Professional <span className="text-primary">Experience</span>
           </h2>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            3+ years at Katalon, contributing to test automation and AI-powered testing solutions
+            5+ years at Katalon, contributing to test automation and AI-powered testing solutions
           </p>
         </div>
 
