@@ -15,7 +15,7 @@ export default function Navigation({ darkMode, setDarkMode }: NavigationProps) {
   }
 
   return (
-    <nav className="fixed top-0 w-full bg-dark/90 backdrop-blur-sm border-b border-gray-800 z-50">
+    <nav className="fixed top-0 w-full bg-white/90 dark:bg-dark/90 backdrop-blur-sm border-b border-slate-200 dark:border-gray-800 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="text-primary font-mono text-xl font-bold">
@@ -38,7 +38,9 @@ export default function Navigation({ darkMode, setDarkMode }: NavigationProps) {
             </button>
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-pressed={darkMode}
+              className="p-2 hover:bg-slate-200 dark:hover:bg-gray-800 rounded-lg transition-colors"
             >
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
@@ -48,13 +50,16 @@ export default function Navigation({ darkMode, setDarkMode }: NavigationProps) {
           <div className="md:hidden flex items-center space-x-2">
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-pressed={darkMode}
+              className="p-2 hover:bg-slate-200 dark:hover:bg-gray-800 rounded-lg transition-colors"
             >
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              className="p-2 hover:bg-slate-200 dark:hover:bg-gray-800 rounded-lg transition-colors"
             >
               {isOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -63,7 +68,7 @@ export default function Navigation({ darkMode, setDarkMode }: NavigationProps) {
 
         {/* Mobile Menu */}
         {isOpen && (
-          <div className="md:hidden py-4 border-t border-gray-800">
+          <div className="md:hidden py-4 border-t border-slate-200 dark:border-gray-800">
             <div className="flex flex-col space-y-4">
               <button onClick={() => scrollToSection('hero')} className="text-left hover:text-primary transition-colors">
                 Home

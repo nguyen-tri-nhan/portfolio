@@ -9,7 +9,7 @@ export default function Contact() {
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             Connect <span className="text-primary">With Me</span>
           </h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-600 dark:text-gray-300 max-w-2xl mx-auto">
             Feel free to connect with me on GitHub and LinkedIn to see my work and professional background.
           </p>
         </div>
@@ -23,12 +23,12 @@ export default function Contact() {
                 href="https://github.com/nguyen-tri-nhan"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center space-x-3 p-4 border border-gray-700 rounded-lg hover:border-primary/50 transition-colors group"
+                className="flex items-center space-x-3 p-4 border border-slate-200 dark:border-gray-700 rounded-lg hover:border-primary/50 transition-colors group"
               >
                 <Github size={24} className="text-primary" />
                 <div>
                   <div className="font-semibold">GitHub</div>
-                  <div className="text-sm text-gray-400">@nguyen-tri-nhan</div>
+                  <div className="text-sm text-slate-500 dark:text-gray-400">@nguyen-tri-nhan</div>
                 </div>
               </a>
               
@@ -36,17 +36,17 @@ export default function Contact() {
                 href="https://www.linkedin.com/in/nguyen-tri-nhan/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center space-x-3 p-4 border border-gray-700 rounded-lg hover:border-primary/50 transition-colors group"
+                className="flex items-center space-x-3 p-4 border border-slate-200 dark:border-gray-700 rounded-lg hover:border-primary/50 transition-colors group"
               >
                 <Linkedin size={24} className="text-blue-500" />
                 <div>
                   <div className="font-semibold">LinkedIn</div>
-                  <div className="text-sm text-gray-400">/in/nguyen-tri-nhan</div>
+                  <div className="text-sm text-slate-500 dark:text-gray-400">/in/nguyen-tri-nhan</div>
                 </div>
               </a>
             </div>
             
-            <div className="mt-8 text-center text-gray-400">
+            <div className="mt-8 text-center text-slate-500 dark:text-gray-400">
               <p>Currently not available for new opportunities</p>
             </div>
           </div>

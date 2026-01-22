@@ -47,7 +47,7 @@ export default function Projects() {
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             Featured <span className="text-primary">Projects</span>
           </h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-600 dark:text-gray-300 max-w-2xl mx-auto">
             A showcase of my best work demonstrating technical skills and problem-solving abilities
           </p>
         </div>
@@ -55,7 +55,7 @@ export default function Projects() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {projects.map((project) => (
             <div key={project.id} className="project-card group">
-              <div className="aspect-video bg-gray-800 rounded-lg mb-4 overflow-hidden">
+              <div className="aspect-video bg-slate-100 dark:bg-gray-800 rounded-lg mb-4 overflow-hidden">
                 {project.image ? (
                   <div className="w-full h-full bg-white flex items-center justify-center p-4">
                     <img 
@@ -73,8 +73,8 @@ export default function Projects() {
 
               <div className="space-y-4">
                 <h3 className="text-xl font-bold text-primary">{project.title}</h3>
-                <p className="text-gray-300">{project.description}</p>
-                <p className="text-sm text-gray-400">{project.longDescription}</p>
+                <p className="text-slate-700 dark:text-gray-300">{project.description}</p>
+                <p className="text-sm text-slate-600 dark:text-gray-400">{project.longDescription}</p>
 
                 <div className="flex flex-wrap gap-2">
                   {project.technologies.map((tech) => (
@@ -88,7 +88,7 @@ export default function Projects() {
                 </div>
 
                 <div className="flex items-center justify-between pt-4">
-                  <div className="flex items-center space-x-4 text-sm text-gray-400">
+                  <div className="flex items-center space-x-4 text-sm text-slate-500 dark:text-gray-400">
                     <div className="flex items-center space-x-1">
                       <Star size={16} />
                       <span>{project.stars}</span>

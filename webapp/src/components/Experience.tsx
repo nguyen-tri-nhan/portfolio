@@ -87,13 +87,13 @@ const experiences: ExperienceItem[] = [
 
 export default function Experience() {
   return (
-    <section id="experience" className="py-20 px-4 relative z-10 bg-darker/50">
+    <section id="experience" className="py-20 px-4 relative z-10 bg-slate-100/70 dark:bg-darker/50">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             Professional <span className="text-primary">Experience</span>
           </h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-600 dark:text-gray-300 max-w-2xl mx-auto">
             5+ years at Katalon, contributing to test automation and AI-powered testing solutions
           </p>
         </div>
@@ -116,12 +116,12 @@ export default function Experience() {
                     href="https://katalon.com/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-primary transition-colors"
+                    className="text-slate-500 dark:text-gray-400 hover:text-primary transition-colors"
                   >
                     <ExternalLink size={16} />
                   </a>
                 </div>
-                <p className="text-gray-400">2021 - Present</p>
+                <p className="text-slate-500 dark:text-gray-400">2021 - Present</p>
               </div>
             </div>
           </div>
@@ -132,16 +132,16 @@ export default function Experience() {
                 <div className="flex items-center space-x-3 mb-4">
                   <Calendar size={20} className="text-primary" />
                   <h4 className="text-xl font-bold text-primary">{exp.title}</h4>
-                  <span className="text-gray-400">({exp.period})</span>
+                  <span className="text-slate-500 dark:text-gray-400">({exp.period})</span>
                 </div>
                 
                 <div className="space-y-6">
                   {exp.projects.map((project, projectIndex) => (
                     <div key={projectIndex}>
-                      <h5 className="font-semibold text-gray-200 mb-3">{project.name}</h5>
+                      <h5 className="font-semibold text-slate-800 dark:text-gray-200 mb-3">{project.name}</h5>
                       <ul className="space-y-2">
                         {project.responsibilities.map((responsibility, respIndex) => (
-                          <li key={respIndex} className="flex items-start space-x-2 text-gray-300">
+                          <li key={respIndex} className="flex items-start space-x-2 text-slate-700 dark:text-gray-300">
                             <ChevronRight size={16} className="text-primary mt-0.5 flex-shrink-0" />
                             <span className="text-sm leading-relaxed">{responsibility}</span>
                           </li>

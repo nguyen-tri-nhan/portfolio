@@ -8,17 +8,17 @@
   }
   
   body {
-    @apply bg-dark text-white;
+    @apply bg-slate-50 text-slate-900 dark:bg-dark dark:text-white;
   }
 }
 
 @layer components {
   .terminal-window {
-    @apply bg-darker border border-gray-700 rounded-lg shadow-2xl;
+    @apply bg-white border border-slate-200 rounded-lg shadow-2xl dark:bg-darker dark:border-gray-700;
   }
   
   .terminal-header {
-    @apply bg-gray-800 px-4 py-3 rounded-t-lg flex items-center space-x-2;
+    @apply bg-slate-200 px-4 py-3 rounded-t-lg flex items-center space-x-2 dark:bg-gray-800;
   }
   
   .terminal-dot {
@@ -26,11 +26,11 @@
   }
   
   .terminal-content {
-    @apply p-6 font-mono text-sm;
+    @apply p-6 font-mono text-sm text-slate-700 dark:text-gray-300;
   }
   
   .project-card {
-    @apply bg-darker border border-gray-700 rounded-lg p-6 hover:border-primary/50 transition-all duration-300;
+    @apply bg-white border border-slate-200 rounded-lg p-6 shadow-sm hover:border-primary/50 transition-all duration-300 dark:bg-darker dark:border-gray-700;
   }
   
   .btn-primary {

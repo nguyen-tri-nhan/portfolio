@@ -26,7 +26,7 @@ function App() {
   }, [darkMode])
 
   return (
-    <div className="min-h-screen bg-dark text-white relative overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-dark dark:text-white relative overflow-x-hidden">
       <BinaryRain />
       <Navigation darkMode={darkMode} setDarkMode={setDarkMode} />
       <main>
