@@ -21,7 +21,7 @@ export default function Hero() {
   const [showCursor, setShowCursor] = useState(true)
   const [commandInput, setCommandInput] = useState('')
   const [commandHistory, setCommandHistory] = useState<
-    { command: string; response: string }[]
+    { command: string; response: string; visibleLength?: number; isTyping?: boolean }[]
   >([])
   const terminalContentRef = useRef<HTMLDivElement>(null)
 
@@ -35,7 +35,7 @@ export default function Hero() {
           setCurrentChar(0)
         }
       }
-    }, 25)
+    }, 5)
 
     return () => clearTimeout(timer)
   }, [currentLine, currentChar])
@@ -58,19 +58,34 @@ export default function Hero() {
     if (!command) return
 
     let response = ''
-    if (command === 'view_experience') {
+    if (command.startsWith('sudo ')) {
+      response = 'Nice try. Boss mode unlocks after the salary hits the account.'
+    } else if (command === 'view_experience') {
       scrollToExperience()
       response = 'Scrolling to experience...'
     } else if (command === 'go github' || command === 'github') {
       window.open('https://github.com/nguyen-tri-nhan', '_blank', 'noopener,noreferrer')
       response = 'Opening GitHub...'
+    } else if (command === 'go linkedin' || command === 'linkedin') {
+      window.open('https://www.linkedin.com/in/nguyen-tri-nhan/', '_blank', 'noopener,noreferrer')
+      response = 'Opening LinkedIn...'
     } else if (command === 'help') {
-      response = 'Available commands: view_experience, github (or go github), help'
+      response =
+        'Available commands:\n' +
+        '- view_experience: scroll to the experience section\n' +
+        '- github or go github: open my GitHub profile\n' +
+        '- linkedin or go linkedin: open my LinkedIn profile\n' +
+        '- help: show this list'
     } else {
       response = 'Unknown command. Try: help'
     }
 
-    setCommandHistory((prev) => [...prev, { command: rawCommand, response }])
+    setCommandHistory((prev) => [
+      ...prev,
+      command === 'help'
+        ? { command: rawCommand, response, visibleLength: 0, isTyping: true }
+        : { command: rawCommand, response }
+    ])
   }
 
   const typingComplete = currentLine >= TERMINAL_LINES.length
@@ -79,6 +94,38 @@ export default function Hero() {
     if (!terminalContentRef.current) return
     terminalContentRef.current.scrollTop = terminalContentRef.current.scrollHeight
   }, [currentLine, currentChar, commandHistory])
+
+  useEffect(() => {
+    const lastEntry = commandHistory[commandHistory.length - 1]
+    if (!lastEntry?.isTyping) return
+
+    if ((lastEntry.visibleLength ?? 0) >= lastEntry.response.length) {
+      setCommandHistory((prev) => {
+        const next = [...prev]
+        const entry = next[next.length - 1]
+        if (!entry?.isTyping) return prev
+        entry.isTyping = false
+        return next
+      })
+      return
+    }
+
+    const timer = setTimeout(() => {
+      setCommandHistory((prev) => {
+        const next = [...prev]
+        const entry = next[next.length - 1]
+        if (!entry?.isTyping) return prev
+        const nextLength = (entry.visibleLength ?? 0) + 1
+        entry.visibleLength = Math.min(nextLength, entry.response.length)
+        if (entry.visibleLength >= entry.response.length) {
+          entry.isTyping = false
+        }
+        return next
+      })
+    }, 12)
+
+    return () => clearTimeout(timer)
+  }, [commandHistory])
 
   return (
     <section id="hero" className="min-h-screen flex items-center justify-center px-4 pt-16 relative z-10">
@@ -115,8 +162,10 @@ export default function Hero() {
                       <span>$</span>
                       <span className="text-slate-800 dark:text-gray-200">{entry.command}</span>
                     </div>
-                    <div className="text-sm text-slate-600 dark:text-gray-400">
-                      {entry.response}
+                    <div className="text-sm text-slate-600 dark:text-gray-400 whitespace-pre-wrap break-words">
+                      {entry.isTyping
+                        ? entry.response.slice(0, entry.visibleLength ?? 0)
+                        : entry.response}
                     </div>
                   </div>
                 ))}
