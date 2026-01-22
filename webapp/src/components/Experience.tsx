@@ -12,7 +12,7 @@ interface ExperienceItem {
 
 const experiences: ExperienceItem[] = [
   {
-    period: '2025 - Present',
+    period: '2025 - Present (Concurrent)',
     title: 'Katalon Platform',
     projects: [
       {
@@ -21,14 +21,16 @@ const experiences: ExperienceItem[] = [
           'Partnered with CloudOps to define deployment pipelines and own release execution',
           'Made technical decisions for deployment and rollout strategy',
           'Supported the DevOps team in managing team infrastructure and operations',
-          'Develop backend features and integrate with orchestration agent via A2A protocol'
+          'Integrated Google ADK A2A protocol so parent agents can orchestrate child agents for test case generation and execution',
+          'Deployed an A2A inspector per team to validate contracts before orchestrator integration',
+          'Maintained 100% agent uptime since launch'
         ]
       }
     ],
     technologies: ['Docker', 'Python', 'Grafana', 'Microservices', 'Kotlin', 'Quarkus']
   },
   {
-    period: '2024 - Present',
+    period: '2024 - Present (Concurrent)',
     title: 'Katalon TestOps Gen3',
     projects: [
       {
@@ -36,7 +38,8 @@ const experiences: ExperienceItem[] = [
         responsibilities: [
           'Full software lifecycle responsibility for backend development',
           'Develop backend features as microservices (Quarkus + Kotlin)',
-          'Support Microfrontend integration for FE team'
+          'Maintain shared micro-frontend library for TestOps apps (TypeScript, React)',
+          'Supported micro-frontend integration for FE team'
         ]
       },
       {
