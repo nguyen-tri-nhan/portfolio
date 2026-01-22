@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ChevronDown } from 'lucide-react'
 
 const TERMINAL_LINES = [
@@ -19,6 +19,11 @@ export default function Hero() {
   const [currentLine, setCurrentLine] = useState(0)
   const [currentChar, setCurrentChar] = useState(0)
   const [showCursor, setShowCursor] = useState(true)
+  const [commandInput, setCommandInput] = useState('')
+  const [commandHistory, setCommandHistory] = useState<
+    { command: string; response: string }[]
+  >([])
+  const terminalContentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -30,7 +35,7 @@ export default function Hero() {
           setCurrentChar(0)
         }
       }
-    }, 50)
+    }, 25)
 
     return () => clearTimeout(timer)
   }, [currentLine, currentChar])
@@ -47,6 +52,34 @@ export default function Hero() {
     document.getElementById('experience')?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  const handleCommand = (value: string) => {
+    const rawCommand = value.trim()
+    const command = rawCommand.toLowerCase()
+    if (!command) return
+
+    let response = ''
+    if (command === 'view_experience') {
+      scrollToExperience()
+      response = 'Scrolling to experience...'
+    } else if (command === 'go github' || command === 'github') {
+      window.open('https://github.com/nguyen-tri-nhan', '_blank', 'noopener,noreferrer')
+      response = 'Opening GitHub...'
+    } else if (command === 'help') {
+      response = 'Available commands: view_experience, github (or go github), help'
+    } else {
+      response = 'Unknown command. Try: help'
+    }
+
+    setCommandHistory((prev) => [...prev, { command: rawCommand, response }])
+  }
+
+  const typingComplete = currentLine >= TERMINAL_LINES.length
+  
+  useEffect(() => {
+    if (!terminalContentRef.current) return
+    terminalContentRef.current.scrollTop = terminalContentRef.current.scrollHeight
+  }, [currentLine, currentChar, commandHistory])
+
   return (
     <section id="hero" className="min-h-screen flex items-center justify-center px-4 pt-16 relative z-10">
       <div className="max-w-4xl mx-auto text-center">
@@ -56,7 +89,10 @@ export default function Hero() {
             <div className="terminal-dot bg-yellow-500"></div>
             <div className="terminal-dot bg-green-500"></div>
           </div>
-          <div className="terminal-content min-h-[300px]">
+          <div
+            ref={terminalContentRef}
+            className="terminal-content min-h-[320px] max-h-[360px] overflow-y-auto text-left pr-2"
+          >
             {TERMINAL_LINES.slice(0, currentLine + 1).map((line, index) => (
               <div key={index} className="mb-2">
                 {index === currentLine ? (
@@ -71,6 +107,37 @@ export default function Hero() {
                 )}
               </div>
             ))}
+            {typingComplete && (
+              <div className="mt-2 space-y-2">
+                {commandHistory.map((entry, index) => (
+                  <div key={`cmd-${index}`} className="space-y-1">
+                    <div className="flex items-center gap-2 text-primary">
+                      <span>$</span>
+                      <span className="text-slate-800 dark:text-gray-200">{entry.command}</span>
+                    </div>
+                    <div className="text-sm text-slate-600 dark:text-gray-400">
+                      {entry.response}
+                    </div>
+                  </div>
+                ))}
+                <div className="flex items-center gap-2 text-primary">
+                  <span>$</span>
+                  <input
+                    value={commandInput}
+                    onChange={(event) => setCommandInput(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        handleCommand(commandInput)
+                        setCommandInput('')
+                      }
+                    }}
+                    className="flex-1 bg-transparent outline-none text-slate-800 dark:text-gray-200"
+                    placeholder="Type: view_experience, github, or help"
+                    aria-label="Terminal command input"
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
