@@ -1,5 +1,6 @@
-import { Moon, Sun, Menu, X } from 'lucide-react'
+import { Moon, Sun, Menu, X, Map } from 'lucide-react'
 import { useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 interface NavigationProps {
   darkMode: boolean
@@ -8,10 +9,30 @@ interface NavigationProps {
 
 export default function Navigation({ darkMode, setDarkMode }: NavigationProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const location = useLocation()
+  const navigate = useNavigate()
+  const isHome = location.pathname === '/'
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
     setIsOpen(false)
+  }
+
+  const goHome = () => {
+    if (isHome) {
+      scrollToSection('hero')
+    } else {
+      navigate('/')
+      setIsOpen(false)
+    }
+  }
+
+  const goRoadmap = () => {
+    if (isHome) {
+      navigate('/experience')
+    } else {
+      scrollToSection('roadmap')
+    }
   }
 
   return (
@@ -24,17 +45,25 @@ export default function Navigation({ darkMode, setDarkMode }: NavigationProps) {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <button onClick={() => scrollToSection('hero')} className="hover:text-primary transition-colors">
+            <button onClick={goHome} className="hover:text-primary transition-colors">
               Home
             </button>
-            <button onClick={() => scrollToSection('experience')} className="hover:text-primary transition-colors">
-              Experience
-            </button>
-            <button onClick={() => scrollToSection('projects')} className="hover:text-primary transition-colors">
-              Projects
-            </button>
-            <button onClick={() => scrollToSection('contact')} className="hover:text-primary transition-colors">
-              Contact
+            {isHome ? (
+              <>
+                <button onClick={() => scrollToSection('experience')} className="hover:text-primary transition-colors">
+                  Experience
+                </button>
+                <button onClick={() => scrollToSection('projects')} className="hover:text-primary transition-colors">
+                  Projects
+                </button>
+                <button onClick={() => scrollToSection('contact')} className="hover:text-primary transition-colors">
+                  Contact
+                </button>
+              </>
+            ) : null}
+            <button onClick={goRoadmap} className="inline-flex items-center gap-2 hover:text-primary transition-colors">
+              <Map size={16} />
+              Roadmap
             </button>
             <button
               onClick={() => setDarkMode(!darkMode)}
@@ -70,17 +99,24 @@ export default function Navigation({ darkMode, setDarkMode }: NavigationProps) {
         {isOpen && (
           <div className="md:hidden py-4 border-t border-slate-200 dark:border-gray-800">
             <div className="flex flex-col space-y-4">
-              <button onClick={() => scrollToSection('hero')} className="text-left hover:text-primary transition-colors">
+              <button onClick={goHome} className="text-left hover:text-primary transition-colors">
                 Home
               </button>
-              <button onClick={() => scrollToSection('experience')} className="text-left hover:text-primary transition-colors">
-                Experience
-              </button>
-              <button onClick={() => scrollToSection('projects')} className="text-left hover:text-primary transition-colors">
-                Projects
-              </button>
-              <button onClick={() => scrollToSection('contact')} className="text-left hover:text-primary transition-colors">
-                Contact
+              {isHome ? (
+                <>
+                  <button onClick={() => scrollToSection('experience')} className="text-left hover:text-primary transition-colors">
+                    Experience
+                  </button>
+                  <button onClick={() => scrollToSection('projects')} className="text-left hover:text-primary transition-colors">
+                    Projects
+                  </button>
+                  <button onClick={() => scrollToSection('contact')} className="text-left hover:text-primary transition-colors">
+                    Contact
+                  </button>
+                </>
+              ) : null}
+              <button onClick={goRoadmap} className="text-left hover:text-primary transition-colors">
+                Roadmap
               </button>
             </div>
           </div>
