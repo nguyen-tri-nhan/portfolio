@@ -1,5 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { ChevronDown } from 'lucide-react'
+import {
+  COMMAND_DEFINITIONS,
+  buildCommandMap,
+  buildHelpText,
+  pickFortune,
+  TerminalCommandContext
+} from '../data/terminalCommands'
 
 const PROMPT = 'nhan@portfolio:~$'
 const RESUME_URL = '/resume.pdf'
@@ -17,46 +24,6 @@ const TERMINAL_LINES = [
   '}',
   '$ view_experience'
 ]
-
-const COMMAND_DEFINITIONS = [
-  {
-    command: 'view_experience',
-    aliases: [],
-    description: 'scroll to the experience section'
-  },
-  {
-    command: 'github',
-    aliases: ['go github'],
-    description: 'open my GitHub profile'
-  },
-  {
-    command: 'linkedin',
-    aliases: ['go linkedin'],
-    description: 'open my LinkedIn profile'
-  },
-  {
-    command: 'resume',
-    aliases: [],
-    description: 'open my resume PDF'
-  },
-  {
-    command: 'clear',
-    aliases: [],
-    description: 'clear the terminal output'
-  },
-  {
-    command: 'help',
-    aliases: [],
-    description: 'show this list'
-  }
-]
-
-const HELP_RESPONSE =
-  'Available commands:\n' +
-  COMMAND_DEFINITIONS.map((definition) => {
-    const aliasText = definition.aliases.length > 0 ? ` (${definition.aliases.join(', ')})` : ''
-    return `- ${definition.command}${aliasText}: ${definition.description}`
-  }).join('\n')
 
 export default function Hero() {
   const [currentLine, setCurrentLine] = useState(0)
@@ -98,6 +65,21 @@ export default function Hero() {
     document.getElementById('experience')?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  const scrollToProjects = () => {
+    document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const scrollToContact = () => {
+    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const helpText = buildHelpText(COMMAND_DEFINITIONS)
+  const commandMap = buildCommandMap(COMMAND_DEFINITIONS)
+
   const getMatchingCommands = (input: string) => {
     const normalized = input.trim().toLowerCase()
     if (!normalized) {
@@ -105,7 +87,7 @@ export default function Hero() {
     }
     return COMMAND_DEFINITIONS.filter((definition) => {
       if (definition.command.startsWith(normalized)) return true
-      return definition.aliases.some((alias) => alias.startsWith(normalized))
+      return definition.aliases?.some((alias) => alias.startsWith(normalized)) ?? false
     })
   }
 
@@ -137,11 +119,32 @@ export default function Hero() {
     const command = rawCommand.toLowerCase()
     if (!command) return
 
-    let response = ''
-    if (command === 'clear') {
-      response = 'Terminal cleared.'
+    const historySnapshot = [...commandLog]
+    const sudoHandler = commandMap.get('sudo')
+    const matchedDefinition = command.startsWith('sudo ')
+      ? sudoHandler
+      : commandMap.get(command)
+
+    const context: TerminalCommandContext = {
+      scrollToExperience,
+      scrollToProjects,
+      scrollToContact,
+      scrollToTop,
+      openUrl: (url) => window.open(url, '_blank', 'noopener,noreferrer'),
+      resumeUrl: RESUME_URL,
+      history: historySnapshot,
+      now: () => new Date(),
+      pickFortune,
+      helpText
+    }
+
+    const result = matchedDefinition
+      ? matchedDefinition.run(context)
+      : { response: 'Unknown command. Try: help' }
+
+    if (result.clearHistory) {
       setCommandHistory([
-        { command: rawCommand, response, visibleLength: 0, isTyping: true }
+        { command: rawCommand, response: result.response, visibleLength: 0, isTyping: true }
       ])
       setCommandLog([])
       setHistoryIndex(-1)
@@ -150,30 +153,9 @@ export default function Hero() {
 
     setCommandLog((prev) => [...prev, rawCommand])
     setHistoryIndex(-1)
-
-    if (command.startsWith('sudo ')) {
-      response = 'Nice try. Boss mode unlocks after the salary hits the account.'
-    } else if (command === 'view_experience') {
-      scrollToExperience()
-      response = 'Scrolling to experience...'
-    } else if (command === 'go github' || command === 'github') {
-      window.open('https://github.com/nguyen-tri-nhan', '_blank', 'noopener,noreferrer')
-      response = 'Opening GitHub...'
-    } else if (command === 'go linkedin' || command === 'linkedin') {
-      window.open('https://www.linkedin.com/in/nguyen-tri-nhan/', '_blank', 'noopener,noreferrer')
-      response = 'Opening LinkedIn...'
-    } else if (command === 'resume') {
-      window.open(RESUME_URL, '_blank', 'noopener,noreferrer')
-      response = 'Opening resume...'
-    } else if (command === 'help') {
-      response = HELP_RESPONSE
-    } else {
-      response = 'Unknown command. Try: help'
-    }
-
     setCommandHistory((prev) => [
       ...prev,
-      { command: rawCommand, response, visibleLength: 0, isTyping: true }
+      { command: rawCommand, response: result.response, visibleLength: 0, isTyping: true }
     ])
   }
 
@@ -226,8 +208,6 @@ export default function Hero() {
       commandInputRef.current?.focus()
     }
   }, [typingComplete])
-
-  const matchingCommands = getMatchingCommands(commandInput)
 
   const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
@@ -320,7 +300,7 @@ export default function Hero() {
                     }}
                     onKeyDown={handleInputKeyDown}
                     className="flex-1 bg-transparent outline-none text-slate-800 caret-primary dark:text-gray-200"
-                    placeholder="Type: view_experience, github, linkedin, resume, help"
+                    placeholder="Type: help"
                     aria-label="Terminal command input"
                   />
                 </div>
