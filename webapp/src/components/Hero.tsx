@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { ChevronDown } from 'lucide-react'
 
+const PROMPT = 'nhan@portfolio:~$'
+const RESUME_URL = '/resume.pdf'
+
 const TERMINAL_LINES = [
   '$ whoami',
   'Nhan Nguyen - Software Engineer @ Katalon',
@@ -15,15 +18,58 @@ const TERMINAL_LINES = [
   '$ view_experience'
 ]
 
+const COMMAND_DEFINITIONS = [
+  {
+    command: 'view_experience',
+    aliases: [],
+    description: 'scroll to the experience section'
+  },
+  {
+    command: 'github',
+    aliases: ['go github'],
+    description: 'open my GitHub profile'
+  },
+  {
+    command: 'linkedin',
+    aliases: ['go linkedin'],
+    description: 'open my LinkedIn profile'
+  },
+  {
+    command: 'resume',
+    aliases: [],
+    description: 'open my resume PDF'
+  },
+  {
+    command: 'clear',
+    aliases: [],
+    description: 'clear the terminal output'
+  },
+  {
+    command: 'help',
+    aliases: [],
+    description: 'show this list'
+  }
+]
+
+const HELP_RESPONSE =
+  'Available commands:\n' +
+  COMMAND_DEFINITIONS.map((definition) => {
+    const aliasText = definition.aliases.length > 0 ? ` (${definition.aliases.join(', ')})` : ''
+    return `- ${definition.command}${aliasText}: ${definition.description}`
+  }).join('\n')
+
 export default function Hero() {
   const [currentLine, setCurrentLine] = useState(0)
   const [currentChar, setCurrentChar] = useState(0)
   const [showCursor, setShowCursor] = useState(true)
   const [commandInput, setCommandInput] = useState('')
+  const [commandLog, setCommandLog] = useState<string[]>([])
+  const [historyIndex, setHistoryIndex] = useState(-1)
   const [commandHistory, setCommandHistory] = useState<
     { command: string; response: string; visibleLength?: number; isTyping?: boolean }[]
   >([])
   const terminalContentRef = useRef<HTMLDivElement>(null)
+  const commandInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -52,12 +98,59 @@ export default function Hero() {
     document.getElementById('experience')?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  const getMatchingCommands = (input: string) => {
+    const normalized = input.trim().toLowerCase()
+    if (!normalized) {
+      return COMMAND_DEFINITIONS
+    }
+    return COMMAND_DEFINITIONS.filter((definition) => {
+      if (definition.command.startsWith(normalized)) return true
+      return definition.aliases.some((alias) => alias.startsWith(normalized))
+    })
+  }
+
+  const applyAutocomplete = () => {
+    const normalized = commandInput.trim().toLowerCase()
+    if (!normalized) return
+    const matches = getMatchingCommands(normalized)
+    if (matches.length === 0) return
+    if (matches.length === 1) {
+      setCommandInput(matches[0].command)
+      return
+    }
+    const prefix = matches
+      .map((match) => match.command)
+      .reduce((acc, value) => {
+        let next = acc
+        while (next && !value.startsWith(next)) {
+          next = next.slice(0, -1)
+        }
+        return next
+      }, matches[0].command)
+    if (prefix && prefix.length > normalized.length) {
+      setCommandInput(prefix)
+    }
+  }
+
   const handleCommand = (value: string) => {
     const rawCommand = value.trim()
     const command = rawCommand.toLowerCase()
     if (!command) return
 
     let response = ''
+    if (command === 'clear') {
+      response = 'Terminal cleared.'
+      setCommandHistory([
+        { command: rawCommand, response, visibleLength: 0, isTyping: true }
+      ])
+      setCommandLog([])
+      setHistoryIndex(-1)
+      return
+    }
+
+    setCommandLog((prev) => [...prev, rawCommand])
+    setHistoryIndex(-1)
+
     if (command.startsWith('sudo ')) {
       response = 'Nice try. Boss mode unlocks after the salary hits the account.'
     } else if (command === 'view_experience') {
@@ -69,22 +162,18 @@ export default function Hero() {
     } else if (command === 'go linkedin' || command === 'linkedin') {
       window.open('https://www.linkedin.com/in/nguyen-tri-nhan/', '_blank', 'noopener,noreferrer')
       response = 'Opening LinkedIn...'
+    } else if (command === 'resume') {
+      window.open(RESUME_URL, '_blank', 'noopener,noreferrer')
+      response = 'Opening resume...'
     } else if (command === 'help') {
-      response =
-        'Available commands:\n' +
-        '- view_experience: scroll to the experience section\n' +
-        '- github or go github: open my GitHub profile\n' +
-        '- linkedin or go linkedin: open my LinkedIn profile\n' +
-        '- help: show this list'
+      response = HELP_RESPONSE
     } else {
       response = 'Unknown command. Try: help'
     }
 
     setCommandHistory((prev) => [
       ...prev,
-      command === 'help'
-        ? { command: rawCommand, response, visibleLength: 0, isTyping: true }
-        : { command: rawCommand, response }
+      { command: rawCommand, response, visibleLength: 0, isTyping: true }
     ])
   }
 
@@ -101,31 +190,81 @@ export default function Hero() {
 
     if ((lastEntry.visibleLength ?? 0) >= lastEntry.response.length) {
       setCommandHistory((prev) => {
-        const next = [...prev]
-        const entry = next[next.length - 1]
-        if (!entry?.isTyping) return prev
-        entry.isTyping = false
-        return next
+        return prev.map((entry, index) => {
+          if (index !== prev.length - 1) return entry
+          return {
+            ...entry,
+            isTyping: false,
+            visibleLength: entry.response.length
+          }
+        })
       })
       return
     }
 
     const timer = setTimeout(() => {
       setCommandHistory((prev) => {
-        const next = [...prev]
-        const entry = next[next.length - 1]
-        if (!entry?.isTyping) return prev
-        const nextLength = (entry.visibleLength ?? 0) + 1
-        entry.visibleLength = Math.min(nextLength, entry.response.length)
-        if (entry.visibleLength >= entry.response.length) {
-          entry.isTyping = false
-        }
-        return next
+        return prev.map((entry, index) => {
+          if (index !== prev.length - 1) return entry
+          if (!entry.isTyping) return entry
+          const nextLength = (entry.visibleLength ?? 0) + 1
+          const done = nextLength >= entry.response.length
+          return {
+            ...entry,
+            visibleLength: Math.min(nextLength, entry.response.length),
+            isTyping: done ? false : entry.isTyping
+          }
+        })
       })
-    }, 12)
+    }, 10)
 
     return () => clearTimeout(timer)
   }, [commandHistory])
+
+  useEffect(() => {
+    if (typingComplete) {
+      commandInputRef.current?.focus()
+    }
+  }, [typingComplete])
+
+  const matchingCommands = getMatchingCommands(commandInput)
+
+  const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      if (!commandInput.trim()) return
+      handleCommand(commandInput)
+      setCommandInput('')
+      return
+    }
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      if (commandLog.length === 0) return
+      const nextIndex = historyIndex === -1 ? commandLog.length - 1 : Math.max(historyIndex - 1, 0)
+      setHistoryIndex(nextIndex)
+      setCommandInput(commandLog[nextIndex] ?? '')
+      return
+    }
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      if (commandLog.length === 0 || historyIndex === -1) return
+      const nextIndex = historyIndex + 1
+      if (nextIndex >= commandLog.length) {
+        setHistoryIndex(-1)
+        setCommandInput('')
+      } else {
+        setHistoryIndex(nextIndex)
+        setCommandInput(commandLog[nextIndex] ?? '')
+      }
+      return
+    }
+
+    if (event.key === 'Tab') {
+      event.preventDefault()
+      applyAutocomplete()
+    }
+  }
 
   return (
     <section id="hero" className="min-h-screen flex items-center justify-center px-4 pt-16 relative z-10">
@@ -159,7 +298,7 @@ export default function Hero() {
                 {commandHistory.map((entry, index) => (
                   <div key={`cmd-${index}`} className="space-y-1">
                     <div className="flex items-center gap-2 text-primary">
-                      <span>$</span>
+                      <span className="text-xs text-slate-500 dark:text-gray-400">{PROMPT}</span>
                       <span className="text-slate-800 dark:text-gray-200">{entry.command}</span>
                     </div>
                     <div className="text-sm text-slate-600 dark:text-gray-400 whitespace-pre-wrap break-words">
@@ -169,19 +308,19 @@ export default function Hero() {
                     </div>
                   </div>
                 ))}
+
                 <div className="flex items-center gap-2 text-primary">
-                  <span>$</span>
+                  <span className="text-xs text-slate-500 dark:text-gray-400">{PROMPT}</span>
                   <input
+                    ref={commandInputRef}
                     value={commandInput}
-                    onChange={(event) => setCommandInput(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') {
-                        handleCommand(commandInput)
-                        setCommandInput('')
-                      }
+                    onChange={(event) => {
+                      setCommandInput(event.target.value)
+                      setHistoryIndex(-1)
                     }}
-                    className="flex-1 bg-transparent outline-none text-slate-800 dark:text-gray-200"
-                    placeholder="Type: view_experience, github, or help"
+                    onKeyDown={handleInputKeyDown}
+                    className="flex-1 bg-transparent outline-none text-slate-800 caret-primary dark:text-gray-200"
+                    placeholder="Type: view_experience, github, linkedin, resume, help"
                     aria-label="Terminal command input"
                   />
                 </div>
