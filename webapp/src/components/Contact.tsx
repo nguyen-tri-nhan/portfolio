@@ -16,14 +16,12 @@ export default function Contact() {
 
         <div className="max-w-2xl mx-auto">
           <div>
-            <h3 className="text-2xl font-bold mb-6 text-center">Connect With Me</h3>
-            
             <div className="space-y-4">
               <a
                 href="https://github.com/nguyen-tri-nhan"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center space-x-3 p-4 border border-slate-200 dark:border-gray-700 rounded-lg hover:border-primary/50 transition-colors group"
+                className="flex items-center space-x-3 p-4 border border-slate-200 dark:border-gray-700 rounded-lg hover:border-primary/50 hover:-translate-y-0.5 hover:shadow-[0_0_12px_rgba(0,255,136,0.12)] transition-all duration-300 group"
               >
                 <Github size={24} className="text-primary" />
                 <div>
@@ -36,7 +34,7 @@ export default function Contact() {
                 href="https://www.linkedin.com/in/nguyen-tri-nhan/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center space-x-3 p-4 border border-slate-200 dark:border-gray-700 rounded-lg hover:border-primary/50 transition-colors group"
+                className="flex items-center space-x-3 p-4 border border-slate-200 dark:border-gray-700 rounded-lg hover:border-primary/50 hover:-translate-y-0.5 hover:shadow-[0_0_12px_rgba(0,255,136,0.12)] transition-all duration-300 group"
               >
                 <Linkedin size={24} className="text-blue-500" />
                 <div>
@@ -47,7 +45,7 @@ export default function Contact() {
 
               <a
                 href="mailto:nguyentrinhan.dev@gmail.com"
-                className="flex items-center space-x-3 p-4 border border-slate-200 dark:border-gray-700 rounded-lg hover:border-primary/50 transition-colors group"
+                className="flex items-center space-x-3 p-4 border border-slate-200 dark:border-gray-700 rounded-lg hover:border-primary/50 hover:-translate-y-0.5 hover:shadow-[0_0_12px_rgba(0,255,136,0.12)] transition-all duration-300 group"
               >
                 <Mail size={24} className="text-primary" />
                 <div>

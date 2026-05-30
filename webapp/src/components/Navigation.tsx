@@ -1,5 +1,5 @@
 import { Moon, Sun, Menu, X, Map } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 interface NavigationProps {
@@ -9,8 +9,28 @@ interface NavigationProps {
 
 export default function Navigation({ darkMode, setDarkMode }: NavigationProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState('hero')
   const location = useLocation()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (location.pathname !== '/') return
+    const sections = ['hero', 'experience', 'projects', 'contact']
+    const observers: IntersectionObserver[] = []
+
+    sections.forEach((id) => {
+      const el = document.getElementById(id)
+      if (!el) return
+      const observer = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setActiveSection(id) },
+        { threshold: 0.4 }
+      )
+      observer.observe(el)
+      observers.push(observer)
+    })
+
+    return () => observers.forEach((o) => o.disconnect())
+  }, [location.pathname])
   const isHome = location.pathname === '/'
 
   const scrollToSection = (id: string) => {
@@ -45,18 +65,30 @@ export default function Navigation({ darkMode, setDarkMode }: NavigationProps) {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <button onClick={goHome} className="hover:text-primary transition-colors">
+            <button
+              onClick={goHome}
+              className={`hover:text-primary transition-colors ${isHome && activeSection === 'hero' ? 'text-primary font-semibold' : ''}`}
+            >
               Home
             </button>
             {isHome ? (
               <>
-                <button onClick={() => scrollToSection('experience')} className="hover:text-primary transition-colors">
+                <button
+                  onClick={() => scrollToSection('experience')}
+                  className={`hover:text-primary transition-colors ${activeSection === 'experience' ? 'text-primary font-semibold' : ''}`}
+                >
                   Experience
                 </button>
-                <button onClick={() => scrollToSection('projects')} className="hover:text-primary transition-colors">
+                <button
+                  onClick={() => scrollToSection('projects')}
+                  className={`hover:text-primary transition-colors ${activeSection === 'projects' ? 'text-primary font-semibold' : ''}`}
+                >
                   Projects
                 </button>
-                <button onClick={() => scrollToSection('contact')} className="hover:text-primary transition-colors">
+                <button
+                  onClick={() => scrollToSection('contact')}
+                  className={`hover:text-primary transition-colors ${activeSection === 'contact' ? 'text-primary font-semibold' : ''}`}
+                >
                   Contact
                 </button>
               </>

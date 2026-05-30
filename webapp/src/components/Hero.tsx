@@ -338,7 +338,7 @@ export default function Hero() {
               rel="noopener noreferrer"
               className="btn-secondary"
             >
-              View GitHub
+              GitHub
             </a>
           </div>
         </div>

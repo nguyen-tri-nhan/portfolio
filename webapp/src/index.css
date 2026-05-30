@@ -30,7 +30,7 @@
   }
   
   .project-card {
-    @apply bg-white border border-slate-200 rounded-lg p-6 shadow-sm hover:border-primary/50 transition-all duration-300 dark:bg-darker dark:border-gray-700;
+    @apply bg-white border border-slate-200 rounded-lg p-6 shadow-sm hover:border-primary/50 hover:-translate-y-1 hover:shadow-[0_0_16px_rgba(0,255,136,0.12)] transition-all duration-300 dark:bg-darker dark:border-gray-700;
   }
   
   .btn-primary {

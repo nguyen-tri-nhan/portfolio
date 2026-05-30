@@ -70,7 +70,7 @@ export default function Experience() {
                     {exp.technologies.map((tech) => (
                       <span
                         key={tech}
-                        className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full border border-primary/20"
+                        className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full border border-primary/20 transition-shadow hover:shadow-[0_0_8px_rgba(0,255,136,0.5)]"
                       >
                         {tech}
                       </span>

@@ -18,6 +18,7 @@ const projects: Project[] = [
     description: 'AI-powered multi-agent system for automated test-case generation and browser automation orchestration',
     longDescription: 'Built asynchronous AI-driven browser automation runners using Playwright MCP and Chrome DevTools Protocol. Integrated Jira, Azure DevOps, PDFs, and spreadsheets into context-ingestion pipelines for AI-based test generation.',
     technologies: ['Python', 'Google ADK', 'LiteLLM', 'A2A Protocol', 'Playwright MCP', 'CDP', 'Docker'],
+    image: 'https://2465122.fs1.hubspotusercontent-na1.net/hub/2465122/hubfs/g_fNa7d1_400x400%20(1).jpg?width=108&height=108',
   },
   {
     id: 'katalon-authoring',
@@ -25,6 +26,7 @@ const projects: Project[] = [
     description: 'ReactJS micro-frontend applications and backend orchestration services for browser-based testing workflows',
     longDescription: 'Led backend delivery in a cross-functional squad. Developed Kotlin/Quarkus/Kafka services and maintained a shared micro-frontend library adopted across 5+ teams and 7+ applications.',
     technologies: ['Kotlin', 'Quarkus', 'Kafka', 'React', 'TypeScript', 'AWS', 'ArgoCD'],
+    image: 'https://2465122.fs1.hubspotusercontent-na1.net/hub/2465122/hubfs/g_fNa7d1_400x400%20(1).jpg?width=108&height=108',
   },
   {
     id: 'katalon-truetest',
@@ -32,6 +34,7 @@ const projects: Project[] = [
     description: 'AI-assisted autonomous testing platform with browser traffic collection and session recording',
     longDescription: 'Architected a micro-frontend platform adopted across 5+ engineering teams. Implemented browser traffic collection modules to generate automation scripts from real user behaviors.',
     technologies: ['React', 'TypeScript', 'Java', 'Quarkus', 'Kafka', 'Python', 'GitHub Actions'],
+    image: 'https://2465122.fs1.hubspotusercontent-na1.net/hub/2465122/hubfs/g_fNa7d1_400x400%20(1).jpg?width=108&height=108',
   },
   {
     id: 'visual-testing-engine',
@@ -39,6 +42,7 @@ const projects: Project[] = [
     description: 'Image-processing engine to detect abnormal UI changes in customer applications',
     longDescription: 'Implemented image capture and pixel-diff comparison pipelines using Python and Java integrated into the Katalon TestOps reporting dashboard.',
     technologies: ['Python', 'Java', 'Spring Boot', 'React'],
+    image: 'https://2465122.fs1.hubspotusercontent-na1.net/hub/2465122/hubfs/g_fNa7d1_400x400%20(1).jpg?width=108&height=108',
   },
   {
     id: 'kafdrop',
@@ -131,7 +135,7 @@ export default function Projects() {
                   {project.technologies.map((tech) => (
                     <span
                       key={tech}
-                      className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full border border-primary/20"
+                      className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full border border-primary/20 transition-shadow hover:shadow-[0_0_8px_rgba(0,255,136,0.5)]"
                     >
                       {tech}
                     </span>
