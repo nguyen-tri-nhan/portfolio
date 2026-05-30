@@ -1,4 +1,4 @@
-import { Github, Linkedin } from 'lucide-react'
+import { Github, Linkedin, Mail, MapPin } from 'lucide-react'
 
 export default function Contact() {
 
@@ -31,7 +31,7 @@ export default function Contact() {
                   <div className="text-sm text-slate-500 dark:text-gray-400">@nguyen-tri-nhan</div>
                 </div>
               </a>
-              
+
               <a
                 href="https://www.linkedin.com/in/nguyen-tri-nhan/"
                 target="_blank"
@@ -44,10 +44,29 @@ export default function Contact() {
                   <div className="text-sm text-slate-500 dark:text-gray-400">/in/nguyen-tri-nhan</div>
                 </div>
               </a>
+
+              <a
+                href="mailto:nguyentrinhan.dev@gmail.com"
+                className="flex items-center space-x-3 p-4 border border-slate-200 dark:border-gray-700 rounded-lg hover:border-primary/50 transition-colors group"
+              >
+                <Mail size={24} className="text-primary" />
+                <div>
+                  <div className="font-semibold">Email</div>
+                  <div className="text-sm text-slate-500 dark:text-gray-400">nguyentrinhan.dev@gmail.com</div>
+                </div>
+              </a>
+
+              <div className="flex items-center space-x-3 p-4 border border-slate-200 dark:border-gray-700 rounded-lg">
+                <MapPin size={24} className="text-slate-400 dark:text-gray-500" />
+                <div>
+                  <div className="font-semibold">Location</div>
+                  <div className="text-sm text-slate-500 dark:text-gray-400">Ho Chi Minh City, Vietnam</div>
+                </div>
+              </div>
             </div>
-            
+
             <div className="mt-8 text-center text-slate-500 dark:text-gray-400">
-              <p>Currently not available for new opportunities</p>
+              <p>Open to new opportunities</p>
             </div>
           </div>
         </div>

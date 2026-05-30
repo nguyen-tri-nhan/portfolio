@@ -13,14 +13,15 @@ const RESUME_URL = '/resume.pdf'
 
 const TERMINAL_LINES = [
   '$ whoami',
-  'Nhan Nguyen - Software Engineer @ Katalon',
+  'Nhan Nguyen - Software Engineer @ Katalon (5+ yrs)',
   '$ cat experience.json',
   '{',
-  '  "company": "Katalon (2021-Present)",',
-  '  "focus": ["Test Automation", "AI/GenAI", "Microservices"],',
-  '  "backend": ["Quarkus", "Kotlin", "Spring Boot", "Java"],',
+  '  "company": "Katalon (Mar 2021 - Present)",',
+  '  "focus": ["AI Agents", "Platform Engineering", "Distributed Systems"],',
+  '  "backend": ["Kotlin", "Quarkus", "Java", "Spring Boot", "Kafka"],',
   '  "frontend": ["React", "TypeScript", "Micro-frontends"],',
-  '  "devops": ["GitHub Actions", "Grafana", "SonarCloud"]',
+  '  "ai": ["Google ADK", "LiteLLM", "A2A Protocol", "Playwright MCP"],',
+  '  "infra": ["AWS", "Docker", "Terraform", "ArgoCD", "GitHub Actions"]',
   '}',
   '$ view_experience'
 ]
@@ -310,11 +311,22 @@ export default function Hero() {
         </div>
 
         <div className="space-y-6">
+          <div className="flex justify-center">
+            <a
+              href="https://www.linkedin.com/in/nguyen-tri-nhan/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 hover:bg-green-500/20 transition-colors"
+            >
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              Open to work
+            </a>
+          </div>
           <h1 className="text-4xl md:text-6xl font-bold">
             Hello, I'm <span className="text-primary">Nhan</span>
           </h1>
           <p className="text-xl md:text-2xl text-slate-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Software Engineer passionate about creating innovative solutions with clean, efficient code
+            Full-stack engineer with 5+ years building scalable SaaS platforms, distributed systems, and AI-powered automation workflows
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button onClick={scrollToExperience} className="btn-primary">

@@ -1,4 +1,4 @@
-import { ExternalLink, Github, Star, GitFork } from 'lucide-react'
+import { Github, Lock } from 'lucide-react'
 
 interface Project {
   id: string
@@ -7,23 +7,47 @@ interface Project {
   longDescription: string
   technologies: string[]
   liveUrl?: string
-  githubUrl: string
-  stars: number
-  forks: number
+  githubUrl?: string
   image?: string
 }
 
 const projects: Project[] = [
   {
+    id: 'ai-authoring-agent',
+    title: 'AI Authoring Agent & Test Runner',
+    description: 'AI-powered multi-agent system for automated test-case generation and browser automation orchestration',
+    longDescription: 'Built asynchronous AI-driven browser automation runners using Playwright MCP and Chrome DevTools Protocol. Integrated Jira, Azure DevOps, PDFs, and spreadsheets into context-ingestion pipelines for AI-based test generation.',
+    technologies: ['Python', 'Google ADK', 'LiteLLM', 'A2A Protocol', 'Playwright MCP', 'CDP', 'Docker'],
+  },
+  {
+    id: 'katalon-authoring',
+    title: 'Katalon Authoring',
+    description: 'ReactJS micro-frontend applications and backend orchestration services for browser-based testing workflows',
+    longDescription: 'Led backend delivery in a cross-functional squad. Developed Kotlin/Quarkus/Kafka services and maintained a shared micro-frontend library adopted across 5+ teams and 7+ applications.',
+    technologies: ['Kotlin', 'Quarkus', 'Kafka', 'React', 'TypeScript', 'AWS', 'ArgoCD'],
+  },
+  {
+    id: 'katalon-truetest',
+    title: 'Katalon TrueTest',
+    description: 'AI-assisted autonomous testing platform with browser traffic collection and session recording',
+    longDescription: 'Architected a micro-frontend platform adopted across 5+ engineering teams. Implemented browser traffic collection modules to generate automation scripts from real user behaviors.',
+    technologies: ['React', 'TypeScript', 'Java', 'Quarkus', 'Kafka', 'Python', 'GitHub Actions'],
+  },
+  {
+    id: 'visual-testing-engine',
+    title: 'Visual Testing Engine',
+    description: 'Image-processing engine to detect abnormal UI changes in customer applications',
+    longDescription: 'Implemented image capture and pixel-diff comparison pipelines using Python and Java integrated into the Katalon TestOps reporting dashboard.',
+    technologies: ['Python', 'Java', 'Spring Boot', 'React'],
+  },
+  {
     id: 'kafdrop',
-    title: 'Kafdrop',
+    title: 'Kafdrop — Open Source',
     description: 'Open source Kafka Web UI for viewing Kafka topics and browsing consumer groups',
-    longDescription: 'Contributing to popular Apache Kafka management tool with enhanced UI features.',
+    longDescription: 'Added Kafka message publishing and environment-aware debugging capabilities to support internal operational workflows.',
     technologies: ['Java', 'Spring Boot', 'Kafka', 'JavaScript', 'Docker'],
     liveUrl: 'https://github.com/obsidiandynamics/kafdrop',
     githubUrl: 'https://github.com/obsidiandynamics/kafdrop',
-    stars: 5200,
-    forks: 900,
     image: 'https://raw.githubusercontent.com/wiki/obsidiandynamics/kafdrop/images/kafdrop-logo.png'
   },
   {
@@ -31,11 +55,9 @@ const projects: Project[] = [
     title: 'Interactive Portfolio',
     description: 'Modern portfolio website with terminal animations and interactive features',
     longDescription: 'Built with React, TypeScript, and Tailwind CSS featuring terminal UI and smooth animations.',
-    technologies: ['React', 'TypeScript', 'Tailwind CSS', 'Vite', 'Framer Motion'],
+    technologies: ['React', 'TypeScript', 'Tailwind CSS', 'Vite'],
     liveUrl: '/',
     githubUrl: 'https://github.com/nguyen-tri-nhan/portfolio',
-    stars: 12,
-    forks: 3,
   }
 ]
 
@@ -58,8 +80,8 @@ export default function Projects() {
               <div className="aspect-video bg-slate-100 dark:bg-gray-800 rounded-lg mb-4 overflow-hidden">
                 {project.image ? (
                   <div className="w-full h-full bg-white flex items-center justify-center p-4">
-                    <img 
-                      src={project.image} 
+                    <img
+                      src={project.image}
                       alt={project.title}
                       className="max-w-full max-h-full object-contain"
                     />
@@ -72,7 +94,36 @@ export default function Projects() {
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-xl font-bold text-primary">{project.title}</h3>
+                <div className="flex items-center justify-between">
+                  {(project.liveUrl || project.githubUrl) ? (
+                    <a
+                      href={project.liveUrl ?? project.githubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xl font-bold text-primary hover:underline"
+                    >
+                      {project.title}
+                    </a>
+                  ) : (
+                    <h3 className="text-xl font-bold text-primary">{project.title}</h3>
+                  )}
+                  {project.githubUrl ? (
+                    <a
+                      href={project.githubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-slate-400 hover:text-primary transition-colors"
+                      title="View Source Code"
+                    >
+                      <Github size={18} />
+                    </a>
+                  ) : (
+                    <span className="flex items-center gap-1 text-xs text-slate-400 dark:text-gray-500 border border-slate-200 dark:border-gray-700 rounded-full px-2 py-0.5">
+                      <Lock size={11} />
+                      Private
+                    </span>
+                  )}
+                </div>
                 <p className="text-slate-700 dark:text-gray-300">{project.description}</p>
                 <p className="text-sm text-slate-600 dark:text-gray-400">{project.longDescription}</p>
 
@@ -85,42 +136,6 @@ export default function Projects() {
                       {tech}
                     </span>
                   ))}
-                </div>
-
-                <div className="flex items-center justify-between pt-4">
-                  <div className="flex items-center space-x-4 text-sm text-slate-500 dark:text-gray-400">
-                    <div className="flex items-center space-x-1">
-                      <Star size={16} />
-                      <span>{project.stars}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <GitFork size={16} />
-                      <span>{project.forks}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex space-x-2">
-                    {project.liveUrl && (
-                      <a
-                        href={project.liveUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 bg-primary text-black rounded-lg hover:bg-primary/90 transition-colors"
-                        title="View Live Demo"
-                      >
-                        <ExternalLink size={16} />
-                      </a>
-                    )}
-                    <a
-                      href={project.githubUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 border border-primary text-primary rounded-lg hover:bg-primary/10 transition-colors"
-                      title="View Source Code"
-                    >
-                      <Github size={16} />
-                    </a>
-                  </div>
                 </div>
               </div>
             </div>
