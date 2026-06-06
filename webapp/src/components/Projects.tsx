@@ -45,6 +45,14 @@ const projects: Project[] = [
     image: 'https://2465122.fs1.hubspotusercontent-na1.net/hub/2465122/hubfs/g_fNa7d1_400x400%20(1).jpg?width=108&height=108',
   },
   {
+    id: 'mini-social-network',
+    title: 'Mini Social Network',
+    description: 'Over-engineered microservices social network built to explore distributed systems patterns end-to-end',
+    longDescription: 'Deliberately over-engineered to learn how technologies wire together in practice. Implemented event-driven architecture via Kafka, Debezium CDC, and the Outbox Pattern across 6 independent Quarkus/Kotlin services. Added realtime WebSocket pub/sub for live comments and notifications backed by Redis. Deployed on local Kubernetes with Traefik API gateway and a full LGTM observability stack. Migrated the original codebase from Spring Boot to Quarkus.',
+    technologies: ['Kotlin', 'Quarkus', 'Kafka', 'Debezium', 'Redis', 'WebSocket', 'Kubernetes', 'Traefik', 'React', 'OpenTelemetry', 'Grafana'],
+    githubUrl: 'https://github.com/nguyen-tri-nhan/mini-social-network',
+  },
+  {
     id: 'kafdrop',
     title: 'Kafdrop — Open Source',
     description: 'Open source Kafka Web UI for viewing Kafka topics and browsing consumer groups',
