@@ -45,6 +45,15 @@ const projects: Project[] = [
     image: 'https://2465122.fs1.hubspotusercontent-na1.net/hub/2465122/hubfs/g_fNa7d1_400x400%20(1).jpg?width=108&height=108',
   },
   {
+    id: 'family-tree',
+    title: 'Family Tree',
+    description: 'Local-first Vietnamese family tree manager — runs as a web app and desktop app (Windows/macOS) from the same codebase',
+    longDescription: 'Supports multi-generation, multi-branch trees with automatic kinship labeling dialect-aware for Northern/Southern Vietnamese (Bố/Mẹ vs Ba/Má, Uncle/Aunt/Cousin…). Built with a Storage Adapter Pattern so the same React app runs on both web (file input + localStorage) and Electron (native file dialog, IPC, atomic writes). Kinship computed via Lowest Common Ancestor algorithm. Supports lunar/solar calendar and PNG/PDF export. Desktop builds (.dmg/.exe) published via GitHub Actions; web deployed on Vercel.',
+    technologies: ['React', 'TypeScript', 'Electron', 'Vite', 'Vitest', 'GitHub Actions', 'Vercel'],
+    liveUrl: 'https://project-miqs8.vercel.app',
+    githubUrl: 'https://github.com/nguyen-tri-nhan/family-tree',
+  },
+  {
     id: 'mini-social-network',
     title: 'Mini Social Network',
     description: 'Over-engineered microservices social network built to explore distributed systems patterns end-to-end',
