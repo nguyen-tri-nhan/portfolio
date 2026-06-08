@@ -13,6 +13,15 @@ interface Project {
 
 const projects: Project[] = [
   {
+    id: 'family-tree',
+    title: 'Family Tree',
+    description: 'Local-first Vietnamese family tree manager — runs as a web app and desktop app (Windows/macOS) from the same codebase',
+    longDescription: 'Supports multi-generation, multi-branch trees with automatic kinship labeling dialect-aware for Northern/Southern Vietnamese (Bố/Mẹ vs Ba/Má, Uncle/Aunt/Cousin…). Built with a Storage Adapter Pattern so the same React app runs on both web (file input + localStorage) and Electron (native file dialog, IPC, atomic writes). Kinship computed via Lowest Common Ancestor algorithm. Supports lunar/solar calendar and PNG/PDF export. Desktop builds (.dmg/.exe) published via GitHub Actions; web deployed on Vercel.',
+    technologies: ['React', 'TypeScript', 'Electron', 'Vite', 'Vitest', 'GitHub Actions', 'Vercel'],
+    liveUrl: 'https://project-miqs8.vercel.app',
+    githubUrl: 'https://github.com/nguyen-tri-nhan/family-tree',
+  },
+  {
     id: 'ai-authoring-agent',
     title: 'AI Authoring Agent & Test Runner',
     description: 'AI-powered multi-agent system for automated test-case generation and browser automation orchestration',
@@ -43,15 +52,6 @@ const projects: Project[] = [
     longDescription: 'Implemented image capture and pixel-diff comparison pipelines using Python and Java integrated into the Katalon TestOps reporting dashboard.',
     technologies: ['Python', 'Java', 'Spring Boot', 'React'],
     image: 'https://2465122.fs1.hubspotusercontent-na1.net/hub/2465122/hubfs/g_fNa7d1_400x400%20(1).jpg?width=108&height=108',
-  },
-  {
-    id: 'family-tree',
-    title: 'Family Tree',
-    description: 'Local-first Vietnamese family tree manager — runs as a web app and desktop app (Windows/macOS) from the same codebase',
-    longDescription: 'Supports multi-generation, multi-branch trees with automatic kinship labeling dialect-aware for Northern/Southern Vietnamese (Bố/Mẹ vs Ba/Má, Uncle/Aunt/Cousin…). Built with a Storage Adapter Pattern so the same React app runs on both web (file input + localStorage) and Electron (native file dialog, IPC, atomic writes). Kinship computed via Lowest Common Ancestor algorithm. Supports lunar/solar calendar and PNG/PDF export. Desktop builds (.dmg/.exe) published via GitHub Actions; web deployed on Vercel.',
-    technologies: ['React', 'TypeScript', 'Electron', 'Vite', 'Vitest', 'GitHub Actions', 'Vercel'],
-    liveUrl: 'https://project-miqs8.vercel.app',
-    githubUrl: 'https://github.com/nguyen-tri-nhan/family-tree',
   },
   {
     id: 'mini-social-network',
