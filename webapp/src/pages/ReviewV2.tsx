@@ -13,7 +13,7 @@ export default function ReviewV2() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-100 overflow-hidden review-v2">
+    <div className="flex h-screen pt-16 bg-slate-950 text-slate-100 overflow-hidden review-v2">
       {/* Left sidebar */}
       <ReviewSidebar
         selected={selectedFile}

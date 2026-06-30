@@ -1,4 +1,4 @@
-import { Moon, Sun, Menu, X, Map } from 'lucide-react'
+import { Moon, Sun, Menu, X, Map, BookOpen } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
@@ -32,6 +32,7 @@ export default function Navigation({ darkMode, setDarkMode }: NavigationProps) {
     return () => observers.forEach((o) => o.disconnect())
   }, [location.pathname])
   const isHome = location.pathname === '/'
+  const isReview = location.pathname === '/review-v2'
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
@@ -98,6 +99,13 @@ export default function Navigation({ darkMode, setDarkMode }: NavigationProps) {
               Roadmap
             </button>
             <button
+              onClick={() => navigate('/review-v2')}
+              className={`inline-flex items-center gap-2 hover:text-primary transition-colors ${isReview ? 'text-primary font-semibold' : ''}`}
+            >
+              <BookOpen size={16} />
+              Review
+            </button>
+            <button
               onClick={() => setDarkMode(!darkMode)}
               aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               aria-pressed={darkMode}
@@ -149,6 +157,13 @@ export default function Navigation({ darkMode, setDarkMode }: NavigationProps) {
               ) : null}
               <button onClick={goRoadmap} className="text-left hover:text-primary transition-colors">
                 Roadmap
+              </button>
+              <button
+                onClick={() => { navigate('/review-v2'); setIsOpen(false) }}
+                className={`text-left inline-flex items-center gap-2 hover:text-primary transition-colors ${isReview ? 'text-primary font-semibold' : ''}`}
+              >
+                <BookOpen size={16} />
+                Review
               </button>
             </div>
           </div>
