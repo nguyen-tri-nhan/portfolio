@@ -108,6 +108,8 @@ const TOPICS=[
     {name:'JVM Internals',subs:['Heap','Stack','Metaspace','Class Loading','Garbage Collection','Memory Leaks']},
     {name:'Collections',subs:['ArrayList vs LinkedList','HashMap Internals','ConcurrentHashMap','TreeMap / LinkedHashMap']},
     {name:'Exception Handling',subs:['Checked vs Unchecked','try-with-resources','Custom Exceptions']},
+    {name:'Java I/O',subs:['Blocking I/O (java.io)','NIO (Non-Blocking)','NIO.2 Path & Files','So sánh các mô hình I/O']},
+    {name:'Performance Tuning',subs:['Công cụ Profiling (jstack/jmap/jcmd)','Phân tích Heap Dump','Phân tích Thread Dump','JVM Flags Cheatsheet']},
   ]},
   {title:'2. Concurrency',icon:'⚡',topics:[
     {name:'Thread Lifecycle',subs:[]},
@@ -133,6 +135,8 @@ const TOPICS=[
     {name:'Transactions',subs:['ACID','Isolation Levels','Locking']},
     {name:'JPA / Hibernate',subs:['Entity Lifecycle','Lazy Loading','N+1 Problem','Optimistic / Pessimistic Locking']},
     {name:'NoSQL',subs:['Redis','MongoDB','When to Use NoSQL']},
+    {name:'MyBatis',subs:['Mapper & XML Mapping','Dynamic SQL','ResultMap','MyBatis vs JPA']},
+    {name:'MySQL Deep Dive',subs:['InnoDB & MVCC','Đọc EXPLAIN Plan','Slow Query Log','Connection Pool (HikariCP)']},
   ]},
   {title:'5. Microservices',icon:'🔗',topics:[
     {name:'Service Discovery',subs:['Eureka / Consul']},
@@ -155,6 +159,7 @@ const TOPICS=[
     {name:'Rate Limiting',subs:['Token Bucket','Sliding Window']},
     {name:'CAP Theorem',subs:[]},
     {name:'Consistency Patterns',subs:['Eventual Consistency','Strong Consistency']},
+    {name:'High Concurrency',subs:['Sizing Thread Pool','Tuning Connection Pool','Bulkhead & Isolation','Capacity Planning']},
   ]},
   {title:'8. Cloud & DevOps',icon:'☁️',topics:[
     {name:'Docker',subs:['Image / Container / Layer','Dockerfile Best Practices','Networking & Volumes']},
@@ -173,6 +178,11 @@ const TOPICS=[
     {name:'Creational',subs:['Singleton','Factory Method','Builder','Prototype']},
     {name:'Structural',subs:['Adapter','Decorator','Facade','Proxy']},
     {name:'Behavioral',subs:['Strategy','Observer','Template Method','Command','Chain of Responsibility']},
+  ]},
+  {title:'11. Linux & Deployment',icon:'🐧',topics:[
+    {name:'File & Process',subs:[]},
+    {name:'Network & Logs',subs:[]},
+    {name:'Service Deployment',subs:[]},
   ]},
 ];
 
@@ -13127,6 +13137,1050 @@ public class OrderService {
 codeLabel:'OrderValidationChain: StockValidator → FraudValidator → PaymentValidator — extensible pipeline',
 adapt:'Spring Security filter chain: SecurityFilterChain là Chain of Responsibility theo nghĩa đen — thêm filter cho JWT validation, CORS, rate limiting không cần thay đổi filter khác. Dùng Chain of Responsibility cho validation pipeline khi các validator khác nhau áp dụng cho input khác nhau.',
 interview:['Sự khác biệt giữa Chain of Responsibility và if-else chain?','Spring Security implement Chain of Responsibility thế nào?','Handler trong chain có thể vừa xử lý VÀ forward request không?']};
+
+// ===== JAVA I/O =====
+DETAIL['Java I/O']={title:'Tổng Quan Java I/O',crumb:'1. Core Java',
+summary:'Java cung cấp hai package I/O: <code>java.io</code> (blocking, dựa trên stream) và <code>java.nio</code> (non-blocking, dựa trên buffer/channel). NIO.2 (<code>java.nio.file</code>) hiện đại hóa các thao tác file. Hiểu cả ba là nền tảng để xử lý file, network và xây dựng ứng dụng hiệu năng cao.',
+points:[
+  '<strong>java.io</strong>: Dựa trên stream, blocking. InputStream/OutputStream cho bytes; Reader/Writer cho ký tự.',
+  '<strong>java.nio</strong>: Mô hình Buffer + Channel. Hỗ trợ non-blocking và Selector để multiplexing.',
+  '<strong>NIO.2</strong> (Java 7+): package <code>java.nio.file</code> — Path, Files, WatchService cho thao tác file hiện đại.',
+  'Blocking I/O: một thread một kết nối — đơn giản nhưng không scale quá ~10K kết nối đồng thời.',
+  'NIO Selector: một thread giám sát nhiều channel — nền tảng của Netty và các server high-concurrency.',
+  'Java 21 Virtual Threads: viết code blocking nhưng scale như NIO — tốt nhất cả hai thế giới.',
+],
+adapt:'Trong Spring Boot ít khi viết raw I/O. Nhưng cần hiểu: <code>MultipartFile.getInputStream()</code> dùng java.io; Spring WebFlux (Netty) dùng NIO selector. Với file lớn, dùng <code>Files.lines(path)</code> — stream lazy, bộ nhớ không tăng theo kích thước file.',
+interview:['Sự khác biệt giữa java.io và java.nio là gì?','Khi nào nên dùng NIO thay vì Blocking I/O?','Selector trong Java NIO có vai trò gì?']};
+
+DETAIL['Blocking I/O (java.io)']={title:'Blocking I/O — java.io',crumb:'1. Core Java › Java I/O',
+summary:'java.io là blocking và dựa trên stream: mỗi lệnh read/write block thread hiện tại cho đến khi có data. Áp dụng Decorator pattern — bọc stream để thêm buffering, encoding, nén.',
+points:[
+  '<strong>Byte streams</strong>: <code>InputStream / OutputStream</code> cho raw bytes. Cho file: <code>FileInputStream / FileOutputStream</code>.',
+  '<strong>Char streams</strong>: <code>Reader / Writer</code> cho Unicode text. Cho file: <code>FileReader / FileWriter</code>.',
+  '<strong>Buffered wrappers</strong>: <code>BufferedReader / BufferedWriter</code> gom nhiều system call thành batch — tăng hiệu năng đáng kể.',
+  'Luôn dùng <code>try-with-resources</code> — đảm bảo <code>close()</code> được gọi dù có exception.',
+  'Decorator chain: <code>new BufferedReader(new InputStreamReader(new FileInputStream("f.txt"), StandardCharsets.UTF_8))</code>.',
+],
+code:`// Đọc file text từng dòng (có buffer)
+try (BufferedReader br = new BufferedReader(
+         new InputStreamReader(new FileInputStream("data.txt"), StandardCharsets.UTF_8))) {
+    String line;
+    while ((line = br.readLine()) != null) {
+        System.out.println(line);
+    }
+}
+
+// Ghi file text
+try (BufferedWriter bw = new BufferedWriter(new FileWriter("out.txt"))) {
+    bw.write("Hello, World!");
+    bw.newLine();
+}
+
+// Copy file binary (buffer 8 KB)
+try (InputStream in  = new FileInputStream("src.bin");
+     OutputStream out = new FileOutputStream("dst.bin")) {
+    byte[] buf = new byte[8192];
+    int n;
+    while ((n = in.read(buf)) != -1) out.write(buf, 0, n);
+}`,
+codeLabel:'Đọc/ghi text có buffer và copy binary',
+adapt:'Ưu tiên <code>Files.readAllLines()</code> cho file nhỏ và <code>Files.lines()</code> (lazy Stream) cho file lớn — cả hai là NIO.2 wrappers tiện lợi tự xử lý encoding và đóng stream. Luôn bọc <code>FileReader</code> bằng <code>BufferedReader</code> — không có buffer, mỗi <code>readLine()</code> gọi nhiều system call.',
+interview:['Byte stream và char stream khác nhau thế nào?','BufferedReader bổ sung gì cho FileReader?','Điều gì xảy ra nếu quên đóng stream?']};
+
+DETAIL['NIO (Non-Blocking)']={title:'NIO — Non-Blocking I/O',crumb:'1. Core Java › Java I/O',
+summary:'java.nio dùng mô hình Buffer + Channel. Channel có thể set sang non-blocking, và Selector multiplexes nhiều channel trên một thread — cho phép server event-driven xử lý hàng nghìn kết nối mà không cần thread-per-connection.',
+points:[
+  '<strong>Buffer</strong>: container có typed (ByteBuffer, CharBuffer…) với position/limit/capacity. Data chạy qua buffer.',
+  '<strong>Channel</strong>: bidirectional, hỗ trợ cả đọc và ghi. Loại chính: <code>FileChannel, SocketChannel, ServerSocketChannel</code>.',
+  '<strong>Selector</strong>: theo dõi nhiều channel cho sự kiện I/O: OP_ACCEPT, OP_READ, OP_WRITE.',
+  '<code>channel.configureBlocking(false)</code>: non-blocking — read/write trả về 0 thay vì block.',
+  '<strong>Zero-copy</strong>: <code>FileChannel.transferTo()</code> chuyển data trực tiếp kernel → socket, không qua user space.',
+  '<code>ByteBuffer.flip()</code>: chuyển buffer từ write mode sang read mode (limit = position, position = 0).',
+],
+code:`// Skeleton server non-blocking với Selector
+ServerSocketChannel server = ServerSocketChannel.open();
+server.bind(new InetSocketAddress(8080));
+server.configureBlocking(false);
+
+Selector selector = Selector.open();
+server.register(selector, SelectionKey.OP_ACCEPT);
+
+while (true) {
+    selector.select(); // block cho đến khi có ít nhất 1 channel sẵn sàng
+    Iterator<SelectionKey> it = selector.selectedKeys().iterator();
+    while (it.hasNext()) {
+        SelectionKey key = it.next(); it.remove();
+        if (key.isAcceptable()) {
+            SocketChannel client = server.accept();
+            client.configureBlocking(false);
+            client.register(selector, SelectionKey.OP_READ);
+        } else if (key.isReadable()) {
+            SocketChannel ch = (SocketChannel) key.channel();
+            ByteBuffer buf = ByteBuffer.allocate(1024);
+            ch.read(buf);
+            buf.flip(); // chuyển sang read mode
+            // xử lý buf.array()[0..buf.limit()]
+        }
+    }
+}`,
+codeLabel:'Server non-blocking dùng Selector',
+adapt:'Ít khi viết raw NIO trong Spring Boot — Netty (WebFlux) đã lo. Nhưng interviewer hỏi để kiểm tra hiểu biết về event-loop model. Insight chính: NIO Selector là nền tảng Java của cùng ý tưởng với Node.js event loop. Zero-copy qua <code>FileChannel.transferTo()</code> phổ biến trong file-serving throughput cao.',
+interview:['ByteBuffer.flip() có vai trò gì?','Selector cho phép một thread xử lý hàng nghìn kết nối thế nào?','Zero-copy là gì và FileChannel.transferTo() dùng nó thế nào?']};
+
+DETAIL['NIO.2 Path & Files']={title:'NIO.2 — API Path & Files',crumb:'1. Core Java › Java I/O',
+summary:'NIO.2 (Java 7, package java.nio.file) hiện đại hóa thao tác file với Path (bất biến, đa nền tảng), Files (các method tiện ích phong phú), và WatchService (theo dõi thay đổi thư mục).',
+points:[
+  '<code>Path.of("dir/file.txt")</code>: path độc lập nền tảng. <code>Paths.get()</code> là cách cũ tương đương.',
+  '<code>Files.readAllLines(path)</code>, <code>Files.readAllBytes(path)</code>: tiện lợi cho file nhỏ.',
+  '<code>Files.lines(path)</code>: <code>Stream&lt;String&gt;</code> lazy — hiệu quả cho file lớn. Phải đóng stream sau khi dùng!',
+  '<code>Files.walk(path)</code>: duyệt thư mục đệ quy dưới dạng <code>Stream&lt;Path&gt;</code>.',
+  '<code>WatchService</code>: theo dõi sự kiện CREATE / MODIFY / DELETE trong thư mục mà không cần polling.',
+],
+code:`// Đọc tất cả dòng (file nhỏ)
+List<String> lines = Files.readAllLines(Path.of("config.txt"), StandardCharsets.UTF_8);
+
+// Stream file lớn — bộ nhớ không tăng theo kích thước file
+try (Stream<String> stream = Files.lines(Path.of("huge.log"))) {
+    stream.filter(l -> l.contains("ERROR"))
+          .forEach(System.out::println);
+} // stream tự đóng
+
+// Copy với ghi đè
+Files.copy(Path.of("src.txt"), Path.of("dst.txt"), StandardCopyOption.REPLACE_EXISTING);
+
+// Duyệt thư mục — tìm tất cả file .java
+try (Stream<Path> walk = Files.walk(Path.of("src/main"))) {
+    List<Path> javaFiles = walk
+        .filter(p -> p.toString().endsWith(".java"))
+        .collect(Collectors.toList());
+}
+
+// Theo dõi thư mục thay đổi
+WatchService watcher = FileSystems.getDefault().newWatchService();
+Path dir = Path.of("/data/uploads");
+dir.register(watcher, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
+WatchKey key = watcher.take(); // block đến khi có sự kiện
+for (WatchEvent<?> event : key.pollEvents()) {
+    System.out.println(event.kind() + ": " + event.context());
+}`,
+codeLabel:'Files.lines, Files.walk, WatchService',
+adapt:'Dùng <code>Files.lines()</code> để xử lý log file — stream lazy nên bộ nhớ không đổi dù file bao lớn. Luôn wrap trong try-with-resources để đóng stream. <code>WatchService</code> là nền tảng của hot-reload config trong Spring Cloud Config. Trong Spring Batch, <code>Files.walk()</code> tiện để xử lý thư mục chứa file input.',
+interview:['Khác nhau giữa Files.readAllLines() và Files.lines()?','Xử lý file log 10 GB không bị OutOfMemoryError thế nào?','WatchService dùng để làm gì trong Java?']};
+
+DETAIL['So sánh các mô hình I/O']={title:'So Sánh Các Mô Hình I/O',crumb:'1. Core Java › Java I/O',
+summary:'Java hỗ trợ bốn mô hình I/O: Blocking (java.io), Non-Blocking NIO (selector), Asynchronous NIO2 (AsynchronousChannel), và Virtual Threads (Java 21). Hiểu trade-off giúp chọn đúng approach.',
+points:[
+  '<strong>Blocking I/O</strong>: thread block đến khi có data. Code đơn giản, scale kém (thread-per-connection).',
+  '<strong>Non-Blocking NIO</strong>: selector poll nhiều channel. Một thread xử lý nghìn kết nối. Code phức tạp hơn.',
+  '<strong>Async NIO2</strong>: <code>AsynchronousFileChannel</code> — completion handler gọi khi I/O xong. Dựa trên callback, phức tạp.',
+  '<strong>Virtual Threads (Java 21)</strong>: code blocking style; JVM tháo carrier thread khi I/O wait. Code đơn giản + concurrency cao.',
+  'Spring WebFlux: reactive streams qua Netty NIO — non-blocking tường minh nhưng mô hình reactive phức tạp.',
+  'Spring MVC trên Virtual Threads (Java 21): đơn giản hơn WebFlux, vẫn xử lý concurrency cao — ưu tiên cho project mới.',
+],
+code:`// Cách 1: Blocking truyền thống (đơn giản, scale giới hạn)
+@GetMapping("/data")
+String data() throws Exception {
+    return Files.readString(Path.of("big.txt")); // block carrier thread
+}
+
+// Cách 2: Spring WebFlux (non-blocking, reactive — phức tạp)
+@GetMapping("/data")
+Mono<String> data() {
+    return Mono.fromCallable(() -> Files.readString(Path.of("big.txt")))
+               .subscribeOn(Schedulers.boundedElastic());
+}
+
+// Cách 3: Virtual Threads (Java 21) — tốt nhất cả hai
+// application.properties: spring.threads.virtual.enabled=true
+// Code blocking y hệt cách 1, nhưng JVM tự chuyển sang virtual thread.
+
+// Hoặc cấu hình thủ công:
+@Bean
+TomcatProtocolHandlerCustomizer<?> useVirtualThreads() {
+    return handler ->
+        handler.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
+}`,
+codeLabel:'Blocking vs WebFlux vs Virtual Threads',
+adapt:'Cho project Java 21+ mới: dùng Virtual Threads với Spring MVC truyền thống — concurrency cao mà không cần reactive programming phức tạp. Chỉ dùng WebFlux khi cần backpressure hoặc streaming (Server-Sent Events, response lớn). Biết tất cả mô hình để thảo luận kiến trúc trong phỏng vấn — interviewer kiểm tra hiểu tại sao chọn mỗi loại.',
+interview:['Khi nào chọn WebFlux thay vì Spring MVC?','Virtual Threads giải quyết vấn đề thread-per-connection thế nào?','Sự khác nhau giữa non-blocking I/O và asynchronous I/O?']};
+
+// ===== PERFORMANCE TUNING =====
+DETAIL['Performance Tuning']={title:'Tuning Hiệu Năng JVM',crumb:'1. Core Java',
+summary:'Tuning hiệu năng là xác định đúng bottleneck (CPU, bộ nhớ, I/O, lock) bằng công cụ profiling, rồi áp dụng fix chính xác. Không bao giờ optimize mà không đo trước.',
+points:[
+  '<strong>Đo trước, optimize sau</strong>: hầu hết vấn đề hiệu năng nằm ở query DB, không phải code Java.',
+  '<strong>CPU bottleneck</strong>: method nóng (flame graph), vòng lặp dày, tạo nhiều object gây GC pressure.',
+  '<strong>Memory bottleneck</strong>: heap leak (tăng dần đến OOM), live set lớn gây GC pause dài.',
+  '<strong>I/O bottleneck</strong>: query DB chậm (slow query log + EXPLAIN), network latency, thiếu connection pool.',
+  '<strong>Lock contention</strong>: thread dump thấy nhiều thread BLOCKED chờ cùng một monitor.',
+  'Công cụ: <code>jstack</code>, <code>jmap</code>, <code>jcmd</code>, <code>jstat</code>, <strong>async-profiler</strong> (an toàn production), <strong>Arthas</strong> (Alibaba).',
+],
+adapt:'Trong phỏng vấn, mô tả quy trình hệ thống: 1) Quan sát triệu chứng (CPU cao? bộ nhớ tăng? latency?), 2) Thu thập dữ liệu (thread dump / heap dump / GC log), 3) Xác định root cause, 4) Apply fix có mục tiêu, 5) Đo lại để xác nhận. Đừng chỉ nói "tôi tune JVM" mà không nói đã thay đổi gì và cải thiện bao nhiêu.',
+interview:['Mô tả cách chẩn đoán CPU cao trong ứng dụng Java.','Heap dump và thread dump khác nhau thế nào?','Làm sao xác định method nào đang ngốn CPU nhất?']};
+
+DETAIL['Công cụ Profiling (jstack/jmap/jcmd)']={title:'Công Cụ Profiling: jstack / jmap / jcmd',crumb:'1. Core Java › Performance Tuning',
+summary:'JDK đi kèm các công cụ chẩn đoán tích hợp — jstack (thread dump), jmap (heap info/dump), jcmd (đa năng), jstat (GC stats). async-profiler và Arthas cung cấp profiling sâu hơn với overhead tối thiểu.',
+points:[
+  '<code>jstack &lt;pid&gt;</code>: thread dump — trạng thái tất cả thread (RUNNABLE/BLOCKED/WAITING) và stack trace. Phát hiện deadlock.',
+  '<code>jmap -heap &lt;pid&gt;</code>: heap summary. <code>jmap -dump:live,format=b,file=h.hprof &lt;pid&gt;</code>: snapshot heap đầy đủ.',
+  '<code>jcmd &lt;pid&gt; help</code>: liệt kê lệnh có sẵn. <code>jcmd &lt;pid&gt; GC.heap_info</code>, <code>VM.flags</code>, <code>Thread.print</code>.',
+  '<code>jstat -gcutil &lt;pid&gt; 1000</code>: GC stats mỗi 1 giây (% dùng S0/S1/Eden/Old, số lần GC và thời gian).',
+  '<strong>async-profiler</strong>: CPU flame graph, allocation profiling, lock profiling. Dùng perf_events — an toàn production, không có safepoint bias.',
+  '<strong>Arthas</strong> (Alibaba): trace method call, xem parameters, decompile class đang chạy. Rất hữu ích chẩn đoán production không cần redeploy.',
+],
+code:`# 1. Tìm PID của Java process
+jps -l
+# hoặc: ps aux | grep java
+
+# 2. Thread dump (lấy 2-3 lần cách nhau 5-10s)
+jstack 12345 > thread1.txt && sleep 5 && jstack 12345 > thread2.txt
+
+# 3. GC monitoring (mỗi giây)
+jstat -gcutil 12345 1000
+# Output: S0  S1  E   O    M   CCS YGC  YGCT FGC FGCT  GCT
+#          0  63  25  45  96   92  187  4.2   2  1.8  6.0
+
+# 4. Heap dump (live = bỏ qua object không thể reach)
+jmap -dump:live,format=b,file=/tmp/heap.hprof 12345
+# Hoặc tự động khi OOM: -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/logs/
+
+# 5. async-profiler — CPU flame graph 30 giây
+./profiler.sh -d 30 -f /tmp/flame.html 12345
+
+# 6. Arthas — trace method chậm (>100ms)
+java -jar arthas-boot.jar 12345
+[arthas]$ trace com.example.OrderService placeOrder '#cost > 100'
+[arthas]$ watch com.example.OrderService placeOrder '{params, returnObj}' -x 2`,
+codeLabel:'Cheatsheet lệnh chẩn đoán',
+adapt:'Trong production: bật <code>-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/logs/</code> khi startup để tự động capture heap dump khi OOM. Dùng <code>jstat -gcutil</code> mỗi giây để xem GC pressure thời gian thực. async-profiler an toàn production (không có overhead safepoint polling). Arthas lý tưởng khi không thể redeploy — instrument code đang chạy mà không cần restart.',
+interview:['Tìm thread nào đang ngốn 100% CPU bằng jstack thế nào?','jstat -gcutil cho biết gì?','Khi nào dùng async-profiler thay vì jmap?']};
+
+DETAIL['Phân tích Heap Dump']={title:'Phân Tích Heap Dump',crumb:'1. Core Java › Performance Tuning',
+summary:'Heap dump là snapshot toàn bộ object trong JVM heap tại một thời điểm. Phân tích bằng Eclipse MAT hoặc VisualVM để tìm memory leak — object vẫn reachable từ GC root nhưng không còn cần thiết.',
+points:[
+  'Trigger: <code>jmap -dump:live,format=b,file=heap.hprof &lt;pid&gt;</code> hoặc tự động khi OOM: <code>-XX:+HeapDumpOnOutOfMemoryError</code>.',
+  '<strong>Eclipse MAT</strong>: mở .hprof → chạy "Leak Suspects Report" → tìm object giữ nhiều memory nhất.',
+  '<strong>Dominator Tree</strong>: object nào "chiếm" (giữ sống duy nhất) nhiều memory nhất.',
+  '<strong>Retained Heap</strong>: tổng memory giải phóng được nếu object này bị GC (bao gồm mọi thứ nó giữ).',
+  '<strong>Shallow Heap</strong>: chỉ bản thân object đó (không tính những gì nó trỏ tới).',
+  'Leak phổ biến: <code>Map/List</code> static tăng mãi, <code>ThreadLocal</code> không remove trong thread pool, listener không deregister.',
+],
+code:`// Leak pattern 1: Cache static không có eviction (tăng mãi)
+class BadCache {
+    private static final Map<String, byte[]> CACHE = new HashMap<>();
+    // Mỗi key thêm vào đều tồn tại mãi trong memory!
+}
+// Fix: dùng Caffeine với max size và TTL
+Cache<String, byte[]> cache = Caffeine.newBuilder()
+    .maximumSize(10_000)
+    .expireAfterWrite(1, TimeUnit.HOURS)
+    .build();
+
+// Leak pattern 2: ThreadLocal không remove trong thread pool
+// Thread pool tái sử dụng thread — ThreadLocal request trước bị leak!
+class Service {
+    static ThreadLocal<UserContext> CTX = new ThreadLocal<>();
+    void handle(Request req) {
+        CTX.set(new UserContext(req.getUserId()));
+        try {
+            doWork();
+        } finally {
+            CTX.remove(); // QUAN TRỌNG — không có dòng này: memory leak + rủi ro bảo mật
+        }
+    }
+}
+
+// Leak pattern 3: Listener không deregister
+class Widget {
+    Widget(EventBus bus) {
+        bus.register(this); // đăng ký listener
+        // Nếu Widget bị discard nhưng bus còn sống → Widget không thể bị GC
+    }
+    // Fix: gọi bus.unregister(this) trong destroy/close
+}`,
+codeLabel:'Ba pattern memory leak phổ biến và cách fix',
+adapt:'Sau khi có heap dump: 1) Chạy "Leak Suspects" report trong MAT trước — tự xác định top offender. 2) Mở Dominator Tree sort theo retained heap. 3) Right-click object nghi ngờ → "Path to GC Roots" để biết cái gì đang giữ nó sống. Luôn bật <code>-XX:+HeapDumpOnOutOfMemoryError</code> trong production để capture trạng thái ngay lúc failure.',
+interview:['Shallow heap và retained heap khác nhau thế nào?','Tìm memory leak bằng Eclipse MAT thế nào?','Kể ba nguyên nhân memory leak phổ biến trong Java.']};
+
+DETAIL['Phân tích Thread Dump']={title:'Phân Tích Thread Dump',crumb:'1. Core Java › Performance Tuning',
+summary:'Thread dump hiển thị tất cả thread trong JVM với trạng thái hiện tại và stack trace. Công cụ chính để chẩn đoán CPU spike, deadlock, và latency chậm do lock contention.',
+points:[
+  '<strong>RUNNABLE</strong>: thread đang chạy Java code hoặc chờ OS (có thể đang I/O hoặc bị OS scheduling).',
+  '<strong>BLOCKED</strong>: đang chờ acquire Java monitor lock đang bị thread khác giữ — lock contention.',
+  '<strong>WAITING</strong>: chờ vô thời hạn trên <code>Object.wait()</code>, <code>LockSupport.park()</code>, <code>Thread.join()</code>.',
+  '<strong>TIMED_WAITING</strong>: tương tự nhưng có timeout — <code>Thread.sleep()</code>, <code>wait(timeout)</code>.',
+  'Chẩn đoán CPU cao: tương quan thread ID của JVM với OS thread ID qua <code>top -H</code> → convert TID sang hex.',
+  'Deadlock: <code>jstack</code> tự báo cáo "Found one Java-level deadlock" kèm thông tin chi tiết.',
+],
+code:`# Bước 1: tìm OS thread nào đang ngốn CPU
+top -H -p 12345
+# Ghi lại PID của thread nóng, ví dụ 12350
+
+# Bước 2: chuyển PID sang hex (JVM dùng hex cho nid)
+printf '%x\n' 12350   # → 303e
+
+# Bước 3: tìm trong thread dump
+jstack 12345 | grep -A 30 "nid=0x303e"
+# Output:
+# "http-nio-8080-exec-5" #42 daemon prio=5 tid=... nid=0x303e runnable
+#    java.lang.Thread.State: RUNNABLE
+#    at com.example.OrderService.calculateDiscount(OrderService.java:87)
+
+# Deadlock trong jstack output:
+# Found one Java-level deadlock:
+# "Thread-1": waiting to lock <0x000...> held by "Thread-2"
+# "Thread-2": waiting to lock <0x000...> held by "Thread-1"
+
+# Nhiều thread BLOCKED — tìm thread giữ lock gây tắc
+jstack 12345 | grep -A 5 "BLOCKED"
+# "- waiting to lock <0xabc> (owned by "Thread-pool-1-exec-1")"
+# → Thread-pool-1-exec-1 là bottleneck — xem nó đang làm gì`,
+codeLabel:'Chẩn đoán CPU cao và phát hiện deadlock',
+adapt:'Khi thấy CPU cao: 1) <code>top -H</code> tìm thread nóng, 2) convert TID sang hex, 3) grep thread dump. Khi response chậm mà CPU bình thường: tìm thread BLOCKED. Hầu hết "CPU spike" trong Java thực ra là GC pressure (kiểm tra <code>jstat -gcutil</code>) hoặc vòng lặp dày trong business logic. I/O mạng/DB thấy là RUNNABLE với native I/O trong stack trace.',
+interview:['Tương quan thread OS CPU cao với Java stack trace thế nào?','BLOCKED trong thread dump có nghĩa gì?','Xác nhận deadlock từ thread dump thế nào?']};
+
+DETAIL['JVM Flags Cheatsheet']={title:'JVM Flags Cheatsheet',crumb:'1. Core Java › Performance Tuning',
+summary:'Các JVM flag quan trọng cho heap sizing, chọn GC, logging và diagnostics. Cần thuộc các flag thường dùng và default trong production.',
+points:[
+  '<strong>Heap</strong>: <code>-Xms</code> (initial), <code>-Xmx</code> (max). Đặt bằng nhau trong production để tránh overhead resize.',
+  '<strong>GC</strong>: <code>-XX:+UseG1GC</code> (default Java 9+). <code>-XX:+UseZGC</code> (Java 15+ production, pause dưới 1ms).',
+  '<code>-XX:MaxGCPauseMillis=200</code>: mục tiêu pause của G1 (best-effort). Giảm xuống cho service nhạy cảm latency.',
+  '<strong>GC logging (Java 11+)</strong>: <code>-Xlog:gc*:file=/logs/gc.log:time,uptime:filecount=5,filesize=20m</code>.',
+  '<code>-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/logs/</code>: tự dump khi OOM. Luôn bật trong production.',
+  '<code>-XX:+ExitOnOutOfMemoryError</code>: crash ngay khi OOM để Kubernetes/systemd restart sạch sẽ.',
+  '<code>-XX:+UseContainerSupport</code>: detect đúng CPU/memory trong Docker/K8s (mặc định Java 8u191+).',
+],
+code:`# Startup production — Spring Boot JAR
+java \
+  -server \
+  -Xms2g -Xmx2g \
+  -XX:+UseG1GC \
+  -XX:MaxGCPauseMillis=200 \
+  -XX:G1HeapRegionSize=16m \
+  -XX:+HeapDumpOnOutOfMemoryError \
+  -XX:HeapDumpPath=/var/log/app/ \
+  -XX:+ExitOnOutOfMemoryError \
+  -Xlog:gc*:file=/var/log/app/gc.log:time,uptime:filecount=5,filesize=20m \
+  -Dfile.encoding=UTF-8 \
+  -Dspring.profiles.active=prod \
+  -jar app.jar
+
+# Quy tắc trong container:
+# -Xmx = ~75% memory limit của container
+#   (để lại room cho Metaspace, native memory, OS)
+# -XX:+UseContainerSupport đã mặc định (Java 8u191+)
+
+# ZGC cho latency cực thấp (Java 17+):
+# -XX:+UseZGC -XX:SoftMaxHeapSize=4g
+
+# Xem flags đang dùng của JVM đang chạy
+jcmd 12345 VM.flags`,
+codeLabel:'JVM startup flags cho production',
+adapt:'Trong Kubernetes: không đặt <code>-Xmx</code> = 100% memory container — JVM cần headroom cho Metaspace, compiler buffer, OS memory. 75% là điểm khởi đầu an toàn. Dùng <code>-XX:+ExitOnOutOfMemoryError</code> để Kubernetes restart pod ngay thay vì app tiếp tục chạy yếu.',
+interview:['-Xms và -Xmx tại sao nên đặt bằng nhau trong production?','Khi nào dùng ZGC thay vì G1GC?','-XX:+UseContainerSupport làm gì?']};
+
+// ===== MyBATIS =====
+DETAIL['MyBatis']={title:'Tổng Quan MyBatis',crumb:'4. Database',
+summary:'MyBatis là persistence framework ánh xạ Java interface method sang SQL statement qua XML hoặc annotation. Khác với JPA/Hibernate, MyBatis giữ SQL tường minh — toàn quyền kiểm soát query trong khi tự động xử lý parameter binding và result mapping.',
+points:[
+  '<strong>SQL-first</strong>: bạn viết SQL; MyBatis lo parameter binding (PreparedStatement) và result mapping.',
+  '<strong>Mapper interface</strong>: Java interface với <code>@Mapper</code>; Spring Boot tự inject implementation.',
+  'XML mapper file: SQL nằm trong XML; namespace = tên đầy đủ của interface.',
+  '<code>#{param}</code>: PreparedStatement binding (an toàn với SQL injection). <code>${param}</code>: string substitution (nguy hiểm — tránh dùng với user input).',
+  '<strong>vs JPA</strong>: MyBatis = SQL tường minh (dễ debug, dự đoán được); JPA = SQL tự generate (ít boilerplate, nhiều "magic").',
+  '<strong>Chọn MyBatis khi</strong>: query phức tạp, SQL do DBA quản lý, stored procedure, đường dẫn performance-critical.',
+],
+adapt:'Nhiều công ty tech gốc Trung Quốc (Alibaba, Baidu ecosystem) ưa MyBatis vì SQL tường minh và có thể kiểm soát. Nếu JD nhắc MyBatis, expect phỏng vấn viết dynamic SQL. Rule tuyệt đối: luôn dùng <code>#{}</code> cho user input — <code>${}</code> là string interpolation, mở cửa cho SQL injection.',
+interview:['#{} và ${} trong MyBatis khác nhau thế nào?','MyBatis ngăn SQL injection thế nào so với nối chuỗi?','Khi nào chọn MyBatis thay vì JPA/Hibernate?']};
+
+DETAIL['Mapper & XML Mapping']={title:'Mapper Interface & XML Mapping',crumb:'4. Database › MyBatis',
+summary:'MyBatis ánh xạ Java interface method sang SQL qua XML file hoặc annotation inline. XML namespace phải khớp đúng tên đầy đủ của interface; id của statement phải khớp tên method.',
+points:[
+  '<code>@Mapper</code> trên interface; Spring Boot auto-scan với <code>@MapperScan("com.example.mapper")</code>.',
+  'CRUD đơn giản: dùng annotation (<code>@Select, @Insert, @Update, @Delete</code>) trực tiếp trên method.',
+  'SQL phức tạp: dùng XML mapper file — dễ đọc hơn cho query dài dòng, hỗ trợ dynamic SQL.',
+  '<code>@Options(useGeneratedKeys=true, keyProperty="id")</code>: gán auto-increment PK ngược lại vào entity sau insert.',
+  '<code>resultType</code>: class đơn giản, tự map tên cột sang field (camelCase nếu bật <code>mapUnderscoreToCamelCase=true</code>).',
+],
+code:`// Mapper interface
+@Mapper
+public interface UserMapper {
+    @Select("SELECT * FROM users WHERE id = #{id}")
+    User findById(Long id);
+
+    @Select("SELECT * FROM users WHERE email = #{email}")
+    Optional<User> findByEmail(String email);
+
+    @Insert("INSERT INTO users(name, email, status) VALUES(#{name}, #{email}, #{status})")
+    @Options(useGeneratedKeys = true, keyProperty = "id")
+    int insert(User user);
+
+    @Update("UPDATE users SET status = #{status} WHERE id = #{id}")
+    int updateStatus(@Param("id") Long id, @Param("status") String status);
+
+    // Query phức tạp → dùng XML
+    List<User> searchUsers(UserQuery query);
+}
+
+// XML: src/main/resources/mapper/UserMapper.xml
+/*
+<mapper namespace="com.example.mapper.UserMapper">
+  <select id="searchUsers" resultType="com.example.domain.User">
+    SELECT id, name, email, status, created_at
+    FROM users
+    WHERE status = #{status}
+      AND created_at >= #{startDate}
+    ORDER BY created_at DESC
+    LIMIT #{pageSize} OFFSET #{offset}
+  </select>
+</mapper>
+*/`,
+codeLabel:'Mapper với annotation và XML',
+adapt:'Dùng annotation cho CRUD đơn giản một bảng, XML cho query có điều kiện động, JOIN nhiều bảng. Bật <code>mapUnderscoreToCamelCase: true</code> trong config MyBatis để tự map <code>user_name → userName</code> — giảm đáng kể boilerplate resultMap. Luôn dùng <code>@Options(useGeneratedKeys=true)</code> để lấy PK tự sinh ngược về entity sau insert.',
+interview:['Rủi ro khi dùng ${} thay vì #{} trong MyBatis?','Lấy primary key tự sinh sau INSERT thế nào?','Namespace trong XML mapper file liên hệ với Mapper interface thế nào?']};
+
+DETAIL['Dynamic SQL']={title:'Dynamic SQL',crumb:'4. Database › MyBatis',
+summary:'MyBatis dynamic SQL dùng XML tag để build SQL có điều kiện — loại bỏ nối chuỗi thủ công trong khi giữ query dễ đọc và an toàn injection. Tag chính: &lt;if&gt;, &lt;where&gt;, &lt;set&gt;, &lt;foreach&gt;, &lt;choose&gt;.',
+points:[
+  '<code>&lt;if test="..."&gt;</code>: include SQL có điều kiện. Dùng biểu thức OGNL.',
+  '<code>&lt;where&gt;</code>: wrap điều kiện, tự thêm WHERE và bỏ AND/OR đầu — thay thế hack "WHERE 1=1".',
+  '<code>&lt;set&gt;</code>: cho UPDATE — tự thêm SET và bỏ dấu phẩy cuối.',
+  '<code>&lt;foreach&gt;</code>: iterate collection. Cần thiết cho mệnh đề IN: <code>WHERE id IN (&lt;foreach&gt;)</code>.',
+  '<code>&lt;choose&gt;&lt;when&gt;&lt;otherwise&gt;</code>: tương đương switch/case — chỉ thực thi when đầu tiên khớp.',
+],
+code:`<!-- Dynamic search với <where> và <if> -->
+<select id="searchOrders" resultType="Order">
+  SELECT id, user_id, total, status, created_at FROM orders
+  <where>
+    <if test="userId   != null">AND user_id   = #{userId}</if>
+    <if test="status   != null">AND status    = #{status}</if>
+    <if test="startDate != null">AND created_at &gt;= #{startDate}</if>
+    <if test="endDate   != null">AND created_at &lt;= #{endDate}</if>
+  </where>
+  ORDER BY created_at DESC
+  LIMIT #{pageSize} OFFSET #{offset}
+</select>
+
+<!-- IN clause với <foreach> -->
+<select id="findByIds" resultType="User">
+  SELECT * FROM users WHERE id IN
+  <foreach item="id" collection="list" open="(" separator="," close=")">
+    #{id}
+  </foreach>
+</select>
+
+<!-- Partial update với <set> (chỉ update field không null) -->
+<update id="updateSelective">
+  UPDATE users
+  <set>
+    <if test="name   != null">name   = #{name},</if>
+    <if test="email  != null">email  = #{email},</if>
+    <if test="status != null">status = #{status},</if>
+  </set>
+  WHERE id = #{id}
+</update>`,
+codeLabel:'<where>, <foreach>, <set> — ví dụ thực tế',
+adapt:'<code>&lt;where&gt;</code> là tag dùng nhiều nhất trong project thực — giải quyết gọn "tất cả điều kiện optional" mà không cần hack "WHERE 1=1". <code>&lt;foreach&gt;</code> cho IN clause an toàn hơn nối chuỗi thủ công. Pattern <code>updateSelective</code> (chỉ update field không null) tương đương <code>@DynamicUpdate</code> của JPA nhưng toàn quyền kiểm soát SQL.',
+interview:['Tag <where> giải quyết vấn đề gì so với hardcode "WHERE 1=1"?','Viết batch INSERT 100 record bằng MyBatis thế nào?','Biểu thức OGNL kiểm tra list không rỗng thế nào?']};
+
+DETAIL['ResultMap']={title:'ResultMap — Ánh Xạ Kết Quả Phức Tạp',crumb:'4. Database › MyBatis',
+summary:'ResultMap định nghĩa mapping tường minh từ cột sang field cho JOIN query, nested object (association = has-one), và nested collection (collection = has-many). Đây là cách MyBatis xử lý dữ liệu quan hệ mà không gây N+1.',
+points:[
+  '<code>resultType</code>: tự map theo tên cột. Đủ cho query một bảng.',
+  '<code>resultMap</code>: cần khi tên cột khác field name, hoặc mapping kết quả JOIN sang nested object.',
+  '<code>&lt;association property="address" javaType="Address"&gt;</code>: ánh xạ quan hệ has-one.',
+  '<code>&lt;collection property="items" ofType="OrderItem"&gt;</code>: ánh xạ quan hệ has-many.',
+  'Một JOIN query với <code>&lt;collection&gt;</code> tốt hơn nhiều so với N+1 select riêng.',
+  'Bật <code>mapUnderscoreToCamelCase=true</code> để giảm boilerplate <code>&lt;result&gt;</code> tag.',
+],
+code:`<!-- ResultMap: Order → Address (has-one) + List<OrderItem> (has-many) -->
+<resultMap id="OrderRM" type="com.example.Order">
+  <id     property="id"     column="o_id"/>
+  <result property="userId" column="o_user_id"/>
+  <result property="total"  column="o_total"/>
+
+  <!-- has-one: embedded Address object -->
+  <association property="address" javaType="com.example.Address">
+    <result property="street" column="a_street"/>
+    <result property="city"   column="a_city"/>
+    <result property="zip"    column="a_zip"/>
+  </association>
+
+  <!-- has-many: List<OrderItem> từ các dòng JOIN -->
+  <collection property="items" ofType="com.example.OrderItem">
+    <id     property="id"        column="i_id"/>
+    <result property="productId" column="i_product_id"/>
+    <result property="quantity"  column="i_qty"/>
+    <result property="price"     column="i_price"/>
+  </collection>
+</resultMap>
+
+<!-- Một JOIN duy nhất — không N+1 -->
+<select id="findOrderDetail" resultMap="OrderRM">
+  SELECT o.id          AS o_id,   o.user_id  AS o_user_id, o.total   AS o_total,
+         a.street      AS a_street, a.city   AS a_city,   a.zip     AS a_zip,
+         i.id          AS i_id,   i.product_id AS i_product_id,
+         i.quantity    AS i_qty,  i.price    AS i_price
+  FROM orders o
+  LEFT JOIN addresses   a ON a.order_id = o.id
+  LEFT JOIN order_items i ON i.order_id = o.id
+  WHERE o.id = #{id}
+</select>`,
+codeLabel:'ResultMap với association và collection',
+adapt:'Alias tất cả cột trong JOIN query (ví dụ <code>o.id AS o_id</code>) để tránh xung đột khi nhiều bảng có cột tên <code>id</code>. Dùng <code>&lt;collection&gt;</code> với JOIN cho hầu hết trường hợp — load tất cả trong một query. Chỉ dùng lazy <code>select</code> attribute (trigger query riêng mỗi record) khi nested data hiếm khi cần.',
+interview:['resultType và resultMap khác nhau thế nào?','MyBatis xử lý quan hệ một-nhiều trong một query thế nào?','Ngăn N+1 query trong MyBatis thế nào?']};
+
+DETAIL['MyBatis vs JPA']={title:'MyBatis vs JPA/Hibernate',crumb:'4. Database › MyBatis',
+summary:'MyBatis và JPA đại diện cho hai triết lý ORM đối lập: MyBatis SQL-first (tường minh, kiểm soát được); JPA object-first (tiện lợi CRUD, SQL tự generate). Chọn dựa trên độ phức tạp query và kỹ năng team.',
+points:[
+  '<strong>MyBatis</strong>: bạn viết SQL. Toàn quyền kiểm soát, execution plan dự đoán được, tốt cho query phức tạp và reporting.',
+  '<strong>JPA/Hibernate</strong>: SQL tự generate từ entity model. CRUD nhanh, quản lý entity lifecycle, khó tối ưu query phức tạp.',
+  'Thế mạnh MyBatis: JOIN phức tạp, stored procedure, batch operation, phối hợp với DBA, đường dẫn performance-critical.',
+  'Thế mạnh JPA: CRUD entity đơn giản, audit field (@CreatedDate), phân trang, portability giữa các DB.',
+  '<strong>N+1 risk</strong>: JPA lazy loading gây N+1 nếu quên @EntityGraph hoặc JOIN FETCH. MyBatis tường minh tất cả loading — không query ẩn.',
+  '<strong>Hybrid</strong>: Spring Data JPA cho repo đơn giản + MyBatis mapper cho reporting phức tạp — hoạt động trong cùng project.',
+],
+code:`// JPA: CRUD tiện nhưng có N+1 risk
+@Entity public class Order {
+    @OneToMany(fetch = FetchType.LAZY) // N+1 nếu access ngoài transaction!
+    List<OrderItem> items;
+}
+// Fix: join fetch trong JPQL
+@Query("SELECT o FROM Order o JOIN FETCH o.items WHERE o.id = :id")
+Order findWithItems(@Param("id") Long id);
+
+// MyBatis: JOIN tường minh, không N+1 bất ngờ
+// (xem ví dụ ResultMap ở trên — query một lần trả về Order + items)
+
+// Hybrid trong cùng Spring Boot project:
+@Repository
+public interface OrderRepo extends JpaRepository<Order, Long> {}  // CRUD đơn giản
+
+@Mapper
+public interface OrderReportMapper {
+    List<MonthlySalesRow> monthlySalesByProduct(@Param("year") int year); // report phức tạp
+}
+
+// Config MyBatis (application.yml):
+// mybatis:
+//   configuration:
+//     map-underscore-to-camel-case: true
+//   mapper-locations: classpath:mapper/**/*.xml`,
+codeLabel:'So sánh N+1 và approach hybrid',
+adapt:'Khi hỏi "MyBatis vs JPA": nêu cả hai trade-off, rồi đưa ra recommendation có lý do. JPA cho service user CRUD đơn giản. MyBatis cho module báo cáo tài chính với JOIN 20 bảng. Approach hybrid (JPA + MyBatis trong cùng project) phổ biến trong enterprise — Spring Boot hỗ trợ cả hai cùng lúc.',
+interview:['N+1 query trong JPA do đâu và fix thế nào?','Dùng cả MyBatis và Spring Data JPA trong cùng Spring Boot project được không?','Khi nào recommend MyBatis cho project mới?']};
+
+// ===== MySQL DEEP DIVE =====
+DETAIL['MySQL Deep Dive']={title:'MySQL — Kiến Thức Chuyên Sâu',crumb:'4. Database',
+summary:'Kiến thức MySQL chuyên sâu: InnoDB engine internals, đọc EXPLAIN plan, phân tích slow query, và cấu hình connection pool — tất cả đều quan trọng cho Java backend engineer làm việc với MySQL production.',
+points:[
+  'InnoDB: storage engine mặc định. Row-level locking, ACID transaction, clustered index, MVCC.',
+  'EXPLAIN: phân tích execution plan để phát hiện full table scan và index bị thiếu.',
+  'Slow Query Log: tìm ra bottleneck hiệu năng thực từ traffic production.',
+  'HikariCP: connection pool mặc định của Spring Boot — tune <code>maximumPoolSize</code> và timeout.',
+],
+adapt:'Kiến thức MySQL được expect nếu JD nhắc đến MySQL. Biết InnoDB internals (clustered index, MVCC) để giải thích locking behavior. Đọc được EXPLAIN plan là kỹ năng thực tế nhất để fix slow query.',
+interview:['Clustered index là gì và InnoDB implement thế nào?','type=ALL trong EXPLAIN có nghĩa gì?','Tune HikariCP pool size thế nào?']};
+
+DETAIL['InnoDB & MVCC']={title:'InnoDB & MVCC',crumb:'4. Database › MySQL Deep Dive',
+summary:'InnoDB tổ chức data trong clustered index (row lưu theo thứ tự PK trên disk), dùng MVCC cho read đồng thời mà không block writer, và duy trì redo/undo log cho crash recovery và read consistency.',
+points:[
+  '<strong>Clustered index</strong>: InnoDB lưu row theo B-tree sắp xếp theo primary key. Secondary index lưu giá trị PK, không phải row pointer.',
+  '<strong>MVCC</strong>: mỗi row có hidden version column (transaction ID, rollback pointer). Reader thấy snapshot nhất quán mà không block writer.',
+  '<strong>Undo log</strong>: lưu version cũ của row cho MVCC snapshot read và rollback. Transaction dài tạo undo log lớn.',
+  '<strong>Redo log</strong> (iblogfile): Write-Ahead Log cho crash recovery. Change bền vững khi ghi vào đây, trước khi flush page.',
+  'Row locking trong InnoDB thực ra là <em>index-entry locking</em> — query không dùng index sẽ lock cả bảng.',
+  '<strong>Next-key lock</strong> (gap lock + row lock): ngăn phantom read ở REPEATABLE READ (default isolation MySQL).',
+  'UUID làm PK là anti-pattern: insert ngẫu nhiên gây B-tree page split và I/O disk cao. Ưu tiên BIGINT AUTO_INCREMENT.',
+],
+code:`-- Tốt: BIGINT AUTO_INCREMENT PK — insert sequential, ít page split
+CREATE TABLE orders (
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id     BIGINT       NOT NULL,
+    status      VARCHAR(20)  NOT NULL DEFAULT 'PENDING',
+    total       DECIMAL(12,2),
+    created_at  DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user_id (user_id),
+    INDEX idx_status_created (status, created_at)
+);
+
+-- MVCC: read và write đồng thời, không block nhau
+-- Session A (đọc lâu)
+START TRANSACTION;
+SELECT COUNT(*) FROM orders WHERE status='PENDING'; -- snapshot lúc txn bắt đầu
+
+-- Session B (ghi đồng thời — KHÔNG block Session A)
+INSERT INTO orders(user_id, status, total) VALUES(42, 'PENDING', 99.9);
+COMMIT;
+
+-- Session A vẫn thấy count cũ (MVCC snapshot)
+SELECT COUNT(*) FROM orders WHERE status='PENDING'; -- kết quả như cũ!
+COMMIT;
+
+-- Xem InnoDB status và lock info
+SHOW ENGINE INNODB STATUS;
+SELECT * FROM information_schema.INNODB_TRX;
+SELECT * FROM performance_schema.data_locks;`,
+codeLabel:'Clustered index design và MVCC concurrency',
+adapt:'Lỗi phổ biến nhất InnoDB: dùng UUID (v4) làm primary key. UUID ngẫu nhiên insert khắp B-tree, gây page split và IOPS disk tăng vọt. Nếu cần ID unique toàn cầu, dùng UUIDv7 (có thứ tự) hoặc Snowflake-style BIGINT. REPEATABLE READ của InnoDB dùng MVCC cho SELECT nhưng dùng next-key lock cho UPDATE/DELETE — cân nhắc khi thiết kế transaction.',
+interview:['Tại sao UUID ngẫu nhiên là lựa chọn tồi cho InnoDB primary key?','MVCC cho phép reader và writer chạy đồng thời không block nhau thế nào?','Next-key lock là gì và InnoDB dùng nó để làm gì?']};
+
+DETAIL['Đọc EXPLAIN Plan']={title:'Đọc EXPLAIN Plan',crumb:'4. Database › MySQL Deep Dive',
+summary:'EXPLAIN hiển thị cách MySQL thực thi query: join type, index dùng, số row ước tính, và các thao tác phụ. Đây là công cụ đầu tiên cần dùng khi optimize slow query.',
+points:[
+  '<strong>Cột type</strong> (tốt → tệ): <code>system > const > eq_ref > ref > range > index > ALL</code>.',
+  '<code>ALL</code>: full table scan — query chạm vào mọi row. Thường nghĩa là thiếu index hoặc index không dùng được.',
+  '<strong>key</strong>: index MySQL chọn (<code>NULL</code> = không dùng index).',
+  '<strong>rows</strong>: số row ước tính phải xét — càng thấp càng tốt.',
+  '<code>Extra: Using index</code>: covering index (tất cả data lấy từ index tree — rất nhanh).',
+  '<code>Extra: Using filesort</code>: sort không được bao bởi index — thêm cột ORDER BY vào index.',
+  '<code>Extra: Using temporary</code>: tạo bảng tạm cho GROUP BY hoặc DISTINCT — tốn kém, thường fix được bằng composite index.',
+  '<code>EXPLAIN ANALYZE</code> (MySQL 8.0+): thực thi thật query và hiển thị timing thực tế.',
+],
+code:`-- EXPLAIN cơ bản
+EXPLAIN
+SELECT u.name, COUNT(o.id) AS cnt
+FROM users u
+JOIN orders o ON o.user_id = u.id
+WHERE o.status = 'PAID'
+  AND o.created_at > '2024-01-01'
+GROUP BY u.id;
+
+-- Kết quả mẫu:
+-- id | type  | table | key  | rows   | Extra
+-- 1  | ALL   | o     | NULL | 500000 | Using where; Using temporary; Using filesort
+-- 1  | ref   | u     | PRIMARY | 1   |
+
+-- Vấn đề: type=ALL trên orders, Using temporary, Using filesort
+-- Fix: thêm composite index bao gồm WHERE + GROUP BY
+CREATE INDEX idx_orders_status_date ON orders (status, created_at, user_id);
+
+-- Sau khi thêm index:
+-- id | type  | table | key                    | rows  | Extra
+-- 1  | range | o     | idx_orders_status_date | 8230  | Using index condition
+-- 1  | ref   | u     | PRIMARY                | 1     |
+
+-- EXPLAIN ANALYZE (MySQL 8.0) — xem timing thực tế
+EXPLAIN ANALYZE
+SELECT * FROM orders
+WHERE user_id = 42 AND status = 'PENDING'
+ORDER BY created_at DESC LIMIT 10;`,
+codeLabel:'Đọc EXPLAIN output và cách fix',
+adapt:'Trong phỏng vấn mô tả quy trình: 1) EXPLAIN slow query, 2) tìm type=ALL hoặc key NULL, 3) kiểm tra Extra xem có filesort/temporary, 4) thiết kế composite index bao gồm WHERE + ORDER BY + SELECT columns (covering index). Covering index thấy <code>Extra: Using index</code> — query phục vụ hoàn toàn từ index B-tree, không cần chạm data page.',
+interview:['type=ALL trong EXPLAIN có nghĩa gì?','Covering index là gì và verify thế nào trong EXPLAIN?','Fix query có "Using filesort" trong Extra column thế nào?']};
+
+DETAIL['Slow Query Log']={title:'Slow Query Log',crumb:'4. Database › MySQL Deep Dive',
+summary:'MySQL slow query log ghi lại query vượt ngưỡng thời gian cấu hình. Đây là cách đáng tin cậy nhất để xác định bottleneck hiệu năng thực từ traffic production, khác với benchmark tổng hợp.',
+points:[
+  'Bật: <code>slow_query_log=ON</code>, <code>long_query_time=1</code> (giây), <code>slow_query_log_file=/var/log/mysql/slow.log</code>.',
+  '<code>log_queries_not_using_indexes=ON</code>: log cả query không dùng index bất kể thời gian.',
+  '<strong>mysqldumpslow</strong>: aggregator tích hợp sẵn. Sort theo <code>-s t</code> (total time) hoặc <code>-s c</code> (count).',
+  '<strong>pt-query-digest</strong> (Percona Toolkit): group query tương tự theo fingerprint, hiển thị total time, p95 latency, và query ví dụ.',
+  'Ưu tiên theo <strong>total time</strong>, không phải count — query chạy 1M lần/ngày ở 1ms tốn hơn query chạy 1 lần ở 5s.',
+  '<strong>Performance Schema</strong>: thay thế granular hơn, tích hợp sẵn MySQL 5.7+ (mặc định bật).',
+],
+code:`-- Bật slow query log (runtime, không cần restart)
+SET GLOBAL slow_query_log      = 'ON';
+SET GLOBAL long_query_time     = 1;       -- log query > 1 giây
+SET GLOBAL slow_query_log_file = '/var/log/mysql/slow.log';
+SET GLOBAL log_queries_not_using_indexes = 'ON';
+
+-- Verify
+SHOW VARIABLES LIKE '%slow%';
+
+-- Phân tích bằng mysqldumpslow (có sẵn)
+# Top 10 query theo total time:
+mysqldumpslow -s t -t 10 /var/log/mysql/slow.log
+
+# Top 10 theo count:
+mysqldumpslow -s c -t 10 /var/log/mysql/slow.log
+
+-- Percona pt-query-digest (mạnh hơn — group theo fingerprint)
+pt-query-digest /var/log/mysql/slow.log --limit 10
+
+-- Performance Schema (không cần log file)
+SELECT digest_text, count_star,
+       avg_timer_wait / 1e12  AS avg_sec,
+       sum_timer_wait / 1e12  AS total_sec
+FROM performance_schema.events_statements_summary_by_digest
+ORDER BY sum_timer_wait DESC
+LIMIT 10;`,
+codeLabel:'Bật slow query log và phân tích',
+adapt:'Production: đặt <code>long_query_time=1</code> (hoặc 0.5 cho service SLA chặt). Dùng pt-query-digest để group query tương tự theo fingerprint — nó map "WHERE id=1" và "WHERE id=2" thành cùng canonical query. Fix query theo <strong>total time</strong>: query chạy 100K lần/ngày ở 50ms mỗi lần đóng góp 5000 giây load dù trông có vẻ nhanh.',
+interview:['Bật và phân tích MySQL slow query log thế nào?','Query fingerprinting là gì và tại sao quan trọng?','Performance Schema khác slow query log thế nào?']};
+
+DETAIL['Connection Pool (HikariCP)']={title:'Connection Pool — HikariCP',crumb:'4. Database › MySQL Deep Dive',
+summary:'HikariCP là JDBC connection pool mặc định của Spring Boot. Duy trì pool các kết nối DB sẵn sàng dùng, loại bỏ overhead tạo kết nối mỗi request. Sizing đúng là yếu tố quan trọng cho service throughput cao.',
+points:[
+  '<code>maximumPoolSize</code>: tổng connection DB. Tất cả app instance cộng lại không vượt <code>max_connections</code> của MySQL.',
+  '<code>minimumIdle</code>: connection idle cần giữ ấm. Đặt bằng <code>maximumPoolSize</code> cho load ổn định (tránh overhead resize).',
+  '<code>connectionTimeout</code>: thời gian chờ lấy connection từ pool. Mặc định 30s — giảm xuống 3s để fail fast.',
+  '<code>maxLifetime</code>: tuổi thọ tối đa connection. Phải nhỏ hơn <code>wait_timeout</code> MySQL (mặc định 8h) tránh stale connection.',
+  '<code>leakDetectionThreshold</code>: log warning nếu connection bị giữ quá N ms — phát hiện connection leak.',
+  'Triệu chứng pool quá nhỏ: <code>HikariPool — Connection is not available, request timed out after Xms.</code>',
+],
+code:`# application.yml — HikariCP tuning
+spring:
+  datasource:
+    url: jdbc:mysql://db-host:3306/mydb
+         ?useSSL=true&characterEncoding=UTF-8&serverTimezone=UTC
+    username: app_user
+    password: \${DB_PASSWORD}
+    hikari:
+      pool-name: AppPool
+      maximum-pool-size: 20          # ceiling mỗi instance
+      minimum-idle: 20               # = max → pool ổn định
+      connection-timeout: 3000       # 3s fail-fast
+      idle-timeout: 600000           # 10 phút idle rồi remove
+      max-lifetime: 1800000          # 30 phút < MySQL wait_timeout (28800s)
+      leak-detection-threshold: 60000 # warn nếu giữ > 60s
+
+# Tính pool cho multi-instance:
+# MySQL max_connections = 200
+# App instances = 5
+# Mỗi instance = 200 / 5 = 40, trừ 20 cho DBA → dùng 30
+
+# Monitor (Prometheus qua Actuator + Micrometer):
+management:
+  metrics:
+    enable:
+      hikaricp: true
+# Alert khi:
+# hikaricp_connections_pending_total > 5 → pool bão hòa
+# hikaricp_connections_acquire_seconds (p99) > 100ms → pool quá nhỏ`,
+codeLabel:'Config HikariCP và sizing multi-instance',
+adapt:'Pattern incident production phổ biến nhất: traffic spike → pool hết → thread xếp hàng chờ connection → connection timeout cascade → HTTP 500. Phòng ngừa: đặt <code>connectionTimeout=3000ms</code> để fail fast, alert trên <code>connections_pending</code>, scale horizontally trước khi pool bão hòa. HikariCP khuyến nghị: <code>pool size = (CPU_cores * 2) + effective_spindle_count</code> là điểm khởi đầu cho I/O-bound workload.',
+interview:['Điều gì xảy ra khi tất cả HikariCP connection đang được dùng và có request mới?','Tính maximumPoolSize thế nào khi deploy 5 app instance?','Connection leak detection là gì và cấu hình thế nào?']};
+
+// ===== HIGH CONCURRENCY =====
+DETAIL['High Concurrency']={title:'Pattern High Concurrency trong Java',crumb:'7. System Design',
+summary:'Kỹ thuật High Concurrency (HC) đảm bảo ứng dụng Java xử lý hàng nghìn request đồng thời. Đòn bẩy chính: sizing thread pool đúng, tuning connection pool DB, service stateless, cache hot data, và async processing cho công việc không quan trọng.',
+points:[
+  '<strong>Stateless service</strong>: không có session state trên server — cho phép scale ngang mà không cần sticky session.',
+  '<strong>Sizing thread pool</strong>: I/O-bound = <code>CPU × (1 + wait/compute)</code>; CPU-bound = <code>CPU + 1</code>.',
+  '<strong>Connection pool</strong>: quá nhỏ = bottleneck; quá lớn = DB quá tải. Cân bằng là chìa khóa.',
+  '<strong>Async offloading</strong>: <code>@Async</code> + message queue cho công việc không quan trọng (email, notification).',
+  '<strong>Caching</strong>: Redis cho hot data distributed; Caffeine cho ultra-hot data trong process (dưới microsecond).',
+  '<strong>Circuit breaker</strong>: fail fast khi downstream chậm — ngăn thread pool exhaustion cascade.',
+  "<strong>Little's Law</strong>: <code>N = λ × W</code> — concurrency = arrival_rate × avg_response_time.",
+],
+adapt:"HC là concern xuyên suốt. Trong phỏng vấn: đừng chỉ nói \"thêm server\". Mô tả full stack: load balancer → stateless app server → connection pool → cache → DB với read replica. Xác định bottleneck thực trước (thường là DB, không phải app). Biết Little's Law để justify sizing bằng con số cụ thể.",
+interview:["Phát biểu Little's Law và dùng để size thread pool.",'Walk me through thiết kế system xử lý 50K request/giây.','Khi latency spike dưới high load, điều đầu tiên bạn kiểm tra là gì?']};
+
+DETAIL['Sizing Thread Pool']={title:'Sizing Thread Pool',crumb:'7. System Design › High Concurrency',
+summary:'Kích thước thread pool ảnh hưởng trực tiếp đến throughput và latency. Quá ít thread lãng phí CPU core; quá nhiều gây context-switch overhead và OOM. Kích thước tối ưu phụ thuộc vào loại workload.',
+points:[
+  '<strong>CPU-bound</strong> (tính toán, mã hóa, xử lý in-memory): <code>pool size = CPU cores + 1</code>. Thread thêm bù cho pause ngắn.',
+  '<strong>I/O-bound</strong> (query DB, HTTP call, đọc file): <code>pool size = CPU cores × (1 + wait_ratio)</code>.',
+  'wait_ratio = avg_wait_time / avg_compute_time. Ví dụ: 4 cores, DB 100ms, compute 10ms → 4 × 11 = 44 threads.',
+  '<strong>Bulkhead</strong>: dùng thread pool riêng có tên cho mỗi concern (DB ops, email, report). Bão hòa pool bị cô lập.',
+  'Bounded queue (<code>ArrayBlockingQueue</code>) ngăn OOM dưới load. Dùng <code>CallerRunsPolicy</code> cho natural backpressure.',
+],
+code:`// Pool riêng theo concern — Bulkhead pattern
+@Configuration
+public class AsyncConfig {
+
+    @Bean("dbPool")
+    public ThreadPoolTaskExecutor dbPool() {
+        ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
+        // 4 cores × (1 + 100ms wait / 10ms compute) = 44 → làm tròn 40
+        ex.setCorePoolSize(40);
+        ex.setMaxPoolSize(60);
+        ex.setQueueCapacity(200);     // bounded — reject khi đầy
+        ex.setThreadNamePrefix("db-");
+        // CallerRunsPolicy: nếu queue đầy, caller thread tự thực thi task → natural backpressure
+        ex.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        ex.initialize();
+        return ex;
+    }
+
+    @Bean("emailPool")
+    public ThreadPoolTaskExecutor emailPool() {
+        ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
+        ex.setCorePoolSize(5);
+        ex.setMaxPoolSize(10);
+        ex.setQueueCapacity(5000);   // queue lớn OK — email không nhạy cảm latency
+        ex.setThreadNamePrefix("email-");
+        ex.initialize();
+        return ex;
+    }
+}
+
+@Service class OrderService {
+    @Async("emailPool")
+    CompletableFuture<Void> sendConfirmation(Long orderId) {
+        emailClient.send(orderId); // chạy trên emailPool, không phải caller thread
+        return CompletableFuture.completedFuture(null);
+    }
+}`,
+codeLabel:'Named thread pool với Bulkhead isolation',
+adapt:'Pool thread riêng cho từng downstream dependency là Bulkhead pattern — payment service chậm làm đầy pool của nó chứ không "cướp" pool DB. Dùng <code>CallerRunsPolicy</code> làm rejection handler: khi queue đầy, caller thread tự chạy task, tự nhiên làm chậm producer và tạo backpressure mà không drop công việc.',
+interview:['Công thức sizing thread pool cho I/O-bound service?','Tại sao tạo thread pool riêng cho từng service?','CallerRunsPolicy khác AbortPolicy thế nào?']};
+
+DETAIL['Tuning Connection Pool']={title:'Tuning Connection Pool cho High Concurrency',crumb:'7. System Design › High Concurrency',
+summary:'Dưới high concurrency, kết nối DB trở thành bottleneck. Pool quá nhỏ → thread chờ (latency spike); pool quá lớn → DB quá tải (query chậm cho tất cả). Cân bằng là then chốt.',
+points:[
+  'Mỗi thread gọi DB cần một connection — thread pool size nên ≤ connection pool size.',
+  'Tổng connection tất cả app instance không vượt <code>max_connections</code> MySQL trừ headroom DBA.',
+  '<code>connectionTimeout</code>: nếu pool hết, request chờ thời gian này rồi throw exception. Giữ 3s để fail fast.',
+  '<code>maxLifetime</code>: connection phải được recycle trước khi MySQL đóng phía server (<code>wait_timeout</code>).',
+  '<strong>PgBouncer / ProxySQL</strong>: connection multiplexer — nhiều app connection share ít DB connection hơn.',
+  'Alert threshold: <code>hikaricp_connections_pending > 5</code> là dấu hiệu pool bão hòa trước khi error bắt đầu.',
+],
+code:`# Sizing HikariCP multi-instance
+# MySQL max_connections = 500
+# Headroom DBA/monitoring: 20
+# App connections: 480
+# App instances: 6
+# Pool mỗi instance: 480 / 6 = 80
+
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 80
+      minimum-idle: 80          # stable pool = không resize overhead
+      connection-timeout: 3000  # 3s fail-fast
+      max-lifetime: 1800000     # 30 phút < MySQL wait_timeout
+
+# MySQL: kiểm tra max_connections
+SHOW VARIABLES LIKE 'max_connections';  # default 151
+
+# Tăng MySQL max_connections
+SET GLOBAL max_connections = 600;
+
+# Prometheus query để monitor:
+# Pool utilization: hikaricp_connections_active / hikaricp_connections_max
+# Pending waits (alert > 0): hikaricp_connections_pending_total`,
+codeLabel:'Sizing pool multi-instance và monitoring',
+adapt:'Pattern incident production điển hình: traffic spike → pool hết → request xếp hàng → 30s default timeout fire → HTTP 500 cascade. Phòng ngừa: 1) <code>connectionTimeout=3000ms</code> để fail fast, 2) alert trên <code>connections_pending</code>, 3) scale app instance trước khi pool bão hòa. Với concurrency rất cao, ProxySQL hoặc PgBouncer multiplex nhiều app connection thành ít DB connection hơn, giảm overhead DB.',
+interview:['Tính maximumPoolSize thế nào khi chạy 5 app instance?','Điều gì gây ra "Connection is not available, request timed out" trong HikariCP?','Khi nào cần thêm ProxySQL trước MySQL?']};
+
+DETAIL['Bulkhead & Isolation']={title:'Bulkhead Pattern',crumb:'7. System Design › High Concurrency',
+summary:'Bulkhead cô lập component với resource pool riêng để bão hòa hoặc failure ở một component không cascade sang component khác — đặt tên theo vách ngăn tàu thủy ngăn một khoang bị ngập không làm chìm cả tàu.',
+points:[
+  '<strong>Thread pool bulkhead</strong>: executor riêng cho mỗi downstream service. Service chậm làm đầy pool của nó, không chiếm tài nguyên chung.',
+  '<strong>Semaphore bulkhead</strong>: giới hạn max concurrent call không cần thread pool riêng. Overhead thấp hơn, cô lập kém hơn.',
+  'Resilience4j: <code>@Bulkhead(name="paymentService")</code> — annotation-based bulkhead với fallback method.',
+  'Kết hợp Circuit Breaker: Bulkhead giới hạn concurrency; Circuit Breaker dừng gọi khi failure rate vượt ngưỡng.',
+  'Không có Bulkhead: một downstream service chậm chiếm hết HTTP thread pool chung → mọi endpoint khác bị degraded.',
+],
+code:`# application.yml — Resilience4j Bulkhead
+resilience4j:
+  bulkhead:
+    instances:
+      paymentService:
+        maxConcurrentCalls: 10    # tối đa 10 call đồng thời đến payment
+        maxWaitDuration: 100ms    # chờ tối đa 100ms trước BulkheadFullException
+
+  thread-pool-bulkhead:
+    instances:
+      inventoryService:
+        maxThreadPoolSize: 5
+        coreThreadPoolSize: 3
+        queueCapacity: 20
+
+@Service public class OrderService {
+    @Bulkhead(name = "paymentService", fallbackMethod = "paymentFallback")
+    @CircuitBreaker(name = "paymentService", fallbackMethod = "paymentFallback")
+    public PaymentResult charge(PaymentRequest req) {
+        return paymentClient.charge(req);   // external call chậm
+    }
+
+    // Gọi khi bulkhead đầy HOẶC circuit mở
+    public PaymentResult paymentFallback(PaymentRequest req, Exception e) {
+        log.warn("Payment service không available: {}", e.getClass().getSimpleName());
+        // Degrade gracefully: đưa vào queue để retry async
+        paymentQueue.enqueue(req);
+        return PaymentResult.pending(req.getOrderId());
+    }
+}`,
+codeLabel:'Resilience4j Bulkhead + Circuit Breaker',
+adapt:'Luôn định nghĩa fallback method — Bulkhead không có fallback chỉ throw exception dưới load. Kết hợp Bulkhead (giới hạn concurrency) với CircuitBreaker (dừng gọi khi failure rate cao) và Retry (với exponential backoff). Bộ ba này là core của resilient service-to-service communication trong microservices.',
+interview:['Bulkhead giải quyết vấn đề gì mà shared thread pool không làm được?','Thread pool bulkhead và semaphore bulkhead khác nhau thế nào?','Bulkhead bổ sung cho Circuit Breaker thế nào?']};
+
+DETAIL['Capacity Planning']={title:'Capacity Planning — QPS / TPS',crumb:'7. System Design › High Concurrency',
+summary:"Capacity planning dùng Little's Law và back-of-envelope estimation để xác định nhu cầu thread pool, DB connection và infrastructure trước khi load test xác nhận con số.",
+points:[
+  "<strong>Little's Law</strong>: <code>N = λ × W</code> — concurrency trung bình (N) = arrival rate (λ, req/s) × avg response time (W, giây).",
+  'Ví dụ: 1000 RPS ở 100ms avg → 1000 × 0.1 = 100 request đồng thời → cần ≥ 100 thread slot.',
+  '<strong>DAU → QPS</strong>: 10M DAU × 10 req/ngày = 100M req/ngày ÷ 86400s ≈ 1157 avg RPS. Peak = 3-5× avg.',
+  'Load test để tìm <em>điểm gãy (knee)</em>: throughput plateau nhưng latency bắt đầu tăng nhanh.',
+  'Safety margin: thiết kế cho 3× peak để xử lý flash sale và spike bất ngờ.',
+  'Giới hạn phần cứng tham khảo: 1 core MySQL ≈ 1000 query đơn/s; 1 Redis node ≈ 100K ops/s.',
+],
+code:`# Little's Law áp dụng vào sizing
+# Mục tiêu: xử lý 5000 RPS với p99 < 200ms
+# N = 5000 × 0.2 = 1000 request đồng thời
+
+# Thread pool (I/O-bound, 8 cores):
+# 8 cores × (1 + 50ms DB / 5ms compute) = 88 → làm tròn 100
+
+# Back-of-envelope: DAU → peak QPS
+# 50M DAU, 5 hành động/ngày = 250M req/ngày
+# Daily avg: 250M / 86400 ≈ 2893 RPS
+# Peak hour (20% daily): 50M req / 3600s ≈ 13,889 RPS
+# Với 3× safety: thiết kế cho 41,667 RPS
+
+# JMeter load test: tìm điểm gãy
+# - Ramp từ 10 → 1000 thread trong 5 phút
+# - Xem p99 latency vs throughput
+# - Điểm gãy = throughput plateau + latency tăng mạnh
+# Đó là giới hạn service → scale horizontal trước điểm đó
+
+# Prometheus: tính utilization hiện tại
+# Throughput: rate(http_requests_total[1m])
+# P99 latency: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))`,
+codeLabel:"Little's Law, DAU→QPS, chiến lược load test",
+adapt:"Trong system design interview: luôn anchor ước tính capacity bằng Little's Law. Nó làm quyết định sizing thread pool và connection pool trông có cơ sở thay vì tùy tiện. Biết giới hạn phần cứng tham khảo: một app server đơn thường xử lý được 5K-20K RPS cho CRUD đơn giản (tùy tốc độ DB). Vượt đó thì scale horizontal — stateless service làm điều này trong suốt.",
+interview:["Áp dụng Little's Law để tính thread pool cho 2000 RPS ở 150ms avg latency?",'Chuyển 10M daily active user thành ước tính QPS thế nào?','"Điểm gãy" trong load test là gì?']};
+
+// ===== LINUX & DEPLOYMENT =====
+DETAIL['File & Process']={title:'Lệnh File & Process',crumb:'11. Linux & Deployment',
+summary:'Các lệnh Linux thiết yếu cho điều hướng filesystem, quản lý file và giám sát process — nền tảng để tự mình deploy và troubleshoot ứng dụng Java trên Linux server.',
+points:[
+  '<strong>Điều hướng</strong>: <code>ls -lah</code>, <code>cd</code>, <code>pwd</code>, <code>tree -L 2</code> (cấu trúc thư mục).',
+  '<strong>File ops</strong>: <code>cp -r, mv, rm -rf, mkdir -p, ln -s</code> (symlink), <code>chmod, chown</code>.',
+  '<strong>Tìm kiếm</strong>: <code>find /opt -name "*.jar"</code>, <code>find . -mtime -1</code> (sửa hôm nay), <code>grep -r "pattern" dir/</code>.',
+  '<strong>Process</strong>: <code>ps aux | grep java</code>, <code>top</code>/<code>htop</code>, <code>kill -15 &lt;pid&gt;</code> (graceful), <code>kill -9 &lt;pid&gt;</code> (force).',
+  '<strong>Disk</strong>: <code>df -h</code> (dung lượng filesystem), <code>du -sh *</code> (kích thước thư mục).',
+  '<strong>Archive</strong>: <code>tar -czf backup.tar.gz dir/</code> (tạo), <code>tar -xzf backup.tar.gz</code> (giải nén).',
+],
+code:`# Xem file với kích thước, quyền, owner
+ls -lah /opt/app/
+
+# Tìm file log lớn (>100MB)
+find /var/log -name "*.log" -size +100M
+
+# Tìm file sửa trong 24 giờ qua
+find /opt/app -name "*.jar" -mtime -1
+
+# Quản lý process
+ps aux | grep java                    # list java process
+ps aux | sort -k3 -rn | head -10      # top 10 process ngốn CPU nhất
+top -c                                # monitor process tương tác
+
+# Chạy background với log
+nohup java -Xmx2g -jar app.jar \
+  --spring.profiles.active=prod \
+  > /var/log/app/app.log 2>&1 &
+echo $! > /var/run/app.pid
+
+# Kiểm tra process còn sống không
+kill -0 $(cat /var/run/app.pid) 2>/dev/null && echo "running" || echo "stopped"
+
+# Tắt graceful: SIGTERM trước, SIGKILL nếu cần
+kill -15 $(cat /var/run/app.pid)    # graceful — Spring Boot hoàn thành request đang xử lý
+sleep 10
+kill -0 $(cat /var/run/app.pid) 2>/dev/null && kill -9 $(cat /var/run/app.pid)
+
+# Phân quyền
+chmod 755 deploy.sh         # rwxr-xr-x
+chmod 640 application.yml   # rw-r----- (owner rw, group r, others không)
+chown appuser:appgroup /opt/app/`,
+codeLabel:'Lệnh file và process management',
+adapt:'Dùng <code>kill -15</code> (SIGTERM) trước — graceful shutdown của Spring Boot sẽ hoàn thành request đang xử lý trước khi dừng. Chỉ dùng <code>kill -9</code> như phương án cuối vì nó không cho phép cleanup. Theo dõi disk usage bằng cron job hoặc alerting: thư mục log đầy bất ngờ rất nhanh dưới high load.',
+interview:['kill -9 và kill -15 khác nhau thế nào?','Chạy ứng dụng Java background và giữ nó chạy sau khi logout thế nào?','Tìm thư mục nào đang chiếm nhiều disk nhất thế nào?']};
+
+DETAIL['Network & Logs']={title:'Lệnh Network & Log',crumb:'11. Linux & Deployment',
+summary:'Lệnh chẩn đoán network để kiểm tra port và kết nối; công cụ phân tích log để monitoring thời gian thực và tìm pattern trong production — kỹ năng core để tự troubleshoot deployment.',
+points:[
+  '<code>ss -lntp</code>: liệt kê tất cả TCP port đang listen với process name (thay thế hiện đại cho <code>netstat -tulnp</code>).',
+  '<code>lsof -i :8080</code>: process nào đang dùng port 8080.',
+  '<code>curl -v http://localhost:8080/actuator/health</code>: test HTTP endpoint verbose.',
+  '<code>telnet db-host 3306</code>: test kết nối TCP đến port DB.',
+  '<code>tail -f /var/log/app/app.log</code>: theo dõi log live.',
+  '<code>grep -n "ERROR" app.log</code>: tìm error. <code>grep -C 5 "Exception"</code>: 5 dòng context.',
+  '<code>awk \'{print $NF}\' access.log | sort -n | tail -20</code>: extract và sort field cuối (ví dụ response time).',
+],
+code:`# Kiểm tra port
+ss -lntp                           # tất cả port đang listen + process
+ss -lntp | grep 8080               # port 8080 có được dùng không?
+lsof -i :8080                      # PID nào đang dùng port 8080
+
+# Test kết nối
+curl -v http://localhost:8080/actuator/health   # HTTP test (verbose)
+curl -o /dev/null -s -w "%{http_code}\n" http://localhost:8080/  # chỉ lấy status code
+telnet db-host 3306                # test kết nối DB port (Ctrl+] để thoát)
+ping -c 4 gateway-service          # ICMP reachability
+
+# Summary trạng thái connection (kiểm tra TIME_WAIT tích lũy)
+ss -s
+
+# Monitor log realtime
+tail -f /var/log/app/app.log                       # tất cả output
+tail -f /var/log/app/app.log | grep --line-buffered "ERROR"   # chỉ error
+
+# Phân tích log
+grep -n "NullPointerException" app.log             # tìm kèm số dòng
+grep -C 10 "OutOfMemoryError" app.log              # 10 dòng context
+grep "2024-01-15 14:" app.log | grep -c "ERROR"    # đếm error lúc 2pm
+
+# Phân tích slow request trong nginx access log
+awk '$NF > 1.0 {print}' /var/log/nginx/access.log    # request > 1s
+awk '{sum+=$NF; cnt++} END{print "avg:", sum/cnt}' access.log  # avg response time`,
+codeLabel:'Lệnh chẩn đoán network và phân tích log',
+adapt:'<code>tail -f | grep --line-buffered</code> là cách nhanh nhất xem error live. Flag <code>--line-buffered</code> ngăn grep buffer output khi pipe. Quy trình chẩn đoán outage production: 1) <code>curl /actuator/health</code> kiểm tra trạng thái app, 2) <code>tail -f app.log | grep ERROR</code> xem error hiện tại, 3) <code>ss -s</code> kiểm tra connection state (nhiều TIME_WAIT = connection leak hoặc surge traffic), 4) <code>top</code> kiểm tra CPU/memory.',
+interview:['Kiểm tra process nào đang dùng port 8080 thế nào?','Nhiều TIME_WAIT connection trong ss -s cho thấy gì?','Xem live log nhưng chỉ filter dòng ERROR thế nào?']};
+
+DETAIL['Service Deployment']={title:'Deploy Service & systemd',crumb:'11. Linux & Deployment',
+summary:'systemd là service manager tiêu chuẩn trên Linux hiện đại. Dùng systemd service unit cho ứng dụng Java: tự động restart khi fail, start khi boot, quản lý log qua journald, và điều khiển lifecycle gọn gàng.',
+points:[
+  '<code>systemctl start/stop/restart/status &lt;service&gt;</code>: quản lý lifecycle service.',
+  '<code>systemctl enable &lt;service&gt;</code>: start khi boot. <code>systemctl disable</code>: xóa khỏi boot.',
+  '<code>journalctl -u myapp -f</code>: follow log của service cụ thể.',
+  '<code>journalctl -u myapp --since "1 hour ago"</code>: query log theo thời gian.',
+  '<code>scp user@host:file .</code>: copy file qua SSH. <code>rsync -avz src/ user@host:dst/</code>: sync incremental hiệu quả.',
+  'Đặt <code>SuccessExitStatus=143</code> cho Spring Boot: thoát với 143 (128+SIGTERM) khi graceful shutdown.',
+],
+code:`# /etc/systemd/system/myapp.service
+[Unit]
+Description=My Spring Boot Application
+After=network.target mysql.service
+
+[Service]
+User=appuser
+Group=appgroup
+WorkingDirectory=/opt/myapp
+ExecStart=/usr/bin/java \
+  -Xms1g -Xmx1g \
+  -XX:+UseG1GC \
+  -XX:+HeapDumpOnOutOfMemoryError \
+  -XX:HeapDumpPath=/var/log/myapp \
+  -XX:+ExitOnOutOfMemoryError \
+  -Dspring.profiles.active=prod \
+  -jar /opt/myapp/app.jar
+SuccessExitStatus=143         # Spring Boot thoát 143 khi SIGTERM (graceful shutdown)
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+
+# --- Đăng ký và start ---
+sudo systemctl daemon-reload   # reload sau khi tạo/sửa unit file
+sudo systemctl enable myapp    # start khi boot
+sudo systemctl start myapp
+sudo systemctl status myapp    # verify đang chạy
+
+# --- Deploy JAR version mới ---
+# Bước 1: upload JAR mới
+scp target/app-2.0.jar appuser@server:/opt/myapp/app-new.jar
+
+# Bước 2: trên server — backup + swap + restart
+ssh appuser@server '
+  cp /opt/myapp/app.jar /opt/myapp/app.jar.bak
+  mv /opt/myapp/app-new.jar /opt/myapp/app.jar
+  sudo systemctl restart myapp
+'
+
+# Bước 3: verify
+ssh appuser@server 'sudo journalctl -u myapp -f -n 50'
+# và: curl http://server:8080/actuator/health`,
+codeLabel:'systemd service unit và quy trình deploy',
+adapt:'Luôn dùng systemd thay vì raw <code>nohup</code>: systemd tự restart khi fail, quản lý log qua journald (có rotation), start lại khi reboot. Đặt <code>SuccessExitStatus=143</code> — không có nó, systemd coi graceful shutdown của Spring Boot là crash và cố restart không cần thiết. Dùng <code>After=mysql.service</code> để đảm bảo DB khởi động xong trước khi app start.',
+interview:['Tạo systemd service cho Spring Boot app thế nào?','systemctl stop khác kill -9 vào Java process thế nào?','Xem và filter log của systemd service cụ thể thế nào?']};
 
 // ── NAV ──────────────────────────────────────────────────────────────────────
 function buildNav(){

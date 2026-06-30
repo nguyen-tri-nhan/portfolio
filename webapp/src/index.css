@@ -2,6 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Review V2 prose styles ───────────────────────────────────────── */
+.prose-review p      { @apply text-slate-300 leading-relaxed mb-3; }
+.prose-review h2     { @apply text-lg font-semibold text-slate-100 mt-6 mb-3 pb-1 border-b border-slate-700/50; }
+.prose-review h3     { @apply text-base font-semibold text-slate-200 mt-4 mb-2; }
+.prose-review ul     { @apply space-y-1.5 mb-4 pl-1; }
+.prose-review li     { @apply text-slate-300 text-sm leading-relaxed flex gap-2 items-start; }
+.prose-review li::before { content: '›'; @apply text-blue-400 shrink-0 mt-0.5; }
+.prose-review ol     { @apply space-y-2 mb-4; counter-reset: item; }
+.prose-review ol li  { @apply text-slate-300 text-sm leading-relaxed flex gap-2 items-start; }
+.prose-review ol li::before { content: counter(item) '.'; counter-increment: item; @apply text-blue-400 shrink-0 font-mono text-xs mt-0.5; }
+.prose-review strong { @apply text-slate-100 font-semibold; }
+.prose-review em     { @apply text-slate-300 italic; }
+.prose-review code   { @apply text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-sm font-mono; }
+.prose-review pre    { @apply my-4 rounded-lg overflow-x-auto bg-slate-900 border border-slate-700/50; }
+.prose-review pre code { @apply bg-transparent p-0 text-inherit; }
+.prose-review blockquote { @apply border-l-2 border-blue-500 pl-4 text-slate-400 italic my-3; }
+.prose-review a      { @apply text-blue-400 underline hover:text-blue-300; }
+.prose-review table  { @apply w-full text-sm mb-4 border-collapse; }
+.prose-review th     { @apply text-left px-3 py-1.5 text-slate-300 font-semibold bg-slate-800 border border-slate-700; }
+.prose-review td     { @apply px-3 py-1.5 text-slate-400 border border-slate-700/60; }
+.prose-review tr:nth-child(even) td { @apply bg-slate-800/40; }
+/* Collapsible Q&A */
+.prose-review details { @apply border border-slate-700/60 rounded-lg mb-3 overflow-hidden; }
+.prose-review details[open] { @apply border-blue-500/40; }
+.prose-review summary  { @apply px-4 py-3 cursor-pointer text-slate-200 text-sm font-medium select-none list-none flex items-start gap-2 hover:bg-slate-800/60 transition-colors; }
+.prose-review summary::before { content: '▶'; @apply text-blue-400 text-xs mt-0.5 shrink-0 transition-transform; }
+.prose-review details[open] summary::before { content: '▼'; }
+.prose-review details > *:not(summary) { @apply px-4 pb-4 pt-2 text-slate-300 text-sm leading-relaxed; }
+/* Scrollbar for sidebar */
+.scrollbar-thin::-webkit-scrollbar      { width: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thumb-slate-700::-webkit-scrollbar-thumb { @apply bg-slate-700 rounded; }
+
 @layer base {
   html {
     scroll-behavior: smooth;

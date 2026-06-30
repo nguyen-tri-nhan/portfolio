@@ -7,6 +7,7 @@ import Projects from './components/Projects'
 import Contact from './components/Contact'
 import BinaryRain from './components/BinaryRain'
 import ExperienceRoadmap from './pages/ExperienceRoadmap'
+import ReviewV2 from './pages/ReviewV2'
 import ScrollToTopButton from './components/ScrollToTopButton'
 
 function App() {
@@ -47,6 +48,7 @@ function App() {
               }
             />
             <Route path="/experience" element={<ExperienceRoadmap />} />
+            <Route path="/review-v2" element={<ReviewV2 />} />
           </Routes>
         </main>
         <ScrollToTopButton />
