@@ -50,6 +50,23 @@ Trong system design interview: luôn anchor ước tính capacity bằng Little'
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Áp dụng Little's Law để tính thread pool cho 2000 RPS ở 150ms avg latency?
-1. Chuyển 10M daily active user thành ước tính QPS thế nào?
-1. "Điểm gãy" trong load test là gì?
+<details>
+<summary><strong>Áp dụng Little's Law để tính thread pool cho 2000 RPS ở 150ms avg latency?</strong></summary>
+
+**A:** Little's Law: **L = λ × W** (L = concurrent, λ = throughput, W = response time). L = 2000 × 0.15 = **300 concurrent request** → thread pool cần 300. Thêm safety buffer 20-30%: pool size ~360-390. Với Virtual Threads (Java 21): không cần tính thread pool — JVM manage automatically; chỉ tính max concurrency để giới hạn downstream resource.
+
+</details>
+
+<details>
+<summary><strong>Chuyển 10M daily active user thành ước tính QPS thế nào?</strong></summary>
+
+**A:** 1 ngày = 86,400s. 80/20 rule: 80% traffic trong 20% thời gian (17,280s peak). Ví dụ social app (~30 request/user/ngày): avg QPS = 10M × 30 / 86,400 ≈ **3,472 QPS**; peak ≈ 3,472 × 5 × 1.5 safety ≈ **26,000 QPS**. Điều chỉnh theo tỷ lệ read/write, caching hit rate, geography (peak theo timezone). Validate với real traffic log nếu có.
+
+</details>
+
+<details>
+<summary><strong>"Điểm gãy" trong load test là gì?</strong></summary>
+
+**A:** **Breaking point** là ngưỡng tải mà hệ thống bắt đầu degradation không tuyến tính: latency tăng đột biến, error rate tăng, throughput không tăng dù load tăng. Queuing theory: khi utilization → 100%, queue length → ∞. Tìm bằng **stress test**: tăng dần load đến khi error rate > 1% hoặc latency p99 vượt threshold. Breaking point của production nên gấp **2-3x expected peak load**.
+
+</details>

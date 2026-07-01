@@ -98,6 +98,23 @@ Cho project mới: chọn k6. Cho JMeter infrastructure có sẵn: giữ nguyên
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa virtual user và request per second là gì?
-1. Làm thế nào để parameterize test với credential user khác nhau?
-1. Think time mô phỏng gì trong load test?
+<details>
+<summary><strong>Sự khác biệt giữa virtual user và request per second là gì?</strong></summary>
+
+**A:** **Virtual User (VU)**: simulated concurrent user — mỗi VU thực hiện scenario tuần tự (login → browse → checkout → logout). Số VU = concurrent session. **RPS (Request Per Second)**: throughput — số request/s hệ thống xử lý. Mối quan hệ: RPS = VU × (1/response_time) theo Little's Law. 100 VU với avg 1s response → 100 RPS. Tăng VU → tăng RPS cho đến khi system saturate. k6 dùng VU model; Gatling dùng scenario injection; JMeter dùng thread (tương đương VU).
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để parameterize test với credential user khác nhau?</strong></summary>
+
+**A:** Đọc data từ CSV file: (1) **JMeter**: CSV Data Set Config → điền username/password từ file vào variables. (2) **Gatling**: `csv("users.csv").circular()` → inject từng user vào scenario. (3) **k6**: `SharedArray` đọc JSON/CSV, iterate theo VU index. Best practice: mỗi VU dùng credential riêng để simulate real multi-user scenario, tránh cache warm-up bias từ một user duy nhất. Đảm bảo file test data đủ lớn cho số VU.
+
+</details>
+
+<details>
+<summary><strong>Think time mô phỏng gì trong load test?</strong></summary>
+
+**A:** **Think time** là pause giữa các request trong một VU scenario — simulate user đọc trang, điền form, suy nghĩ trước khi click. Không có think time: VU liên tục gửi request → RPS quá cao, không realistic. Ví dụ: user browse shop, dừng 3-5 giây xem product → add to cart → dừng 2 giây → checkout. Think time làm test realistic hơn: cùng số VU nhưng có think time → RPS thấp hơn, latency profile gần thực tế hơn. Dùng random think time trong range (không fixed) để tránh synchronized requests.
+
+</details>

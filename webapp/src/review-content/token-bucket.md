@@ -84,6 +84,38 @@ Token bucket là chuẩn cho user-facing rate limiting vì nó cho phép request
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa token bucket và leaky bucket là gì?
-1. Khi nào token bucket tốt hơn fixed window?
-1. Token bucket xử lý burst request thế nào?
+<details>
+<summary><strong>Token bucket algorithm hoạt động thế nào?</strong></summary>
+
+**A:** Bucket chứa tối đa **N tokens**. Token được **refill theo tốc độ cố định** (ví dụ 100 tokens/giây). Mỗi request consume 1 token (hoặc nhiều cho weighted). Request được allow khi: có đủ tokens → consume → process. Request bị reject khi: không đủ tokens → 429 rate limited. Key property: cho phép **burst** — nếu ít request trong thời gian dài, bucket đầy token → burst ngắn được allow. Khác leaky bucket: leaky bucket smooth output, không cho burst. Bucket4j (Java): production-grade token bucket implementation hỗ trợ local và distributed (Redis) storage.
+
+</details>
+
+<details>
+<summary><strong>Tại sao token bucket phù hợp cho API rate limiting hơn fixed counter?</strong></summary>
+
+**A:** **Fixed counter** (fixed window): đếm requests trong window — 100 req/minute. Vấn đề: 100 request trong giây cuối window + 100 request giây đầu window tiếp = 200 req trong 2 giây (burst). **Token bucket**: refill continuous (không per-window) → không có boundary burst issue. Burst controlled: chỉ burst đến bucket capacity. Smooth handling: client có thể burst ngắn hạn (legitimate) mà không bị penalize. API response: include `X-RateLimit-Remaining` (tokens left), `X-RateLimit-Reset` (khi nào refill đủ). Thực tế: Stripe, GitHub API dùng token bucket.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để implement token bucket với Redis?</strong></summary>
+
+**A:** Lua script atomic (đảm bảo atomicity):
+```lua
+local tokens = tonumber(redis.call('GET', KEYS[1]) or ARGV[1])
+local now = tonumber(ARGV[2])
+local last = tonumber(redis.call('GET', KEYS[2]) or now)
+local rate = tonumber(ARGV[3])   -- tokens per second
+local capacity = tonumber(ARGV[1])
+local refill = math.min(capacity, tokens + (now - last) * rate)
+if refill >= 1 then
+    redis.call('SET', KEYS[1], refill - 1)
+    redis.call('SET', KEYS[2], now)
+    return 1  -- allowed
+end
+return 0  -- rejected
+```
+KEYS[1]=tokens_key, KEYS[2]=last_time_key. Hoặc dùng Bucket4j với `ProxyManager` cho Redis integration.
+
+</details>

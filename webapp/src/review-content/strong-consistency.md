@@ -80,6 +80,23 @@ Dùng strong consistency cho thao tác nơi tính đúng đắn là tối quan t
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Linearizability là gì?
-1. Google Spanner đạt global strong consistency thế nào?
-1. Chi phí của strong consistency trong distributed system là gì?
+<details>
+<summary><strong>Strong consistency đảm bảo gì?</strong></summary>
+
+**A:** Strong consistency đảm bảo: sau khi write thành công, **mọi subsequent read** (từ bất kỳ node nào) sẽ thấy giá trị đã write — không bao giờ thấy stale data. Giống như single-machine behavior. Implement: (1) Single writer (primary/leader) — mọi write qua một node. (2) Synchronous replication — write không được ack cho đến khi tất cả replicas confirm. (3) Distributed consensus (Raft/Paxos) — majority quorum confirm write trước khi commit. Trade-off: latency cao (phải chờ replicas), availability giảm (network partition → reject write). Dùng: financial transactions, inventory system, leader election.
+
+</details>
+
+<details>
+<summary><strong>Linearizability và serializability khác nhau thế nào?</strong></summary>
+
+**A:** **Linearizability**: consistency model cho **single operations** — mỗi operation appear to take effect atomically at a single point in time, results consistent with a sequential order. Real-time constraint: nếu op A hoàn thành trước op B start, A phải appear before B. **Serializability**: isolation level cho **transactions** — concurrent transactions execute as if some serial order. Không cần real-time constraint — serial order không phải wall-clock order. **Strict serializability** = Linearizability + Serializability. Spanner (Google): externally-consistent (strict serializable) distributed transactions.
+
+</details>
+
+<details>
+<summary><strong>Khi nào strong consistency gây performance problem?</strong></summary>
+
+**A:** Strong consistency gây latency cao khi: (1) **Geographic distribution** — write phải wait cho remote replicas (Singapore → Frankfurt = 150ms RTT). (2) **High write contention** — many writers qua single leader. (3) **Network partition** — CAP theorem: CP system (strong consistency) sẽ reject requests khi partition xảy ra (availability sacrifice). Giải pháp: (1) Local reads từ nearest replica (compromise: đọc slightly stale). (2) Async replication + read-your-own-writes tracking. (3) Eventual consistency cho non-critical data, strong consistency chỉ khi really need.
+
+</details>

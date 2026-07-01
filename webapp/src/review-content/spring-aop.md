@@ -126,6 +126,28 @@ Dùng AOP cho logging, metrics và auditing — những concern này không nên
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa @Before và @Around advice là gì?
-1. Tại sao Spring AOP không hoạt động với self-invocation?
-1. @Transactional được implement nội bộ thế nào?
+<details>
+<summary><strong>Các loại advice trong Spring AOP là gì?</strong></summary>
+
+**A:** (1) **@Before**: chạy trước method. (2) **@After**: chạy sau (kể cả exception). (3) **@AfterReturning**: chạy sau khi method return thành công — có thể access return value. (4) **@AfterThrowing**: chạy khi method throw exception — access exception object. (5) **@Around**: bao quanh method — powerful nhất, control có chạy method hay không, modify return value. Around: `ProceedingJoinPoint.proceed()` để chạy method gốc. Execution order trong cùng class: Around → Before → method → AfterReturning/AfterThrowing → After → Around (sau proceed).
+
+</details>
+
+<details>
+<summary><strong>Pointcut expression viết thế nào?</strong></summary>
+
+**A:** `execution(modifiers? return-type declaring-type? method-name(params) throws?)`. Wildcards: `*` = bất kỳ (một word), `..` = bất kỳ package level hoặc params. Ví dụ:
+- `execution(* com.example.service.*.*(..))` — tất cả method trong package service
+- `execution(public * *(..)))` — tất cả public method
+- `execution(* *Service.*(..)))` — class tên kết thúc Service
+- `@annotation(org.springframework.transaction.annotation.Transactional)` — method có annotation
+- `bean(userService)` — chỉ bean tên userService. Combine: `&&`, `||`, `!`.
+
+</details>
+
+<details>
+<summary><strong>JoinPoint và ProceedingJoinPoint khác nhau thế nào?</strong></summary>
+
+**A:** **`JoinPoint`**: read-only access — xem method signature, arguments, target object. Available trong @Before, @After, @AfterReturning, @AfterThrowing. Methods: `getArgs()`, `getTarget()`, `getSignature()`. **`ProceedingJoinPoint`**: extends JoinPoint — thêm `proceed()` để chạy method gốc (hoặc `proceed(newArgs)` để modify args). Chỉ dùng được trong `@Around`. Thiếu `proceed()` call trong @Around → method gốc không chạy — useful để short-circuit (caching, authorization check). Return value của `proceed()` là return value của method gốc.
+
+</details>

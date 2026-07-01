@@ -98,6 +98,23 @@ Dùng MongoDB khi dữ liệu tự nhiên là hierarchical/document-shaped và s
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Khi nào bạn embed vs reference document trong MongoDB?
-1. MongoDB aggregation pipeline là gì?
-1. MongoDB xử lý transaction thế nào?
+<details>
+<summary><strong>Khi nào bạn embed vs reference document trong MongoDB?</strong></summary>
+
+**A:** **Embed** (sub-document): khi data thường được truy cập cùng nhau, data ít thay đổi, quan hệ 1-1 hoặc 1-ít. Ví dụ: address trong user, items trong order. Ưu điểm: single read, atomic update. **Reference** (DBRef/manual): khi data được reuse bởi nhiều document, data lớn, quan hệ many-to-many, hoặc sub-document thay đổi thường xuyên. Ví dụ: user reference trong comment (user thông tin cần update một nơi). MongoDB không enforce referential integrity — phải handle trong app.
+
+</details>
+
+<details>
+<summary><strong>MongoDB aggregation pipeline là gì?</strong></summary>
+
+**A:** Pipeline là chuỗi **stage** xử lý document tuần tự: `$match` (filter), `$group` (aggregate), `$sort`, `$project` (reshape), `$lookup` (join), `$unwind` (flatten array), `$limit`, `$skip`. Ví dụ: `[{$match: {status:"A"}}, {$group: {_id:"$city", total:{$sum:"$amount"}}}, {$sort: {total:-1}}]` → sum amount by city cho active records. Mạnh hơn find() cho analytics — chạy trên server, không transfer raw data về client.
+
+</details>
+
+<details>
+<summary><strong>MongoDB xử lý transaction thế nào?</strong></summary>
+
+**A:** MongoDB 4.0+ hỗ trợ **multi-document ACID transaction** (trước đó chỉ single-document atomic). Cú pháp tương tự: `session.startTransaction()` → operation → `session.commitTransaction()`. Giới hạn: chỉ trong replica set hoặc sharded cluster; transaction duration tối đa 60s mặc định; overhead đáng kể — tránh transaction dài. Best practice: thiết kế schema để tận dụng single-document atomicity trước (embed); dùng multi-document transaction chỉ khi thực sự cần.
+
+</details>

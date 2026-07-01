@@ -107,6 +107,30 @@ Dùng try-with-resources cho toàn bộ I/O: file, JDBC connection, HTTP client,
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Class phải implement interface nào để dùng với try-with-resources?
-1. Điều gì xảy ra khi cả try body và close() đều ném exception?
-1. Bạn có thể dùng try-with-resources với effectively-final variable của Java 9 không?
+<details>
+<summary><strong>Try-with-resources đảm bảo gì so với try-finally?</strong></summary>
+
+**A:** Try-with-resources: `try (Resource r = new Resource()) { ... }` → `r.close()` tự động gọi khi exit block (normal hoặc exception). Đảm bảo close **ngay cả khi exception xảy ra trong block**. So với try-finally: (1) Không thể "forget" close. (2) Nếu cả body và close() throw exception → body exception được propagate, close exception được **suppressed** (accessible qua `e.getSuppressed()`). Với try-finally: close exception sẽ **swallow** body exception (mất thông tin). Multiple resources: `try (A a = new A(); B b = new B())` — close theo thứ tự **ngược lại** (B rồi A).
+
+</details>
+
+<details>
+<summary><strong>AutoCloseable và Closeable khác nhau thế nào?</strong></summary>
+
+**A:** **`Closeable`** (Java 5): extends AutoCloseable, `close()` throws `IOException` — I/O resources (Stream, Reader, Writer). **`AutoCloseable`** (Java 7): `close()` throws `Exception` — broader, cho mọi resource. Try-with-resources hoạt động với bất kỳ class implement `AutoCloseable`. Implement custom: `class DBConnection implements AutoCloseable { public void close() { conn.close(); } }`. Idempotent close: best practice — gọi close() nhiều lần không gây error. `Closeable` contract: close() idempotent. `AutoCloseable` không require idempotent.
+
+</details>
+
+<details>
+<summary><strong>Có thể dùng try-with-resources với existing resource không?</strong></summary>
+
+**A:** Không trực tiếp — try-with-resources chỉ close resource được **declare trong parentheses**. Nếu resource tạo trước block: wrap:
+```java
+Connection conn = getExistingConnection();
+try (conn) { // Java 9+ effective final variable
+    // use conn
+} // conn.close() called
+```
+Java 9+ cho phép reference đến existing effectively-final AutoCloseable variable trực tiếp trong try-with-resources. Java 7-8: cần assign vào local: `try (Connection c = conn) {...}`. Cẩn thận: nếu outer code vẫn giữ reference → resource đã bị closed.
+
+</details>

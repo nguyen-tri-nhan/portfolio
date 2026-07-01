@@ -22,6 +22,23 @@ HC là concern xuyên suốt. Trong phỏng vấn: đừng chỉ nói "thêm ser
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Phát biểu Little's Law và dùng để size thread pool.
-1. Walk me through thiết kế system xử lý 50K request/giây.
-1. Khi latency spike dưới high load, điều đầu tiên bạn kiểm tra là gì?
+<details>
+<summary><strong>Phát biểu Little's Law và dùng để size thread pool.</strong></summary>
+
+**A:** **L = λ × W**: L = số item trong system (concurrent requests), λ = throughput (request/s), W = thời gian xử lý (s). Ví dụ: 500 RPS, avg latency 200ms → L = 500 × 0.2 = **100 concurrent requests** → cần thread pool size = 100 (plus buffer 20% → 120). Lưu ý: W = *service time + wait time*, nên khi queue build up, W tăng → cần L tăng → pool không đủ → queue càng dài → latency tăng (spiral). Target: utilization < 70-80%.
+
+</details>
+
+<details>
+<summary><strong>Walk me through thiết kế system xử lý 50K request/giây.</strong></summary>
+
+**A:** (1) **Load balancer layer**: 2-3 LB instances (L4/L7), sticky session nếu cần. (2) **App tier**: horizontal scale — tính số instance theo Little's Law: 50K × 0.1s (avg) = 5000 concurrent → mỗi instance 500 thread → 10 instances. (3) **Caching**: Redis cluster giảm 80% DB load — cache hot data. (4) **DB layer**: read replica, connection pooling (HikariCP). (5) **Async**: heavy operation → Kafka, không block request. (6) **CDN**: static assets. (7) **Rate limiting**: protect backend.
+
+</details>
+
+<details>
+<summary><strong>Khi latency spike dưới high load, điều đầu tiên bạn kiểm tra là gì?</strong></summary>
+
+**A:** Theo thứ tự: (1) **Thread pool saturation**: `/actuator/metrics/executor.active` — nếu active ≈ max → thread pool full → queue building. (2) **DB slow query**: slow query log, connection pool wait time. (3) **GC pressure**: GC log — Full GC hoặc long pause. (4) **External dependency**: downstream service latency (distributed trace). (5) **CPU throttling**: Docker/K8s CPU limit hit → throttle. Dùng distributed tracing để thấy span nào đang chậm.
+
+</details>

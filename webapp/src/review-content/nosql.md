@@ -68,6 +68,23 @@ Chọn NoSQL khi: cần horizontal scale qua nhiều node, dữ liệu tự nhi�
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Khi nào bạn chọn MongoDB thay vì PostgreSQL?
-1. BASE có nghĩa gì trong ngữ cảnh NoSQL?
-1. Cassandra đạt write throughput cao thế nào?
+<details>
+<summary><strong>Khi nào bạn chọn MongoDB thay vì PostgreSQL?</strong></summary>
+
+**A:** Chọn **MongoDB** khi: (1) Schema thay đổi thường xuyên, không muốn migration. (2) Data là hierarchical JSON tự nhiên (document fits domain model). (3) Cần horizontal scale writes (sharding). (4) Read pattern là load whole document. Chọn **PostgreSQL** khi: (1) ACID transaction nhiều table. (2) Complex JOIN. (3) Strong consistency bắt buộc. (4) SQL là chuẩn của team. MongoDB 4.0+ có transaction nhưng overhead cao hơn PostgreSQL. PostgreSQL jsonb cũng support semi-structured data — không nhất thiết phải dùng Mongo.
+
+</details>
+
+<details>
+<summary><strong>BASE có nghĩa gì trong ngữ cảnh NoSQL?</strong></summary>
+
+**A:** **B**asically Available: system luôn available, dù có thể trả về stale/partial data khi partition. **S**oft state: system state có thể thay đổi theo thời gian kể cả không có input mới — do replication propagation. **E**ventually consistent: sau khoảng thời gian không có update mới, tất cả replica sẽ hội tụ về cùng giá trị. BASE là trade-off để đạt được high availability và partition tolerance (AP trong CAP). NoSQL theo BASE: Cassandra, DynamoDB, Couchbase.
+
+</details>
+
+<details>
+<summary><strong>Cassandra đạt write throughput cao thế nào?</strong></summary>
+
+**A:** Cassandra write path: (1) Write vào **commit log** (sequential disk write — nhanh). (2) Write vào in-memory **MemTable**. (3) Ack client ngay — không cần block chờ disk. (4) Khi MemTable đầy → flush xuống **SSTable** (immutable file). Background: **compaction** merge SSTable. Đặc điểm: (1) Sequential write (không random write) → disk I/O hiệu quả. (2) **Masterless** (peer-to-peer): write đến bất kỳ node nào → no write bottleneck. (3) Multi-datacenter replication. Kết quả: hàng triệu write/s linear scalable.
+
+</details>

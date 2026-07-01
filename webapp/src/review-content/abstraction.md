@@ -83,6 +83,23 @@ Chỉ expose interface trong service layer (ví dụ: <code>UserService</code> l
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Khi nào dùng abstract class thay vì interface?
-1. Default method trong Java 8 interface thay đổi điều gì?
-1. Abstraction hỗ trợ khả năng test như thế nào?
+<details>
+<summary><strong>Khi nào dùng abstract class thay vì interface?</strong></summary>
+
+**A:** Dùng **abstract class** khi cần chia sẻ state (instance fields) hoặc constructor logic giữa các subclass, hoặc muốn template method pattern với protected helpers. Dùng **interface** khi chỉ định nghĩa contract/capability, muốn đa kế thừa behavior, hoặc không cần shared state. Java 8 default methods thu hẹp khoảng cách, nhưng abstract class vẫn cần khi cần protected/package-private members.
+
+</details>
+
+<details>
+<summary><strong>Default method trong Java 8 interface thay đổi điều gì?</strong></summary>
+
+**A:** Trước Java 8, không thể thêm method vào interface mà không phá vỡ tất cả implementation. **Default method** cho phép evolve API mà không breaking change — ví dụ `Collection.stream()`, `Map.getOrDefault()` được thêm vào Java 8 mà không cần sửa existing code. Khi class implement nhiều interface có default method cùng tên → compile error, phải override để giải quyết.
+
+</details>
+
+<details>
+<summary><strong>Abstraction hỗ trợ khả năng test như thế nào?</strong></summary>
+
+**A:** Abstraction tách interface khỏi implementation, cho phép inject mock/stub trong test. Ví dụ: `UserRepository` interface → unit test dùng Mockito mock, không cần real DB. Không có abstraction: service hardcode `new JpaUserRepository()` → không thể test độc lập. Đây là foundation của **Dependency Inversion Principle** và testable code.
+
+</details>

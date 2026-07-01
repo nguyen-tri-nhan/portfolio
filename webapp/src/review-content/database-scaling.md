@@ -83,6 +83,23 @@ Dùng <code>@Transactional(readOnly=true)</code> trên tất cả service method
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Read replica giúp gì với database scalability?
-1. Replication lag là gì và ảnh hưởng đến ứng dụng thế nào?
-1. Khi nào bạn chọn sharding thay vì read replica?
+<details>
+<summary><strong>Read replica giúp gì với database scalability?</strong></summary>
+
+**A:** Read replica là bản sao read-only của primary DB, nhận replication stream. **Offload read traffic** khỏi primary: SELECT, report query, analytics chạy trên replica; primary chỉ xử lý write. Hầu hết ứng dụng là read-heavy (80-90% read) → replica giảm đáng kể load trên primary. Spring với `@Transactional(readOnly=true)` có thể route đến replica tự động khi config `AbstractRoutingDataSource`.
+
+</details>
+
+<details>
+<summary><strong>Replication lag là gì và ảnh hưởng đến ứng dụng thế nào?</strong></summary>
+
+**A:** **Replication lag**: độ trễ giữa write trên primary và khi write đó apply trên replica — có thể từ milliseconds đến seconds khi primary bận. Ảnh hưởng: user vừa create record → đọc từ replica → không thấy record vừa tạo. Giải pháp: (1) Sau write, đọc từ primary trong cùng transaction/request. (2) "Read-your-writes": dùng session token track version, chờ replica catch up. (3) Tăng replication hardware. Monitor: `SHOW SLAVE STATUS` / `pg_stat_replication`.
+
+</details>
+
+<details>
+<summary><strong>Khi nào bạn chọn sharding thay vì read replica?</strong></summary>
+
+**A:** Read replica giúp **scale reads**, không scale writes — primary vẫn là single write node. Chọn **sharding** khi: write throughput vượt khả năng một primary, dataset quá lớn cho một node, hoặc cần geographic distribution writes. Sharding phức tạp hơn nhiều: cross-shard joins không thể, transactions phức tạp, resharding costly. Thứ tự scale: vertical → read replica → sharding. Sharding là last resort vì complexity cao.
+
+</details>

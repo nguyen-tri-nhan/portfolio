@@ -58,6 +58,23 @@ Hiểu DB của bạn cung cấp thuộc tính ACID nào vs bạn phải impleme
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Giải thích durability — cơ chế nào đảm bảo nó trong PostgreSQL?
-1. Isolation khác atomicity thế nào?
-1. BASE có nghĩa gì và DB NoSQL nào theo nó?
+<details>
+<summary><strong>Giải thích durability — cơ chế nào đảm bảo nó trong PostgreSQL?</strong></summary>
+
+**A:** Durability đảm bảo dữ liệu tồn tại vĩnh viễn sau commit dù crash. PostgreSQL dùng **WAL (Write-Ahead Log)**: ghi thay đổi vào WAL file trước khi áp dụng vào data page; khi crash, replay WAL để phục hồi. `fsync` đảm bảo WAL thực sự xuống disk — tắt `fsync` có thể mất dữ liệu ngay cả khi commit thành công.
+
+</details>
+
+<details>
+<summary><strong>Isolation khác atomicity thế nào?</strong></summary>
+
+**A:** **Atomicity** — transaction là "tất cả hoặc không có gì" (rollback nếu bất kỳ bước nào fail). **Isolation** — concurrent transaction không thấy intermediate state của nhau. Ví dụ transfer: atomicity đảm bảo cả debit lẫn credit xảy ra cùng lúc; isolation đảm bảo transaction khác không thấy trạng thái "đã trừ nhưng chưa cộng".
+
+</details>
+
+<details>
+<summary><strong>BASE có nghĩa gì và DB NoSQL nào theo nó?</strong></summary>
+
+**A:** BASE = **Basically Available, Soft state, Eventually consistent** — đối lập ACID. Hệ thống luôn trả lời (dù có thể stale), state có thể thay đổi do replication, và các replica hội tụ sau thời gian không có update mới. NoSQL theo BASE: **Cassandra**, **DynamoDB** (eventual consistency mặc định), **CouchDB** — ưu tiên availability hơn strong consistency.
+
+</details>

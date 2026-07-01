@@ -80,6 +80,33 @@ Với counter đơn giản, dùng <code>AtomicInteger</code> thay vì synchroniz
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa synchronized method và synchronized block là gì?
-1. Hai thread có thể đồng thời thực thi hai synchronized method khác nhau của cùng một object không?
-1. Reentrant locking là gì và tại sao Java hỗ trợ nó?
+<details>
+<summary><strong>synchronized block và synchronized method khác nhau thế nào?</strong></summary>
+
+**A:** **`synchronized(this) {...}`**: chỉ lock trong block scope — cho phép non-synchronized code chạy parallel. **`synchronized method`**: lock toàn bộ method, tương đương `synchronized(this)` cho instance method hoặc `synchronized(ClassName.class)` cho static method. Best practice: **synchronized block** hẹp hơn — chỉ bao quanh critical section, giảm contention. Lock object: instance method = this; static method = Class object. Dùng private lock object: `private final Object lock = new Object(); synchronized(lock) {...}` — tránh external code lock cùng object.
+
+</details>
+
+<details>
+<summary><strong>ReentrantLock có lợi thế gì so với synchronized?</strong></summary>
+
+**A:** `ReentrantLock` features mà `synchronized` không có: (1) **`tryLock()`**: non-blocking attempt — return false nếu không acquire được (tránh deadlock). (2) **`tryLock(timeout)`**: wait tối đa timeout. (3) **Fair lock**: constructor `new ReentrantLock(true)`. (4) **Interruptible lock**: `lockInterruptibly()` — thread có thể interrupted khi waiting. (5) **Multiple conditions**: `lock.newCondition()` — nhiều wait sets. (6) **Non-block-structured unlock**: lock và unlock có thể ở different methods. Trade-off: phải manually unlock (dùng try-finally). `synchronized` simpler nhưng ít flexible hơn.
+
+</details>
+
+<details>
+<summary><strong>StampedLock là gì và khi nào dùng?</strong></summary>
+
+**A:** `StampedLock` (Java 8): optimistic read lock — không block writers. Modes: (1) **Write lock**: exclusive. (2) **Read lock**: shared, block writers. (3) **Optimistic read**: `stamp = lock.tryOptimisticRead()` — không block, không acquire actual lock → read → `validate(stamp)` kiểm tra không có write trong khi đọc. Nếu validate fail → upgrade sang read lock và retry. Pattern:
+```java
+long stamp = lock.tryOptimisticRead();
+int x = this.x, y = this.y;
+if (!lock.validate(stamp)) {
+    stamp = lock.readLock();
+    try { x = this.x; y = this.y; }
+    finally { lock.unlockRead(stamp); }
+}
+```
+Tốt cho read-heavy workloads.
+
+</details>

@@ -99,6 +99,23 @@ Spring Framework bọc checked JDBC exception thành unchecked <code>DataAccessE
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Tại sao Java bao gồm checked exception? Lập luận ủng hộ và phản đối là gì?
-1. Khi nào bạn nên bọc checked exception trong unchecked?
-1. Exception chaining là gì và tại sao quan trọng?
+<details>
+<summary><strong>Tại sao Java bao gồm checked exception? Lập luận ủng hộ và phản đối là gì?</strong></summary>
+
+**A:** **Ủng hộ**: Compiler buộc caller phải xử lý hoặc declare — "fail loudly" khi bỏ sót error handling, phù hợp I/O operations có thể fail. **Phản đối**: Verbose, thường bị "swallow" bằng `catch(Exception e){}` vô nghĩa; spread qua nhiều layer (DAO → Service → Controller); không phù hợp với lambda (Functional interfaces không khai báo checked exception). Xu hướng hiện đại: wrap trong unchecked RuntimeException và xử lý ở global @ExceptionHandler.
+
+</details>
+
+<details>
+<summary><strong>Khi nào bạn nên bọc checked exception trong unchecked?</strong></summary>
+
+**A:** Bọc khi: (1) Exception là implementation detail không nên leak qua API (JPA wrap `SQLException` thành `DataAccessException`). (2) Caller không thể xử lý meaningful — re-throw vô nghĩa. (3) Dùng trong functional/lambda context — `CheckedFunction` workaround xấu. Pattern: `throw new ServiceException("Failed to read config", e)` — preserve original exception làm cause để không mất stack trace.
+
+</details>
+
+<details>
+<summary><strong>Exception chaining là gì và tại sao quan trọng?</strong></summary>
+
+**A:** Exception chaining: khi wrap exception, pass original làm cause: `new RuntimeException("message", originalException)`. Đảm bảo root cause không bị mất — `getCause()` và stack trace đầy đủ giúp debug. Không chain: chỉ thấy high-level exception, không biết nguyên nhân gốc rễ. Anti-pattern: `catch(SQLException e) { throw new ServiceException("error"); }` — mất nguyên nhân. Luôn: `throw new ServiceException("error", e)`.
+
+</details>

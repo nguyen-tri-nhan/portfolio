@@ -69,6 +69,33 @@ Value object bất biến (Money, UserId) phòng tránh cả lớp bug threading
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Encapsulation khác information hiding như thế nào?
-1. Tại sao immutable class mặc định thread-safe?
-1. Vấn đề gì xảy ra khi trả về trực tiếp field collection có thể thay đổi?
+<details>
+<summary><strong>Encapsulation khác information hiding như thế nào?</strong></summary>
+
+**A:** **Encapsulation**: kỹ thuật bundling data và behavior vào cùng class, với access modifier (private/protected/public) kiểm soát truy cập — *cơ chế*. **Information hiding**: nguyên tắc thiết kế — ẩn implementation detail, chỉ expose interface cần thiết — *mục tiêu*. Encapsulation là công cụ để đạt information hiding. Ví dụ: private field + getter/setter là encapsulation; nhưng nếu setter expose toàn bộ internal state → encapsulation nhưng không information hiding.
+
+</details>
+
+<details>
+<summary><strong>Tại sao immutable class mặc định thread-safe?</strong></summary>
+
+**A:** Immutable object không có state mutation sau khi khởi tạo → không có race condition khi nhiều thread cùng đọc cùng lúc — không cần synchronization. String, Integer, LocalDate trong Java là immutable và thread-safe. Điều kiện immutable: tất cả fields phải `final`, không có setter, fields mutable (collection) phải defensive copy trong constructor. **Shared-nothing** là cách scale dễ nhất: immutable data pass between threads.
+
+</details>
+
+<details>
+<summary><strong>Vấn đề gì xảy ra khi trả về trực tiếp field collection có thể thay đổi?</strong></summary>
+
+**A:** Caller nhận reference đến internal collection, có thể modify → phá vỡ invariant của class:
+```java
+public List<String> getItems() { return this.items; } // unsafe!
+cart.getItems().clear(); // xóa internal state!
+```
+Fix: trả về **defensive copy** hoặc **unmodifiable view**:
+```java
+return Collections.unmodifiableList(this.items); // view, thay đổi ném UnsupportedOperationException
+return new ArrayList<>(this.items); // deep copy
+return List.copyOf(this.items); // Java 10+, immutable copy
+```
+
+</details>

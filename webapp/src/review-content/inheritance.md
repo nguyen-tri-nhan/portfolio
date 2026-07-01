@@ -96,6 +96,23 @@ Trong Spring, tránh subclass các framework class trừ khi tài liệu cho ph�
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Diamond problem là gì và Java giải quyết nó thế nào?
-1. Khi nào inheritance phù hợp hơn composition?
-1. Liskov Substitution Principle có ý nghĩa gì trong thực tế?
+<details>
+<summary><strong>Diamond problem là gì và Java giải quyết nó thế nào?</strong></summary>
+
+**A:** Diamond problem: class D inherit từ B và C, cả B và C đều inherit từ A có method `foo()` — D inherit version nào? Java giải quyết: (1) **Không cho phép extend nhiều class** — chỉ single inheritance cho class. (2) **Multiple interface**: nếu B và C là interface và cùng có default method `foo()` → compile error trong D, buộc D phải override và specify rõ: `B.super.foo()` hoặc implementation riêng. Java ưu tiên class > interface, specific > general.
+
+</details>
+
+<details>
+<summary><strong>Khi nào inheritance phù hợp hơn composition?</strong></summary>
+
+**A:** Inheritance phù hợp khi có quan hệ **"is-a" rõ ràng** và subclass thực sự là specialization của parent — không phải chỉ muốn reuse code. Ví dụ: `Dog extends Animal`, `AdminUser extends User`. Composition phù hợp hơn khi: muốn reuse behavior mà không có "is-a" relationship, muốn swap behavior runtime, tránh tight coupling với parent implementation. Rule: **favor composition over inheritance** (GoF). Composition linh hoạt hơn, testable hơn.
+
+</details>
+
+<details>
+<summary><strong>Liskov Substitution Principle có ý nghĩa gì trong thực tế?</strong></summary>
+
+**A:** LSP: object của subtype phải có thể thay thế object của supertype mà không làm hỏng chương trình. Thực tế: (1) Subclass không nên strengthen precondition (yêu cầu input chặt hơn parent). (2) Subclass không nên weaken postcondition (return ít đảm bảo hơn parent). (3) Ví dụ vi phạm: `Square extends Rectangle` — setWidth trên Square cũng change height → code expect Rectangle behavior bị hỏng. Vi phạm LSP thường xuất hiện khi inheritance được dùng cho code reuse thay vì "is-a" relationship.
+
+</details>

@@ -1005,5 +1005,46 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
         "subs": []
       }
     ]
+  },
+  {
+    "title": "12. Java Versions",
+    "icon": "☕",
+    "topics": [
+      {
+        "name": "Version History Overview",
+        "file": "java-version-history",
+        "subs": []
+      },
+      {
+        "name": "Java 7 & 8 (Lambda, Stream, Optional)",
+        "file": "java-7-8",
+        "subs": []
+      },
+      {
+        "name": "Java 9–11 (Modules, var, HTTP Client)",
+        "file": "java-9-11",
+        "subs": []
+      },
+      {
+        "name": "Java 12–16 (Records, Text Blocks, Patterns)",
+        "file": "java-12-16",
+        "subs": []
+      },
+      {
+        "name": "Java 17 LTS (Sealed Classes)",
+        "file": "java-17",
+        "subs": []
+      },
+      {
+        "name": "Java 21 LTS (Virtual Threads)",
+        "file": "java-21",
+        "subs": []
+      },
+      {
+        "name": "Java 22–25 (Gatherers, Structured Concurrency)",
+        "file": "java-22-25",
+        "subs": []
+      }
+    ]
   }
 ];

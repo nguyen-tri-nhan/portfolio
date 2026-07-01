@@ -58,6 +58,23 @@ Trong phỏng vấn mô tả quy trình: 1) EXPLAIN slow query, 2) tìm type=ALL
 
 ## Câu Hỏi Phỏng Vấn
 
-1. type=ALL trong EXPLAIN có nghĩa gì?
-1. Covering index là gì và verify thế nào trong EXPLAIN?
-1. Fix query có "Using filesort" trong Extra column thế nào?
+<details>
+<summary><strong>type=ALL trong EXPLAIN có nghĩa gì?</strong></summary>
+
+**A:** `type=ALL` = **full table scan** — MySQL đọc tất cả row trong table. Thường do: không có index phù hợp, WHERE condition không selective, query quá rộng. Xem cột `rows`: ước tính số row được scan — 10 triệu row × ALL = rất chậm. Fix: kiểm tra `key` column (null = không dùng index), thêm index cho WHERE columns, check nếu function wrap column cản trở index: `WHERE YEAR(created_at)=2024` → index không dùng được; sửa: `WHERE created_at BETWEEN '2024-01-01' AND '2024-12-31'`.
+
+</details>
+
+<details>
+<summary><strong>Covering index là gì và verify thế nào trong EXPLAIN?</strong></summary>
+
+**A:** Covering index: index chứa tất cả column cần thiết (WHERE + SELECT + ORDER BY) — không cần access table. Verify trong EXPLAIN: `Extra` column hiện `Using index` (MySQL) hoặc `Index Only Scan` (PostgreSQL) thay vì `Using where` + table lookup. Ví dụ: query `SELECT name FROM users WHERE email=?` với index `(email, name)` → covering index; nếu index chỉ có `(email)` → phải fetch `name` từ table (`Using where`).
+
+</details>
+
+<details>
+<summary><strong>Fix query có "Using filesort" trong Extra column thế nào?</strong></summary>
+
+**A:** `Using filesort`: MySQL sort trong memory hoặc disk thay vì dùng index order — tốn kém. Fix: tạo index khớp ORDER BY clause. Ví dụ: `ORDER BY created_at DESC` → index `(created_at)`. Kết hợp WHERE + ORDER BY: `WHERE user_id=? ORDER BY created_at` → index `(user_id, created_at)`. Nếu query chọn ít row rồi sort: filesort có thể OK với ít data. Kết hợp với LIMIT: `ORDER BY ... LIMIT 10` với index sẽ không filesort toàn bộ result.
+
+</details>

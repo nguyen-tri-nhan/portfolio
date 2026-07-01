@@ -77,6 +77,23 @@ Nếu bạn dùng OSGi, application server với classloader isolation, hoặc s
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa PermGen và Metaspace là gì?
-1. Nguyên nhân nào gây ra OutOfMemoryError: Metaspace?
-1. Spring AOP ảnh hưởng đến Metaspace như thế nào?
+<details>
+<summary><strong>Sự khác biệt giữa PermGen và Metaspace là gì?</strong></summary>
+
+**A:** **PermGen** (Java 7-): cố định size trong heap (default 64-256MB), lưu class metadata, static data, interned strings. Dễ gây `OutOfMemoryError: PermGen space`. **Metaspace** (Java 8+): native memory thay vì heap — size chỉ giới hạn bởi system memory (hoặc `-XX:MaxMetaspaceSize`). Class metadata vẫn ở đây; interned strings chuyển sang heap. Không còn PermGen OOM vì config; nhưng nếu không set MaxMetaspaceSize, có thể dùng hết native memory.
+
+</details>
+
+<details>
+<summary><strong>Nguyên nhân nào gây ra OutOfMemoryError: Metaspace?</strong></summary>
+
+**A:** (1) **Class loader leak**: ClassLoader không được GC (vẫn có strong reference) → tất cả class nó load vẫn trong Metaspace. Thường xảy ra với framework dynamic class generation (CGLIB, reflection heavy code). (2) **Dynamic class generation không kiểm soát**: Groovy, CGLIB, ByteBuddy tạo quá nhiều class. (3) **MaxMetaspaceSize quá nhỏ** cho ứng dụng thực sự cần nhiều class. Debug: `jcmd <pid> VM.class_stats | sort -k2 -rn` để xem class count.
+
+</details>
+
+<details>
+<summary><strong>Spring AOP ảnh hưởng đến Metaspace như thế nào?</strong></summary>
+
+**A:** Spring AOP tạo **CGLIB proxy** cho mỗi bean cần proxy (`@Transactional`, `@Cacheable`, `@Async`, custom aspect). Mỗi proxy là một class mới trong Metaspace. Với ứng dụng lớn (500+ bean được proxy), Metaspace usage tăng đáng kể. JDK proxy (chỉ cho interface) nhẹ hơn CGLIB (generate subclass). `proxyTargetClass=false` prefer JDK proxy khi có thể. Theo dõi: `/actuator/metrics/jvm.memory.used?tag=area:nonheap`.
+
+</details>

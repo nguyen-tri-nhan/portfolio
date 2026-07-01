@@ -83,6 +83,23 @@ Luôn định nghĩa <code>FetchType.LAZY</code> trên collection và associatio
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa EAGER và LAZY fetching là gì?
-1. Dirty checking trong Hibernate là gì?
-1. JPA first-level cache hoạt động thế nào?
+<details>
+<summary><strong>Sự khác biệt giữa EAGER và LAZY fetching là gì?</strong></summary>
+
+**A:** **EAGER**: quan hệ được load **cùng lúc** khi load entity — luôn có data, nhưng có thể load data không cần thiết (N+1 problem, unnecessary JOIN). **LAZY**: quan hệ chỉ được load **khi truy cập** — proxy được inject, SQL issue khi access. Vấn đề LAZY: nếu truy cập ngoài transaction (LazyInitializationException). JPA default: `@ManyToOne`, `@OneToOne` = EAGER; `@OneToMany`, `@ManyToMany` = LAZY. Best practice: tất cả LAZY, fetch explicitly khi cần bằng JOIN FETCH hoặc EntityGraph.
+
+</details>
+
+<details>
+<summary><strong>Dirty checking trong Hibernate là gì?</strong></summary>
+
+**A:** Khi entity được load trong persistence context (managed state), Hibernate giữ **snapshot** của trạng thái ban đầu. Khi flush (commit hoặc explicit flush), Hibernate so sánh current state với snapshot — nếu khác → tự động generate UPDATE SQL. Không cần gọi `save()` hay `update()` cho managed entity. Overhead: so sánh tất cả field của tất cả managed entity trước flush. Tối ưu: `@DynamicUpdate` chỉ UPDATE changed column; hạn chế số managed entity trong session.
+
+</details>
+
+<details>
+<summary><strong>JPA first-level cache hoạt động thế nào?</strong></summary>
+
+**A:** **First-level cache** (L1) là **persistence context** — map từ entity ID đến entity instance. Trong cùng transaction, `em.find(User.class, 1L)` lần đầu → hit DB; lần hai → return từ cache, không query DB. Cache scope: một transaction/EntityManager — không share giữa transaction. Hệ quả: trong cùng transaction, modify entity → close entity manager → next transaction thấy DB state (không thấy modification nếu không commit). L2 cache (optional, EHCache/Caffeine) share giữa transaction.
+
+</details>

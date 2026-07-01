@@ -114,6 +114,34 @@ public class GlobalExceptionHandler {
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Domain exception tùy chỉnh nên là checked hay unchecked? Tại sao?
-1. Làm thế nào để map custom exception sang HTTP status code trong Spring?
-1. Rủi ro của việc đặt business logic trong constructor của exception là gì?
+<details>
+<summary><strong>Domain exception tùy chỉnh nên là checked hay unchecked? Tại sao?</strong></summary>
+
+**A:** **Unchecked (RuntimeException)** là best practice hiện đại: (1) Caller không bị buộc handle — exception thường lan lên đến global handler. (2) Phù hợp với functional programming (lambda). (3) Không pollute method signatures với `throws`. (4) Spring, JPA, Hibernate đều dùng unchecked exception. Checked chỉ hợp lý cho recoverable scenario mà caller *thực sự* có thể handle (ví dụ `FileNotFoundException` — caller có thể prompt user chọn file khác).
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để map custom exception sang HTTP status code trong Spring?</strong></summary>
+
+**A:** Dùng `@ResponseStatus` trên exception class:
+```java
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class ResourceNotFoundException extends RuntimeException { ... }
+```
+Hoặc trong `@ControllerAdvice` với `@ExceptionHandler` để control response body:
+```java
+@ExceptionHandler(ResourceNotFoundException.class)
+public ResponseEntity<ErrorResponse> handle(ResourceNotFoundException e) {
+    return ResponseEntity.status(404).body(new ErrorResponse(e.getMessage()));
+}
+```
+
+</details>
+
+<details>
+<summary><strong>Rủi ro của việc đặt business logic trong constructor của exception là gì?</strong></summary>
+
+**A:** (1) **Exception trong exception constructor** → throw exception khi xây dựng exception → NullPointerException hoặc IllegalArgumentException bị throw thay vì exception gốc, che giấu nguyên nhân thực. (2) **Side effects** (log, network call) trong exception constructor → không control được timing, ngăn exception được dùng làm test helper. (3) **Performance**: constructor phức tạp được gọi mỗi lần throw, kể cả trong hot path. Giải pháp: exception chỉ nên giữ message và cause, không làm gì thêm.
+
+</details>

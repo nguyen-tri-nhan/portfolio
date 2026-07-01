@@ -49,6 +49,23 @@ try (InputStream in  = new FileInputStream("src.bin");
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Byte stream và char stream khác nhau thế nào?
-1. BufferedReader bổ sung gì cho FileReader?
-1. Điều gì xảy ra nếu quên đóng stream?
+<details>
+<summary><strong>Byte stream và char stream khác nhau thế nào?</strong></summary>
+
+**A:** **Byte stream** (`InputStream/OutputStream`) — đọc/ghi raw bytes, dùng cho binary data (image, serialized object). **Char stream** (`Reader/Writer`) — đọc/ghi characters với charset encoding, dùng cho text. `InputStreamReader` bridge byte→char với charset chỉ định. Lỗi phổ biến: đọc text file bằng byte stream → hỏng ký tự UTF-8 multi-byte. Luôn chỉ định charset rõ ràng: `StandardCharsets.UTF_8`.
+
+</details>
+
+<details>
+<summary><strong>BufferedReader bổ sung gì cho FileReader?</strong></summary>
+
+**A:** `FileReader` đọc từng ký tự → mỗi `read()` là một system call tốn kém. `BufferedReader` wrap với in-memory buffer (default 8KB): đọc bulk từ disk vào buffer, phục vụ từ buffer — giảm số system call đáng kể. Ngoài ra có `readLine()` convenience method. Rule: **luôn buffer I/O stream**. Java 11+: `Files.readString()` và `Files.lines()` tự buffer nội bộ.
+
+</details>
+
+<details>
+<summary><strong>Điều gì xảy ra nếu quên đóng stream?</strong></summary>
+
+**A:** **Resource leak**: file descriptor bị chiếm → hết fd → `Too many open files` IOException. Network connection không đóng → port exhaustion. Dữ liệu ghi có thể không flush. Giải pháp: **try-with-resources** (Java 7+) tự động gọi `close()` dù exception hay không — stream phải implement `AutoCloseable`. Nếu cả body lẫn close() ném exception → body exception được giữ, close exception bị suppressed.
+
+</details>

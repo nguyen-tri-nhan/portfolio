@@ -49,6 +49,34 @@ Viết unit test cho: business logic, edge case, error path, domain rule. Không
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Test pyramid là gì và tại sao quan trọng?
-1. AAA pattern là gì?
-1. Điều gì KHÔNG nên unit test?
+<details>
+<summary><strong>Unit test tốt có những đặc điểm nào?</strong></summary>
+
+**A:** **F.I.R.S.T** principles: **F**ast (run trong ms, không I/O), **I**solated (không depend vào external system, không shared state giữa tests), **R**epeatable (cùng result mỗi lần run, bất kể environment), **S**elf-validating (assert clearly pass/fail, không cần manual check), **T**imely (viết cùng lúc với code, không sau). Thêm: **one assertion per test** (hoặc ít nhất một concept per test), **descriptive name** (`givenValidUser_whenSave_thenReturnId`), **AAA pattern** (Arrange, Act, Assert). Test nhỏ, fast, không depend vào nhau.
+
+</details>
+
+<details>
+<summary><strong>Test coverage 100% có nghĩa là code không có bug không?</strong></summary>
+
+**A:** **Không** — 100% line coverage chỉ nghĩa là mọi line được execute ít nhất một lần, không đảm bảo đúng behavior. Vấn đề: (1) Test không có meaningful assertion. (2) Branch coverage thấp — test một path nhưng không test branch khác. (3) Không test edge cases (null, empty, boundary values). (4) Integration issues không được cover bởi unit test. (5) Race conditions, memory leak, performance không được detect. Coverage là **necessary but not sufficient** — 70-80% meaningful coverage > 100% coverage với bad tests. Focus: mutation testing (PIT) để verify test quality.
+
+</details>
+
+<details>
+<summary><strong>Given-When-Then (GWT) pattern là gì?</strong></summary>
+
+**A:** GWT (BDD-style) structure test để rõ ràng: **Given** (Arrange): setup preconditions, test data, mocks. **When** (Act): execute action under test. **Then** (Assert): verify expected outcome. Ví dụ:
+```java
+@Test
+void givenInsufficientFunds_whenWithdraw_thenThrowException() {
+    // Given
+    Account account = new Account(50.0);
+    // When / Then
+    assertThrows(InsufficientFundsException.class,
+        () -> account.withdraw(100.0));
+}
+```
+Benefit: test là executable documentation — đọc test biết behavior. Thay vì AAA comment, dùng GWT style cho BDD test với Cucumber/Serenity. Nhất quán hơn khi có tên test method follow "given_when_then".
+
+</details>

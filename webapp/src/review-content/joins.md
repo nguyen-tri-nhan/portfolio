@@ -60,6 +60,34 @@ LEFT JOIN với NULL check là pattern phổ biến "tìm bản ghi không có b
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa LEFT JOIN và INNER JOIN là gì?
-1. Làm thế nào để tìm hàng trong Bảng A không có khớp trong Bảng B?
-1. Tích Descartes là gì và khi nào có thể vô tình xảy ra?
+<details>
+<summary><strong>Sự khác biệt giữa LEFT JOIN và INNER JOIN là gì?</strong></summary>
+
+**A:** **INNER JOIN**: chỉ trả về row có match ở cả hai table. **LEFT JOIN** (LEFT OUTER JOIN): trả về tất cả row từ table bên trái; nếu không có match bên phải → column bên phải là NULL. Ví dụ: `SELECT u.name, o.id FROM users u LEFT JOIN orders o ON u.id=o.user_id` → trả về tất cả user kể cả user chưa có đơn hàng (order_id = NULL). INNER JOIN = "chỉ user có đơn hàng". Dùng LEFT JOIN khi muốn giữ tất cả record của table chính.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để tìm hàng trong Bảng A không có khớp trong Bảng B?</strong></summary>
+
+**A:** Dùng **LEFT JOIN + IS NULL** pattern:
+```sql
+SELECT a.* FROM table_a a
+LEFT JOIN table_b b ON a.id = b.a_id
+WHERE b.a_id IS NULL;
+```
+Hoặc `NOT EXISTS`:
+```sql
+SELECT * FROM table_a a
+WHERE NOT EXISTS (SELECT 1 FROM table_b b WHERE b.a_id = a.id);
+```
+Hoặc `NOT IN` (cẩn thận: nếu subquery có NULL → NOT IN trả về empty). LEFT JOIN + IS NULL thường được optimizer tối ưu tốt nhất.
+
+</details>
+
+<details>
+<summary><strong>Tích Descartes là gì và khi nào có thể vô tình xảy ra?</strong></summary>
+
+**A:** Tích Descartes (Cartesian product): kết hợp mỗi row của table A với mỗi row của table B — N×M rows. Vô tình xảy ra khi: (1) Quên ON condition trong JOIN: `FROM a, b` hoặc `FROM a JOIN b` không có ON — cross join tất cả. (2) JOIN condition sai/không đủ selective: `ON a.year = b.year` khi nhiều row có cùng year. (3) Aggregate nhiều JOIN: mỗi 1-to-many JOIN nhân rows — dùng `SUM` có thể bị double-count (aggregate join anti-pattern).
+
+</details>

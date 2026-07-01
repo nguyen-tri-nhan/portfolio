@@ -141,6 +141,33 @@ Tích hợp Actuator với Prometheus: thêm dependency <code>micrometer-registr
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Spring Boot Actuator expose endpoint nào theo mặc định?
-1. Làm thế nào để tạo custom health indicator?
-1. Làm thế nào để bảo mật các Actuator endpoint?
+<details>
+<summary><strong>Spring Boot Actuator expose endpoint nào theo mặc định?</strong></summary>
+
+**A:** Mặc định expose **tất cả endpoint qua JMX** nhưng chỉ **/health** và **/info** qua HTTP. Để expose thêm: `management.endpoints.web.exposure.include=health,info,metrics,prometheus`. Không expose `/env` và `/beans` public vì chúng lộ sensitive config và bean structure của application.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để tạo custom health indicator?</strong></summary>
+
+**A:** Implement interface `HealthIndicator` và annotate `@Component`:
+```java
+@Component
+public class DbHealthIndicator implements HealthIndicator {
+    public Health health() {
+        try { checkDb(); return Health.up().build(); }
+        catch (Exception e) { return Health.down().withDetail("error", e.getMessage()).build(); }
+    }
+}
+```
+Spring Boot tự động include vào `/actuator/health`. Detail chỉ hiển thị khi `management.endpoint.health.show-details=always`.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để bảo mật các Actuator endpoint?</strong></summary>
+
+**A:** Hai hướng: (1) **Network level** — chạy Actuator trên port riêng (`management.server.port=8081`) và block port đó bằng firewall. (2) **Spring Security** — thêm rule `EndpointRequest.toAnyEndpoint().hasRole("ADMIN")`. Best practice: `/health/liveness` và `/health/readiness` public cho K8s probe; `/env`, `/beans`, `/heapdump` chỉ cho authenticated admin.
+
+</details>

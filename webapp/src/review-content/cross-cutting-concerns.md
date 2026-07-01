@@ -132,6 +132,23 @@ Xác định những gì KHÔNG thuộc về business method và chuyển sang a
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Cross-cutting concern là gì? Đặt tên ba ví dụ trong Spring app điển hình.
-1. Aspect cải thiện maintainability code thế nào?
-1. Nhược điểm của việc lạm dụng AOP là gì?
+<details>
+<summary><strong>Cross-cutting concern là gì? Đặt tên ba ví dụ trong Spring app điển hình.</strong></summary>
+
+**A:** Cross-cutting concern là functionality cắt ngang nhiều module/layer, không thuộc business logic của bất kỳ module cụ thể nào. Ba ví dụ phổ biến trong Spring: (1) **Logging**: log method call, parameter, thời gian thực thi. (2) **Security/Authorization**: check quyền trước khi thực thi method. (3) **Transaction management**: bắt đầu/commit/rollback transaction xung quanh service method. Thêm: caching, audit trail, performance monitoring, retry.
+
+</details>
+
+<details>
+<summary><strong>Aspect cải thiện maintainability code thế nào?</strong></summary>
+
+**A:** Không có AOP: code logging/security/transaction rải rác khắp mọi class → khi cần thay đổi (đổi log format, thêm security check) phải sửa hàng chục file. Với Aspect: tập trung một nơi, thêm/sửa behavior mà không sửa business code. Ví dụ: thêm execution time logging cho tất cả service method chỉ cần thêm một `@Around` aspect — business code không thay đổi. Separation of concerns → dễ test business logic độc lập.
+
+</details>
+
+<details>
+<summary><strong>Nhược điểm của việc lạm dụng AOP là gì?</strong></summary>
+
+**A:** (1) **Debug khó**: behavior xảy ra "ẩn" — stack trace qua proxy layers phức tạp. (2) **Performance overhead**: proxy invocation cho mỗi method call. (3) **Self-invocation không hoạt động**: `this.method()` bypass proxy → `@Transactional` self-invocation bug phổ biến. (4) **Khó predict behavior**: developer mới không biết có aspect nào đang chạy. Rule: chỉ dùng AOP cho cross-cutting concern thực sự, không dùng cho business logic.
+
+</details>

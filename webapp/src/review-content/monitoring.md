@@ -47,6 +47,23 @@ Bắt đầu với phương pháp RED: Request Rate, Error Rate, Duration. Thêm
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Ba trụ cột của observability là gì?
-1. Bốn Golden Signal của Google là gì?
-1. Micrometer tích hợp với Prometheus thế nào?
+<details>
+<summary><strong>Ba trụ cột của observability là gì?</strong></summary>
+
+**A:** (1) **Metrics**: số đo định lượng theo thời gian — RPS, latency p99, error rate, CPU, memory. Prometheus + Grafana. Câu hỏi: "Hệ thống đang hoạt động thế nào?" (2) **Logs**: sự kiện text có timestamp và context — request log, error log, audit. ELK stack, Loki. Câu hỏi: "Chuyện gì đã xảy ra?" (3) **Traces**: theo dõi request qua nhiều service — thấy latency của từng step. Jaeger, Zipkin, Tempo. Câu hỏi: "Chậm ở đâu?" Ba trụ cột bổ sung nhau: metrics alert, logs explain, traces locate.
+
+</details>
+
+<details>
+<summary><strong>Bốn Golden Signal của Google là gì?</strong></summary>
+
+**A:** (1) **Latency**: thời gian xử lý request — cả thành công lẫn lỗi. (2) **Traffic**: load của hệ thống — RPS, message/s. (3) **Errors**: tỷ lệ request fail — 5xx rate, exception rate. (4) **Saturation**: mức độ "đầy" của resource — CPU%, memory%, thread pool queue depth, disk I/O. Nếu chỉ monitor 4 metric này, bạn đã có coverage tốt cho hầu hết incident. Dashboard chuẩn: latency histogram (p50/p95/p99), error rate %, RPS, CPU/memory.
+
+</details>
+
+<details>
+<summary><strong>Micrometer tích hợp với Prometheus thế nào?</strong></summary>
+
+**A:** Micrometer là **metrics facade** — abstract layer giống SLF4J cho logging. Spring Boot Actuator dùng Micrometer để collect metrics. Thêm `micrometer-registry-prometheus` dependency → Micrometer export metrics theo format Prometheus. Endpoint `/actuator/prometheus` expose tất cả metrics dạng text. Prometheus cấu hình scrape endpoint này theo interval (15s). Grafana query Prometheus để visualize. Custom metric: `Counter.builder("order.created").tag("status", "success").register(meterRegistry).increment()`.
+
+</details>

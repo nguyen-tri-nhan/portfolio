@@ -42,6 +42,23 @@ Trong Kubernetes: không đặt <code>-Xmx</code> = 100% memory container — JV
 
 ## Câu Hỏi Phỏng Vấn
 
-1. -Xms và -Xmx tại sao nên đặt bằng nhau trong production?
-1. Khi nào dùng ZGC thay vì G1GC?
-1. -XX:+UseContainerSupport làm gì?
+<details>
+<summary><strong>-Xms và -Xmx tại sao nên đặt bằng nhau trong production?</strong></summary>
+
+**A:** Khi `-Xms < -Xmx`, JVM mở rộng heap khi cần — heap resize là **Stop-The-World operation** và tốn thời gian. Đặt bằng nhau (ví dụ `-Xms2g -Xmx2g`): JVM cấp phát toàn bộ ngay từ đầu, không resize, memory footprint predictable cho K8s resource limits. Nhược điểm: container chiếm memory ngay kể cả khi idle. Trong production, stability > memory efficiency.
+
+</details>
+
+<details>
+<summary><strong>Khi nào dùng ZGC thay vì G1GC?</strong></summary>
+
+**A:** Chọn **ZGC** (Java 17+) khi cần pause time < 1ms bất kể heap size — trading, gaming, real-time streaming, HFT. G1GC đủ tốt cho hầu hết microservice với pause target 200ms. ZGC dùng colored pointers và load barriers cho concurrent marking/compaction, không stop app thread lâu. Trade-off: ZGC tốn CPU nhiều hơn G1GC cho concurrent work. Chạy benchmark với workload thực tế trước khi quyết định.
+
+</details>
+
+<details>
+<summary><strong>-XX:+UseContainerSupport làm gì?</strong></summary>
+
+**A:** `-XX:+UseContainerSupport` (default ON từ JDK 10): cho phép JVM đọc **container resource limits** (Docker/K8s CPU và memory limit) thay vì đọc host machine resource. Không có flag này (JDK < 10): JVM thấy host có 32GB RAM → set heap = 25% × 32GB = 8GB → OOMKilled khi container chỉ limit 512MB. Với flag: JVM thấy container limit 512MB → set heap hợp lý. Trong K8s: luôn set memory limit và để JVM tự calculate heap từ container limit.
+
+</details>

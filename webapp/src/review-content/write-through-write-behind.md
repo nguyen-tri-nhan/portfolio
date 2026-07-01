@@ -78,6 +78,23 @@ Mặc định Write-Through cho hầu hết Spring app dùng <code>@CachePut</co
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Rủi ro của Write-Behind caching là gì?
-1. Khi nào bạn dùng Write-Around thay vì Write-Through?
-1. Làm thế nào để duy trì consistency giữa cache và DB trong Write-Through?
+<details>
+<summary><strong>Write-through và write-behind (write-back) cache khác nhau thế nào?</strong></summary>
+
+**A:** **Write-through**: write đến **cả cache và database đồng thời** — data luôn consistent giữa cache và DB. Mỗi write có latency của DB. **Write-behind (write-back)**: write chỉ đến **cache trước**, database được update **async sau** (batched) — faster writes, nhưng data loss nếu cache fail trước khi flush. Use case: write-through cho financial/critical data (consistency quan trọng). Write-behind cho high-write-throughput, loss-tolerant (analytics events, logs, leaderboard). Redis hỗ trợ cả hai qua custom logic — native write-behind qua Lua scripts hoặc Redis keyspace notifications.
+
+</details>
+
+<details>
+<summary><strong>Write-around cache là gì?</strong></summary>
+
+**A:** Write-around: write trực tiếp vào **database**, bỏ qua cache hoàn toàn. Data được load vào cache khi có read request (read-through/cache-aside). Dùng khi: write-once, read-never (or rarely) data — ví dụ log events, historical records. Tránh "cache pollution" — không cache data hiếm khi được read. Benefit: giảm cache space cho data không cần thiết. Trade-off: read sau write không thấy trong cache → cache miss → read từ DB. Pattern: combine write-around với TTL-based eviction — eventual ly unused data expire khỏi cache.
+
+</details>
+
+<details>
+<summary><strong>Cache thundering herd trong write scenario là gì?</strong></summary>
+
+**A:** Khi cache entry expire và nhiều request cùng lúc miss → tất cả race đến DB để load — **thundering herd** hay **cache stampede**. Với write-through: giảm thundering herd vì cache luôn warm sau write. Fix cho cache-aside: (1) **Mutex/lock**: chỉ một request fetch từ DB, other wait và reuse result. (2) **Probabilistic refresh**: refresh cache một khoảng thời gian trước expiry (random, theo XFetch algorithm). (3) **Stale-while-revalidate**: return stale data cho request đến trong khi refresh async. Redis solution: `SET key value PX ttl NX` để check-and-set atomically.
+
+</details>

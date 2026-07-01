@@ -103,6 +103,32 @@ public class CheckoutService {
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa shallow clone và deep clone?
-1. Tại sao Cloneable được coi là broken trong Java?
-1. Khi nào dùng Prototype thay vì Factory?
+<details>
+<summary><strong>Prototype pattern và copy constructor khác nhau thế nào?</strong></summary>
+
+**A:** **Copy constructor**: constructor nhận instance cùng type để copy — `new User(existingUser)`. Coupling chặt với concrete class — người dùng phải biết concrete type. **Prototype pattern**: interface có `clone()` method — `existingUser.clone()` không cần biết concrete class. Cho phép client code làm việc với interface: `Cloneable obj; obj.clone()`. Java `Cloneable` interface + `Object.clone()` implement shallow copy; cần override để deep copy. Prototype hữu ích khi: nhiều concrete type, cần clone through interface reference, clone expensive object (copy thay vì re-initialize từ đầu).
+
+</details>
+
+<details>
+<summary><strong>Deep copy trong prototype thực hiện thế nào?</strong></summary>
+
+**A:** Java `Object.clone()` là **shallow copy** — reference fields trỏ cùng object. Deep copy: (1) Override `clone()` và manually clone từng mutable field. (2) Serialization: serialize → deserialize tạo completely independent copy (chậm hơn). (3) Copy constructor chaining: mỗi class có copy constructor gọi copy constructor của field class. Ví dụ:
+```java
+@Override
+public User clone() {
+    User clone = (User) super.clone(); // shallow
+    clone.address = this.address.clone(); // deep copy Address
+    clone.roles = new ArrayList<>(this.roles); // deep copy list
+    return clone;
+}
+```
+
+</details>
+
+<details>
+<summary><strong>Spring bean scope prototype thế nào?</strong></summary>
+
+**A:** Spring `@Scope("prototype")` trên bean: mỗi lần `getBean()` hoặc `@Autowired` → Spring tạo **instance mới**. Khác singleton (default): singleton tạo một lần, reuse. Dùng khi: bean có mutable state, không thread-safe, cần isolated state per use. Cẩn thận: inject prototype bean vào singleton → prototype chỉ được inject **một lần** (tại singleton init time). Fix: dùng `ObjectProvider<MyBean>` hoặc implement `ApplicationContextAware` để getBean() mỗi lần cần. Prototype bean không được destroyed bởi Spring — caller tự manage lifecycle.
+
+</details>

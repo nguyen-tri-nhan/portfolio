@@ -21,6 +21,23 @@ Trong Spring Boot ít khi viết raw I/O. Nhưng cần hiểu: <code>MultipartFi
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa java.io và java.nio là gì?
-1. Khi nào nên dùng NIO thay vì Blocking I/O?
-1. Selector trong Java NIO có vai trò gì?
+<details>
+<summary><strong>Sự khác biệt giữa java.io và java.nio là gì?</strong></summary>
+
+**A:** **java.io (blocking I/O)**: stream-oriented, blocking — thread block khi đọc/ghi. Đơn giản, dễ dùng, phù hợp throughput thấp. **java.nio**: buffer-oriented, non-blocking — channel + buffer model, Selector cho multiplexed I/O. Một thread có thể xử lý nhiều channel đồng thời qua Selector. NIO phức tạp hơn nhưng hiệu quả hơn khi cần xử lý nhiều concurrent connection với ít thread. Java 21 Virtual Threads làm blocking I/O scale như NIO mà code đơn giản hơn.
+
+</details>
+
+<details>
+<summary><strong>Khi nào nên dùng NIO thay vì Blocking I/O?</strong></summary>
+
+**A:** Dùng **NIO** khi: (1) Cần xử lý **hàng nghìn concurrent connection** với ít thread (chat server, game server, proxy). (2) Cần non-blocking operation với timeout. (3) Memory-mapped file cho file I/O performance cao. NIO phức tạp: ByteBuffer flip/clear, Selector event loop. **Blocking I/O** phù hợp khi: concurrent connection ít, code đơn giản hơn quan trọng, hoặc dùng Virtual Threads (Java 21+) — blocking code scale như NIO.
+
+</details>
+
+<details>
+<summary><strong>Selector trong Java NIO có vai trò gì?</strong></summary>
+
+**A:** **Selector** là multiplexer: một thread monitor **nhiều Channel** cùng lúc. Register channel với selector (kèm interest ops: OP_READ, OP_WRITE, OP_CONNECT, OP_ACCEPT). `selector.select()` block cho đến khi có channel ready — return set of `SelectionKey`. Duyệt keys, xử lý từng ready channel. Pattern: event loop trong một thread thay vì thread-per-connection. Nền tảng của Netty, Tomcat NIO connector, WebSocket server.
+
+</details>

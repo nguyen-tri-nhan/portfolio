@@ -83,6 +83,23 @@ Dùng AtomicInteger cho sequence generator, rate counter và connection pool siz
 
 ## Câu Hỏi Phỏng Vấn
 
-1. getAndIncrement() đảm bảo atomicity bằng cách nào?
-1. Sự khác biệt giữa updateAndGet và accumulateAndGet là gì?
-1. Trong tình huống nào AtomicInteger hoạt động kém hơn synchronized?
+<details>
+<summary><strong>getAndIncrement() đảm bảo atomicity bằng cách nào?</strong></summary>
+
+**A:** Dùng **CAS loop**: đọc value hiện tại v → tính v+1 → `compareAndSet(v, v+1)`; nếu fail (thread khác thay đổi) → retry. Map xuống CPU atomic instruction (`LOCK XADD` trên x86), không cần OS lock/context switch. JDK 9+ dùng `VarHandle.getAndAdd()` với ACQUIRE/RELEASE memory ordering đảm bảo visibility.
+
+</details>
+
+<details>
+<summary><strong>Sự khác biệt giữa updateAndGet và accumulateAndGet là gì?</strong></summary>
+
+**A:** `updateAndGet(UnaryOperator)` nhận current value, áp dụng function: `counter.updateAndGet(x -> x * 2)`. `accumulateAndGet(x, BinaryOperator)` kết hợp current value với argument bên ngoài: `counter.accumulateAndGet(5, Integer::sum)`. Cả hai return giá trị **sau** update; `getAndUpdate`/`getAndAccumulate` return **trước**. Function phải side-effect free vì có thể bị retry khi contention.
+
+</details>
+
+<details>
+<summary><strong>Trong tình huống nào AtomicInteger hoạt động kém hơn synchronized?</strong></summary>
+
+**A:** Khi **contention cực cao** (1000 thread cùng increment), CAS retry loop gây CPU spinning liên tục — waste CPU nhiều hơn `synchronized` (block thread, để OS schedule). Trong trường hợp đó, `LongAdder` tốt nhất. Ngoài ra: compound operation phức tạp với nhiều bước CAS → `synchronized` hoặc `ReentrantLock` đơn giản và ít bug hơn.
+
+</details>

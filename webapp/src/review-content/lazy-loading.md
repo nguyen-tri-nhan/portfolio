@@ -76,6 +76,23 @@ Pattern an toàn nhất: fetch chính xác những gì bạn cần trong query (
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Nguyên nhân LazyInitializationException và cách sửa là gì?
-1. Open Session in View anti-pattern là gì?
-1. Khi nào bạn dùng @EntityGraph thay vì JPQL JOIN FETCH?
+<details>
+<summary><strong>Nguyên nhân LazyInitializationException và cách sửa là gì?</strong></summary>
+
+**A:** Xảy ra khi truy cập LAZY association **ngoài persistence context** (sau transaction đã close). Ví dụ: `user.getOrders().size()` trong REST controller khi transaction đã kết thúc. Cách sửa: (1) **JOIN FETCH** trong query: `SELECT u FROM User u JOIN FETCH u.orders WHERE u.id=:id`. (2) **@EntityGraph**: `@EntityGraph(attributePaths={"orders"})` trên repository method. (3) Đổi sang EAGER (không khuyên — ảnh hưởng tất cả query). (4) DTO projection thay vì entity cho REST response.
+
+</details>
+
+<details>
+<summary><strong>Open Session in View anti-pattern là gì?</strong></summary>
+
+**A:** **OSIV**: giữ Hibernate session/EntityManager mở **suốt request** (kể cả rendering view/controller) — giải quyết LazyInitializationException bằng cách session vẫn active khi render. Anti-pattern vì: (1) DB connection bị giữ từ đầu đến cuối request — pool exhaustion. (2) N+1 queries xảy ra âm thầm trong view. (3) Logic DB leak sang tầng presentation. Spring Boot enable OSIV mặc định — tắt bằng `spring.jpa.open-in-view=false`, dùng DTO/projection thay thế.
+
+</details>
+
+<details>
+<summary><strong>Khi nào bạn dùng @EntityGraph thay vì JPQL JOIN FETCH?</strong></summary>
+
+**A:** `@EntityGraph` khi: (1) Muốn reuse đặc tả fetch plan mà không viết lại JPQL: đặt `@EntityGraph` trên nhiều repository method. (2) Muốn fetch theo attribute path phức tạp (nested): `attributePaths={"orders.items"}`. (3) Spring Data JPA method query không thể viết JOIN FETCH. **JOIN FETCH** khi: (1) Query có WHERE condition phức tạp cần tùy chỉnh. (2) Cần `DISTINCT` để tránh row duplication trong 1-to-many. (3) Kiểm soát fetch type per query một cách explicit.
+
+</details>

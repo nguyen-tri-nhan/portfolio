@@ -119,6 +119,23 @@ Khái niệm này là nền tảng lý thuyết của toàn bộ Java concurrenc
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Liệt kê các quy tắc happens-before trong JMM.
-1. synchronized có cung cấp happens-before không? Giải thích.
-1. Có happens-before giữa hai thread không đồng bộ hóa không?
+<details>
+<summary><strong>Liệt kê các quy tắc happens-before trong JMM.</strong></summary>
+
+**A:** Các quy tắc happens-before trong Java Memory Model: (1) **Program order**: action trước trong thread happens-before action sau. (2) **Monitor lock**: `unlock` happens-before `lock` kế tiếp trên cùng monitor. (3) **Volatile write**: write volatile variable happens-before read kế tiếp. (4) **Thread start**: `thread.start()` happens-before mọi action trong thread đó. (5) **Thread join**: tất cả action trong thread happens-before `thread.join()` return. (6) **Transitivity**: nếu A hb B và B hb C → A hb C.
+
+</details>
+
+<details>
+<summary><strong>synchronized có cung cấp happens-before không? Giải thích.</strong></summary>
+
+**A:** **Có**. Khi thread giải phóng monitor lock (`synchronized` block exit hoặc method return): tất cả action trước unlock **happens-before** tất cả action sau khi thread khác acquire cùng lock đó. Đảm bảo: mọi write trong synchronized block được flush lên main memory, mọi read sau khi acquire lock sẽ thấy update mới nhất. Đây là lý do synchronized cung cấp cả **mutual exclusion** lẫn **visibility guarantee**.
+
+</details>
+
+<details>
+<summary><strong>Có happens-before giữa hai thread không đồng bộ hóa không?</strong></summary>
+
+**A:** **Không** — nếu hai thread không share synchronization point (lock, volatile, thread join), không có happens-before giữa chúng. Hậu quả: thread B có thể không thấy write từ thread A (CPU cache, compiler reordering). Ví dụ classic: `flag` là non-volatile boolean, thread A set `flag=true`, thread B spin `while(!flag)` → B có thể loop mãi vì không thấy write. Fix: `volatile boolean flag` tạo happens-before.
+
+</details>

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Nhan Nguyen - Software Engineer</title>
+    <script>
+      // SPA redirect for GitHub Pages — encode the path into a query param
+      // and redirect to root so the React app can restore it.
+      // /review-v2 → /?/review-v2 → React restores → Router routes correctly
+      var l = window.location;
+      l.replace(
+        l.protocol + '//' + l.host + l.pathname.split('/').slice(0, 1).join('/') +
+        '/?/' + l.pathname.slice(1).replace(/&/g, '~and~') +
+        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash
+      );
+    </script>
+  </head>
+  <body></body>
+</html>

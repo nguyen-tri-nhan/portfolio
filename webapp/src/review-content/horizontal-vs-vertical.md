@@ -77,6 +77,23 @@ Luôn đặt <code>minReplicas: 2</code> cho HA. Scale trên metric cụ thể �
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Khi nào vertical scaling không còn hiệu quả?
-1. Service cần gì để hỗ trợ horizontal scaling?
-1. Kubernetes HPA quyết định khi nào scale thế nào?
+<details>
+<summary><strong>Khi nào vertical scaling không còn hiệu quả?</strong></summary>
+
+**A:** Vertical scaling (thêm RAM/CPU) có giới hạn vật lý và kinh tế: (1) **Hardware ceiling**: máy lớn nhất có giới hạn (AWS r6a.48xlarge: 192 vCPU, 1.5TB RAM). (2) **Cost**: máy to đắt hơn phi tuyến — 2x resource thường > 3x chi phí. (3) **Single point of failure**: một node không có HA. (4) **Downtime khi scale**: thường cần restart để resize. Khi traffic tăng 10x cần 10x resource → vertical không còn viable → horizontal.
+
+</details>
+
+<details>
+<summary><strong>Service cần gì để hỗ trợ horizontal scaling?</strong></summary>
+
+**A:** (1) **Stateless**: không lưu session state in-memory — dùng Redis/DB cho session. (2) **Idempotent**: request có thể retry khi LB re-route. (3) **External config**: không hardcode host/port — dùng env var hoặc config service. (4) **Health check endpoint**: LB cần để biết instance healthy. (5) **Externalize state**: DB, cache, message queue là shared state, không nằm trong instance. (6) **Distributed locking**: nếu cần lock, dùng Redis/ZooKeeper không phải in-memory.
+
+</details>
+
+<details>
+<summary><strong>Kubernetes HPA quyết định khi nào scale thế nào?</strong></summary>
+
+**A:** HPA (Horizontal Pod Autoscaler) periodically (default 15s) query metrics server: CPU usage, memory, hoặc custom metrics (RPS, queue length qua KEDA). Algorithm: `desiredReplicas = ceil(currentReplicas × currentMetricValue / targetMetricValue)`. Ví dụ: target CPU = 50%, hiện 80%, 3 pods → ceil(3 × 80/50) = ceil(4.8) = 5 pods. Scale-up: ngay khi metric vượt threshold. Scale-down: chờ 5 phút (cooldown) để tránh flapping.
+
+</details>

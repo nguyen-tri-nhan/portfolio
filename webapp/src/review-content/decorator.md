@@ -114,6 +114,23 @@ Trong Spring, dùng AOP-based decoration (@Cacheable, @Transactional) thay vì m
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Decorator khác Proxy thế nào?
-1. Khi nào dùng Decorator thay vì subclass?
-1. Java I/O stream dùng Decorator thế nào?
+<details>
+<summary><strong>Decorator khác Proxy thế nào?</strong></summary>
+
+**A:** **Decorator**: thêm behavior/responsibility mới, được compose từ bên ngoài bởi client, có thể stack nhiều decorator. Focus: enhancement. **Proxy**: control access đến subject — authentication, caching, lazy init, remote proxy. Focus: control. Decorator thường transparent (implement cùng interface, forward call); Proxy thường thay thế subject về phía client. Ranh giới mờ trong thực tế: `@Transactional` là Proxy (control), `BufferedInputStream` là Decorator (enhance).
+
+</details>
+
+<details>
+<summary><strong>Khi nào dùng Decorator thay vì subclass?</strong></summary>
+
+**A:** Dùng Decorator khi: (1) Muốn thêm responsibility **tại runtime** theo nhiều combination khác nhau — subclass tạo class explosion nếu có N feature × M variant. (2) Muốn compose từ bên ngoài mà không sửa original class. (3) Class bị final (không thể subclass). Ví dụ: Logger với timestamp decorator + json formatter decorator + file writer — 8 combination mà chỉ cần 3 decorator class thay vì 8 subclass.
+
+</details>
+
+<details>
+<summary><strong>Java I/O stream dùng Decorator thế nào?</strong></summary>
+
+**A:** `InputStream` là component interface. `FileInputStream` là concrete component. `BufferedInputStream`, `GZIPInputStream`, `DataInputStream` là concrete decorator — đều wrap một `InputStream` khác. Stack: `new DataInputStream(new BufferedInputStream(new GZIPInputStream(new FileInputStream(file))))` — đọc compressed, buffered binary file với type-aware API. Mỗi decorator thêm một layer behavior mà không sửa class kia.
+
+</details>

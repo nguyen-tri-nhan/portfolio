@@ -117,6 +117,23 @@ Dùng Temporal cho workflow chạy lâu cần durability, retry và visibility. 
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Vai trò của orchestrator trong orchestration saga là gì?
-1. Temporal khác message queue cho saga orchestration thế nào?
-1. Trade-off giữa orchestration và choreography là gì?
+<details>
+<summary><strong>Vai trò của orchestrator trong orchestration saga là gì?</strong></summary>
+
+**A:** **Orchestrator** là central service điều phối các bước của saga: gọi từng service theo thứ tự, handle response, quyết định bước tiếp theo hoặc trigger compensating transaction khi fail. Orchestrator biết toàn bộ flow — là source of truth về trạng thái saga. Ví dụ: `OrderOrchestrator` → gọi PaymentService → nếu thành công gọi InventoryService → nếu fail gọi CancelPaymentService (compensating). Pattern: saga state machine trong orchestrator.
+
+</details>
+
+<details>
+<summary><strong>Temporal khác message queue cho saga orchestration thế nào?</strong></summary>
+
+**A:** **Message queue** (RabbitMQ/Kafka): orchestrator gửi command, subscribe event — cần implement retry, timeout, state persistence manually. Code phức tạp khi saga có nhiều bước và compensating path. **Temporal.io**: workflow engine — code saga như sequential function nhưng durable (persist state tự động), built-in retry, timeout, compensation. Failure của worker process không mất state — Temporal replay lại workflow từ event history. Temporal đơn giản hóa saga orchestration code đáng kể.
+
+</details>
+
+<details>
+<summary><strong>Trade-off giữa orchestration và choreography là gì?</strong></summary>
+
+**A:** **Orchestration**: central control, easy to debug (một nơi xem flow), easy to add step, risk single point of failure/coupling. **Choreography**: decentralized, services không biết nhau (loose coupling), không có single orchestrator, harder to debug (trace event qua nhiều service), harder to understand full flow. Chọn orchestration khi: complex flow với nhiều compensating path, cần visibility; choreography khi: simple few-step flow, muốn maximum decoupling giữa service.
+
+</details>

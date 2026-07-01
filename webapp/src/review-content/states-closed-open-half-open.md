@@ -108,9 +108,35 @@ Thêm alert rule cho chuyển đổi trạng thái: CLOSED→OPEN nên gọi on-
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Mô tả ba trạng thái circuit breaker và sự chuyển đổi của chúng.
-1. Điều gì xảy ra với in-flight call khi circuit chuyển sang OPEN?
-1. Circuit breaker ở trạng thái OPEN bao lâu trước khi thử HALF_OPEN?
+<details>
+<summary><strong>Mô tả ba trạng thái của Circuit Breaker.</strong></summary>
+
+**A:** **CLOSED** (bình thường): request được forward đến service. Đếm failures trong sliding window. Nếu failure rate vượt threshold → chuyển sang OPEN. **OPEN** (circuit trip): request fail ngay lập tức (fast fail) — không gọi service. Sau `waitDurationInOpenState` (ví dụ 30s) → chuyển sang HALF-OPEN. **HALF-OPEN** (probe): cho phép N request thử (`permittedNumberOfCallsInHalfOpenState`). Nếu success rate OK → CLOSED. Nếu failure vẫn cao → OPEN lại. Mục đích: tránh cascade failure, allow service time to recover.
+
+</details>
+
+<details>
+<summary><strong>Fallback và circuit breaker kết hợp thế nào?</strong></summary>
+
+**A:** Circuit breaker OPEN → throw exception (CallNotPermittedException). Fallback method xử lý exception này — return degraded response thay vì propagate error đến user. Ví dụ: Product service down → CB OPEN → ProductFallback: return cached product list hoặc `"Service temporarily unavailable"`. Resilience4j:
+```java
+@CircuitBreaker(name="product", fallbackMethod="getProductsFallback")
+public List<Product> getProducts() { ... }
+
+private List<Product> getProductsFallback(Exception e) {
+    return cachedProducts; // or empty list
+}
+```
+Fallback cho phép partial functionality thay vì complete failure.
+
+</details>
+
+<details>
+<summary><strong>Khi nào circuit breaker không phù hợp?</strong></summary>
+
+**A:** Circuit breaker không phù hợp khi: (1) **Synchronous critical path**: payment, authentication — không thể fallback với degraded response, cần real answer. (2) **Internal errors** (bugs, validation fail): CB không giúp vì không phải transient failure. (3) **Rare failures**: nếu service rất reliable (<0.1% fail), CB overhead không worth it. (4) **Retry là đủ**: nếu retry giải quyết được (network hiccup), không cần CB. (5) **Batch processing**: không có real-time user waiting → timeout / dead letter queue phù hợp hơn. CB hữu ích nhất cho: external service dependencies với uncertain reliability.
+
+</details>
 
 ## Sơ Đồ Resilience4j State Transitions
 

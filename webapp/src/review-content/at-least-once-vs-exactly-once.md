@@ -63,6 +63,23 @@ Với hầu hết ứng dụng: dùng at-least-once + idempotent consumer (đơn
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa at-least-once và exactly-once delivery là gì?
-1. Kafka đạt exactly-once semantics thế nào?
-1. Tại sao at-least-once + idempotency là lựa chọn thực tế phổ biến nhất?
+<details>
+<summary><strong>Sự khác biệt giữa at-least-once và exactly-once delivery là gì?</strong></summary>
+
+**A:** **At-least-once**: message được deliver ít nhất một lần, có thể duplicate khi producer retry hoặc consumer crash trước khi commit offset. Hệ thống nhận phải **idempotent**. **Exactly-once**: mỗi message được xử lý đúng một lần — cần coordination nặng giữa producer, broker và consumer. Kafka hỗ trợ EOS với `enable.idempotence=true` + transactional API.
+
+</details>
+
+<details>
+<summary><strong>Kafka đạt exactly-once semantics thế nào?</strong></summary>
+
+**A:** Hai cơ chế: (1) **Idempotent Producer** (`enable.idempotence=true`): mỗi message có sequence number, broker dedup khi retry. (2) **Transactions**: producer dùng `beginTransaction()`/`commitTransaction()` để atomic ghi vào nhiều partition/topic. Consumer đọc với `isolation.level=read_committed` — chỉ thấy message từ committed transaction. Overhead: ~20-30% throughput giảm so với at-least-once.
+
+</details>
+
+<details>
+<summary><strong>Tại sao at-least-once + idempotency là lựa chọn thực tế phổ biến nhất?</strong></summary>
+
+**A:** Exactly-once đòi 2PC hoặc Kafka transactions — phức tạp, giảm throughput. At-least-once đơn giản hơn: producer retry khi timeout, consumer re-process nếu crash. Nhiều operation tự nhiên là idempotent: DB upsert với unique key, payment với idempotency key, REST PUT. Pattern: `message_id` trong message, consumer check `processed_messages` table trước khi xử lý — skip nếu đã có.
+
+</details>

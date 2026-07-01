@@ -97,6 +97,23 @@ Tích hợp Pact Broker trong CI: consumer publish contract khi build, provider 
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Contract testing giải quyết vấn đề gì so với integration test?
-1. Vai trò của Pact Broker là gì?
-1. can-i-deploy là gì?
+<details>
+<summary><strong>Contract testing giải quyết vấn đề gì so với integration test?</strong></summary>
+
+**A:** Integration test yêu cầu tất cả service phải chạy cùng lúc — brittle, chậm, khó maintain trong microservices. **Contract testing**: consumer ghi lại expectations (contract), provider chạy test đối chiếu contract mà không cần consumer running. Phát hiện breaking change sớm ở CI, mỗi team test độc lập. Pact là tool phổ biến: consumer generate pact file, provider verify pact file — không cần deployed environment.
+
+</details>
+
+<details>
+<summary><strong>Vai trò của Pact Broker là gì?</strong></summary>
+
+**A:** **Pact Broker** là central repository lưu trữ tất cả pact contract files và kết quả verification: (1) Consumer publish pact file sau test. (2) Provider pull pact file và chạy verification, publish kết quả. (3) Broker track versions và verification status. (4) Cung cấp **can-i-deploy** API để biết liệu phiên bản cụ thể của service có an toàn để deploy không. PactFlow là managed Pact Broker với thêm enterprise features.
+
+</details>
+
+<details>
+<summary><strong>can-i-deploy là gì?</strong></summary>
+
+**A:** CLI tool của Pact ecosystem: `pact-broker can-i-deploy --pacticipant UserService --version 1.2.3 --to production` → query Pact Broker kiểm tra tất cả pact contract của UserService v1.2.3 đã được provider verify thành công chưa. Trả về YES/NO — tích hợp vào CI pipeline trước deploy step. Ngăn deploy service khi consumer/provider contract chưa được verify — giảm risk breaking change.
+
+</details>

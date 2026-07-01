@@ -60,6 +60,23 @@ Thêm index dựa trên slow query log thực tế (<code>pg_stat_statements</co
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa clustered và non-clustered index là gì?
-1. Khi nào bạn dùng composite index?
-1. Index selectivity là gì và tại sao quan trọng?
+<details>
+<summary><strong>Sự khác biệt giữa clustered và non-clustered index là gì?</strong></summary>
+
+**A:** **Clustered index**: data rows được **sắp xếp vật lý** theo index key — chỉ có một clustered index per table vì không thể sắp xếp vật lý theo hai chiều. InnoDB: Primary Key là clustered index mặc định, data pages chứa actual rows. **Non-clustered index**: B-tree riêng, leaf node chứa index key + pointer đến row (row ID hoặc PK). Nhiều non-clustered index per table. Lookup qua non-clustered: traverse index → fetch row từ clustered index (double lookup).
+
+</details>
+
+<details>
+<summary><strong>Khi nào bạn dùng composite index?</strong></summary>
+
+**A:** Dùng composite index khi: (1) Query thường filter theo nhiều column cùng lúc: `WHERE status='ACTIVE' AND user_id=?` → index `(status, user_id)`. (2) Muốn **covering index**: include SELECT columns vào index để tránh table lookup. (3) ORDER BY theo nhiều column: `ORDER BY a, b` → index `(a, b)` eliminate filesort. Rule: đặt equality column trước, range column sau. Số lượng: đừng tạo quá nhiều — mỗi index tốn write overhead.
+
+</details>
+
+<details>
+<summary><strong>Index selectivity là gì và tại sao quan trọng?</strong></summary>
+
+**A:** **Selectivity** = số distinct values / tổng rows. Cao (gần 1.0): index rất selective — gender (M/F) selectivity ≈ 0.5, email selectivity ≈ 1.0. DB optimizer dùng selectivity để quyết định có dùng index hay không. Index với selectivity thấp (ví dụ: boolean column, status với 3 giá trị) thường không hiệu quả — DB có thể chọn full table scan nhanh hơn. Kiểm tra: `SHOW INDEX FROM table` → cardinality column.
+
+</details>

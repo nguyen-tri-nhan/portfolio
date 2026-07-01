@@ -104,6 +104,23 @@ Dùng atomic operation của ConcurrentHashMap (<code>compute</code>, <code>merg
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa race condition và data race là gì?
-1. Đưa ví dụ về check-then-act race condition.
-1. Optimistic locking trong JPA ngăn race condition như thế nào?
+<details>
+<summary><strong>Race condition là gì và cho ví dụ thực tế?</strong></summary>
+
+**A:** **Race condition**: behavior của code phụ thuộc vào **thứ tự/timing** thực thi của các thread — kết quả không deterministic. Ví dụ: hai thread cùng đọc `balance = 100`, cùng cộng 50, cùng write → balance = 150 thay vì 200 (mất 50). Ví dụ khác: check-then-act: `if (file.exists()) file.delete()` — giữa check và delete, thread khác có thể tạo file mới. Ví dụ thực tế: ticket booking — hai user book last ticket cùng lúc → oversell. Phát hiện: khó reproduce vì timing-dependent; dùng tools như ThreadSanitizer, helgrind.
+
+</details>
+
+<details>
+<summary><strong>Atomic operation giải quyết race condition thế nào?</strong></summary>
+
+**A:** `AtomicInteger`, `AtomicLong`, `AtomicReference` dùng **CAS (Compare-And-Swap)** hardware instruction — atomic ở CPU level, không cần lock. `atomicInt.incrementAndGet()` là atomic — không có race condition. CAS loop: đọc current value, compute new value, so sánh và swap — nếu current đã đổi (race), retry. Không block → no deadlock, high throughput. Nhưng: CAS chỉ atomic cho **single variable** — nếu cần atomic update nhiều fields, cần `synchronized` hoặc `StampedLock`. `AtomicReference<State>` + immutable State object cho complex atomic update.
+
+</details>
+
+<details>
+<summary><strong>volatile không đủ để fix race condition, tại sao?</strong></summary>
+
+**A:** `volatile` đảm bảo **visibility** — write visible đến tất cả thread ngay lập tức (không cached trong CPU register). Nhưng không đảm bảo **atomicity** của compound operations. `volatile int count; count++` vẫn có race vì `++` là read-modify-write (3 operations). `volatile` đủ cho: simple read/write của single variable mà chỉ một thread write (flag pattern: `volatile boolean stopped`). Cần `synchronized` hoặc `Atomic*`: khi có read-modify-write, check-then-act, hoặc nhiều related variable cần update atomically.
+
+</details>

@@ -54,6 +54,30 @@ Production: đặt <code>long_query_time=1</code> (hoặc 0.5 cho service SLA ch
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Bật và phân tích MySQL slow query log thế nào?
-1. Query fingerprinting là gì và tại sao quan trọng?
-1. Performance Schema khác slow query log thế nào?
+<details>
+<summary><strong>Bật slow query log trong MySQL thế nào?</strong></summary>
+
+**A:** Runtime (không cần restart): `SET GLOBAL slow_query_log = ON; SET GLOBAL long_query_time = 1; SET GLOBAL slow_query_log_file = '/var/log/mysql/slow.log';`. Persistent trong `my.cnf`:
+```ini
+[mysqld]
+slow_query_log = 1
+long_query_time = 1
+log_queries_not_using_indexes = 1
+```
+`long_query_time`: seconds, có thể là float (0.1 = 100ms). `log_queries_not_using_indexes`: log tất cả query không dùng index dù nhanh. Check status: `SHOW GLOBAL STATUS LIKE 'Slow_queries'` — đếm tổng slow queries.
+
+</details>
+
+<details>
+<summary><strong>Phân tích slow query log bằng tool nào?</strong></summary>
+
+**A:** **pt-query-digest** (Percona Toolkit): `pt-query-digest /var/log/mysql/slow.log` → group similar queries, hiện stats (count, total time, avg time, rows examined). Output: top queries theo total time + normalized query pattern. **mysqldumpslow** (built-in): `mysqldumpslow -s t -t 10 slow.log` → top 10 queries by time. **MySQLTuner**: script analyze overall MySQL health. Sau khi tìm slow query: dùng `EXPLAIN` để analyze execution plan — check type (ALL là full scan), key (index used), rows (estimated scan count).
+
+</details>
+
+<details>
+<summary><strong>rows_examined cao trong slow log có nghĩa gì?</strong></summary>
+
+**A:** `rows_examined` là số rows MySQL scan để tìm kết quả. `rows_sent` là số rows trả về client. Nếu `rows_examined >> rows_sent` → inefficient query (scan nhiều nhưng return ít). Ví dụ: examine 1,000,000 rows, send 10 rows → ratio 100,000:1 → thiếu index hoặc index không selective. Action: `EXPLAIN SELECT ...` → check `key` column (NULL = không dùng index), `type` (ALL = full table scan). Thêm index phù hợp → `rows_examined` giảm đáng kể. Mục tiêu: `rows_examined / rows_sent` càng gần 1 càng tốt.
+
+</details>

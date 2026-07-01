@@ -88,6 +88,30 @@ Chạy <code>pact can-i-deploy --pacticipant user-service --version 1.2.3 --to-e
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Provider state trong Pact là gì?
-1. can-i-deploy hoạt động thế nào?
-1. Điều gì xảy ra khi provider thay đổi tên field API?
+<details>
+<summary><strong>Provider state trong Pact là gì?</strong></summary>
+
+**A:** **Provider state**: precondition mà provider phải satisfy trước khi chạy verification — đảm bảo DB/service trong đúng trạng thái. Ví dụ trong pact: `"given": "user 123 exists"` → provider state handler tạo user 123 trong test DB trước khi verify. Provider side code:
+```java
+@State("user 123 exists")
+public void setupUser123() {
+    userRepository.save(new User(123L, "Alice"));
+}
+```
+Không có provider state → verification fail vì data chưa tồn tại.
+
+</details>
+
+<details>
+<summary><strong>can-i-deploy hoạt động thế nào?</strong></summary>
+
+**A:** CLI tool: `pact-broker can-i-deploy --pacticipant OrderService --version 2.1.0 --to production` → query Pact Broker API, kiểm tra tất cả pact contract mà OrderService tham gia (consumer hoặc provider) đã được **verify thành công** với version tương ứng của counterpart. Nếu tất cả verified → exit 0 (deploy được). Nếu có contract chưa verified → exit 1 (không deploy). Tích hợp vào CD pipeline: block deploy nếu can-i-deploy fail.
+
+</details>
+
+<details>
+<summary><strong>Điều gì xảy ra khi provider thay đổi tên field API?</strong></summary>
+
+**A:** Consumer pact contract có `"name": "Alice"` → provider đổi thành `"fullName": "Alice"`. Khi provider chạy verification → pact verification **fail**: expected field "name" không có trong response. Pact Broker ghi nhận failed verification. `can-i-deploy` của provider version mới → fail → provider không thể deploy. Flow đúng: (1) Thông báo consumer trước. (2) Consumer update pact (support cả "name" và "fullName" hoặc update expectation). (3) Publish pact mới. (4) Provider verify pact mới. (5) Deploy.
+
+</details>

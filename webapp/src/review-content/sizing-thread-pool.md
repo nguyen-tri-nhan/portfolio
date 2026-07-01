@@ -64,6 +64,23 @@ Pool thread riêng cho từng downstream dependency là Bulkhead pattern — pay
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Công thức sizing thread pool cho I/O-bound service?
-1. Tại sao tạo thread pool riêng cho từng service?
-1. CallerRunsPolicy khác AbortPolicy thế nào?
+<details>
+<summary><strong>Công thức tính thread pool size là gì?</strong></summary>
+
+**A:** **CPU-bound tasks**: `N_threads = N_cpus + 1` (một thread thêm để tận dụng khi thread khác tạm dừng). **I/O-bound tasks**: `N_threads = N_cpus × (1 + wait_time / service_time)`. Wait time/service time ratio: nếu task block 90% (9ms wait, 1ms compute) → ratio = 9 → `N_threads = N_cpus × 10`. **Thực tế**: đo bằng load testing, tìm throughput plateau — thêm thread không tăng throughput → đã đủ. Little's Law: `N = λ × W` (N = concurrent users, λ = request rate, W = response time). Virtual threads (Java 21): không cần size — JVM manage.
+
+</details>
+
+<details>
+<summary><strong>Thread pool quá ít thread dẫn đến vấn đề gì?</strong></summary>
+
+**A:** Quá ít thread: **thread starvation** — tất cả threads bận, request mới phải chờ trong queue. Hậu quả: latency tăng vọt, timeouts, queue overflow nếu bounded. Đặc biệt nguy hiểm: nếu thread A đang chờ kết quả từ task B (cũng trong cùng pool) → **deadlock** vì thread để execute B không có. Spring Boot default Tomcat: 200 threads — với blocking I/O và slow DB, 200 concurrent requests → thread exhaustion. Triệu chứng: high CPU idle (threads waiting on I/O) nhưng response time cao.
+
+</details>
+
+<details>
+<summary><strong>Tại sao thread pool quá nhiều thread cũng là vấn đề?</strong></summary>
+
+**A:** (1) **Memory**: mỗi platform thread có stack 512KB-1MB → 1000 threads = 500MB-1GB chỉ cho stack. (2) **Context switch overhead**: OS scheduler phải switch giữa nhiều threads — chi phí save/restore CPU state. Với CPU-bound: nhiều thread hơn CPU cores → thrashing (context switch nhiều hơn actual work). (3) **Thundering herd**: tất cả threads wake up cùng lúc cạnh tranh lock. Optimal: CPU-bound = N_cores+1, I/O-bound = measure và test. Virtual threads giải quyết vấn đề này cho I/O-bound — platform thread count = N_cores, virtual thread count = number of concurrent tasks.
+
+</details>

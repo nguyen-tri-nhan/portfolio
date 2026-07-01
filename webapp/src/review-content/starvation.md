@@ -102,6 +102,23 @@ Trong thực tế, starvation hiếm trong hệ thống thiết kế tốt. Nó 
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa starvation và deadlock là gì?
-1. Livelock là gì và khác starvation thế nào?
-1. Khi nào bạn dùng fair lock và chi phí là gì?
+<details>
+<summary><strong>Thread starvation là gì và khác deadlock thế nào?</strong></summary>
+
+**A:** **Starvation**: thread không thể tiến triển vì **liên tục không được cấp resource** (CPU, lock) — các thread khác với priority cao hơn liên tục chiếm. Thread vẫn alive, không bị block mãi, nhưng không được chạy đủ. **Deadlock**: hai hoặc nhiều thread **block nhau** — cả hai chờ resource của nhau → không ai tiến được. Cả hai đều gây progress failure, nhưng nguyên nhân khác: deadlock = circular wait; starvation = unfair scheduling. Phát hiện starvation: thread dump thấy thread ở WAITING/BLOCKED trong thời gian rất dài.
+
+</details>
+
+<details>
+<summary><strong>Fair lock giải quyết starvation thế nào?</strong></summary>
+
+**A:** `ReentrantLock(true)` — **fair lock**: acquire theo thứ tự FIFO — thread chờ lâu nhất được ưu tiên. Không có starvation. Unfair lock (default): không đảm bảo thứ tự — mỗi thread đến có thể "barge in" (chiếm lock ngay cả khi thread khác đang chờ) → starvation có thể xảy ra. Trade-off: fair lock slower throughput (không exploit thread locality, không barge-in) nhưng đảm bảo fairness. `synchronized` không fair. `Semaphore(permits, fair=true)` tương tự. Dùng fair lock khi: starvation là concern thực sự; unfair khi throughput quan trọng hơn fairness.
+
+</details>
+
+<details>
+<summary><strong>Priority inversion là gì?</strong></summary>
+
+**A:** **Priority inversion**: thread **priority thấp** giữ lock, thread **priority cao** phải chờ lock → effective priority của high-priority thread bị giảm xuống bằng low-priority. Tệ hơn: nếu medium-priority thread không cần lock cứ chiếm CPU → low-priority thread không chạy được → lock không release → high-priority thread chờ mãi. Classic case: Mars Pathfinder 1997 — reset liên tục vì priority inversion. Fix: **Priority inheritance** (OS feature) — low-priority thread giữ lock được tạm nâng priority bằng highest waiter. Java không built-in priority inheritance — dùng `Lock.tryLock(timeout)` để avoid indefinite wait.
+
+</details>

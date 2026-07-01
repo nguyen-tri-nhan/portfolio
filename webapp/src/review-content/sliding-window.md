@@ -77,6 +77,35 @@ Sliding window chính xác hơn fixed window nhưng dùng nhiều memory hơn (O
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Double-spend problem với fixed window rate limiting là gì?
-1. Làm thế nào để implement sliding window trong Redis?
-1. Trade-off giữa sliding window log và sliding window counter là gì?
+<details>
+<summary><strong>Sliding window rate limiting so sánh với fixed window thế nào?</strong></summary>
+
+**A:** **Fixed window**: count requests trong window cố định (ví dụ 1 minute). Vấn đề: burst tại ranh giới — 100 request cuối window + 100 request đầu window tiếp = 200 request trong 2s (burst 2x). **Sliding window log**: track timestamp của mỗi request, đếm trong cửa sổ trượt [now-60s, now]. Chính xác nhưng O(n) memory. **Sliding window counter**: chia window thành sub-windows, weighted average — balance accuracy vs memory. Resilience4j CircuitBreaker: `COUNT_BASED` (N calls) và `TIME_BASED` (N seconds) sliding windows để tính failure rate.
+
+</details>
+
+<details>
+<summary><strong>Implement sliding window counter với Redis thế nào?</strong></summary>
+
+**A:** Dùng Redis sorted set: key = `rate:{userId}`, score = timestamp (unix ms), value = request UUID. Pipeline: `MULTI → ZADD key timestamp uuid → ZREMRANGEBYSCORE key 0 (now-window_ms) → ZCARD key → EXPIRE key window_secs → EXEC`. Sau transaction: so sánh count với limit. Atomic bằng Lua script:
+```lua
+local key = KEYS[1]
+local now = tonumber(ARGV[1])
+local window = tonumber(ARGV[2])
+redis.call('ZREMRANGEBYSCORE', key, 0, now - window)
+local count = redis.call('ZCARD', key)
+if count < tonumber(ARGV[3]) then
+    redis.call('ZADD', key, now, now)
+    return 1
+end
+return 0
+```
+
+</details>
+
+<details>
+<summary><strong>Sliding window trong Kafka Streams dùng để làm gì?</strong></summary>
+
+**A:** Kafka Streams sliding window: aggregate events trong rolling time window. `TimeWindows.ofSizeWithNoGrace(Duration.ofMinutes(5))` cho hopping window (non-overlapping). **Sliding window**: window move với mỗi event — mỗi event tạo window kết thúc tại event đó. Dùng cho: fraud detection (count transactions của user trong 5 phút trước mỗi transaction), anomaly detection. `KStream.windowedBy(SlidingWindows.ofTimeDifferenceWithNoGrace(Duration.ofMinutes(5)))`. Khác hopping window: sliding tạo many overlapping windows; hopping tạo discrete non-overlapping windows.
+
+</details>

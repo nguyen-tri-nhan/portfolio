@@ -57,6 +57,23 @@ Kích thước partition dựa trên throughput: mỗi partition xử lý ~10-50
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Kafka dùng message key cho partitioning thế nào?
-1. Bạn có thể đảm bảo thứ tự message qua các partition không?
-1. Điều gì xảy ra khi bạn tăng số partition cho topic hiện có?
+<details>
+<summary><strong>Topic, partition, và offset trong Kafka là gì?</strong></summary>
+
+**A:** **Topic**: logical category/stream — ví dụ "orders", "payments". **Partition**: topic được chia thành N partitions — mỗi partition là append-only ordered log. Nhiều partitions cho phép parallel consumption. **Offset**: vị trí (sequential number) của message trong partition — bắt đầu từ 0, tăng dần. Consumer track offset đã đọc. Consumer group: mỗi partition được consume bởi **một consumer** (trong group) — offset per partition per consumer group được commit vào Kafka. Reread: set offset về trước (`--reset-offsets`) → reprocess messages. Retention: message giữ trong N ngày/hours dù đã consumed.
+
+</details>
+
+<details>
+<summary><strong>Tại sao nhiều partition trong Kafka quan trọng?</strong></summary>
+
+**A:** (1) **Parallelism**: consumer group consume parallel — N partitions cho phép N consumers xử lý song song. 1 partition = 1 consumer max (bottleneck). (2) **Throughput**: producer write parallel vào nhiều partitions. (3) **Distribution**: partitions spread across brokers — no single broker bottleneck. Cân nhắc: nhiều partition quá → overhead (Zookeeper/KRaft, file handles, replication). Rule of thumb: target_throughput / single_partition_throughput. Rebalancing: thêm partition sau → cùng key có thể vào partition khác → break ordering per-key.
+
+</details>
+
+<details>
+<summary><strong>Consumer group offset commit thế nào?</strong></summary>
+
+**A:** Consumer commit offset để mark "đã xử lý đến đây". `enable.auto.commit=true` (default): auto commit định kỳ (`auto.commit.interval.ms=5000`) — risk: commit trước khi xử lý xong → tắt process giữa chừng → message bị mất (committed nhưng chưa process). **Manual commit**: `enable.auto.commit=false` → sau khi xử lý thành công gọi `consumer.commitSync()` hoặc `commitAsync()`. At-least-once: commit sau xử lý. Exactly-once: transactional API. Spring Kafka `@KafkaListener` với `AckMode=MANUAL`: gọi `acknowledgment.acknowledge()` sau process.
+
+</details>

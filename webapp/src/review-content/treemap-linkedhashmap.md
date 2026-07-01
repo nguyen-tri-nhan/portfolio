@@ -90,6 +90,37 @@ Dùng <code>TreeMap</code> cho rate-limiting window (sắp xếp theo timestamp)
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Độ phức tạp thời gian của get/put trong TreeMap vs HashMap là gì?
-1. Bạn implement LRU cache trong Java như thế nào?
-1. Khi nào bạn dùng ConcurrentSkipListMap thay vì TreeMap?
+<details>
+<summary><strong>TreeMap, LinkedHashMap, và HashMap khác nhau thế nào?</strong></summary>
+
+**A:** **HashMap**: O(1) average get/put, **không đảm bảo thứ tự**. **LinkedHashMap**: O(1) get/put, giữ **insertion order** (hoặc access order nếu `accessOrder=true`). **TreeMap**: O(log n) get/put, sorted theo **natural order** của key (hoặc Comparator). Dùng: HashMap khi chỉ cần lookup nhanh. LinkedHashMap khi cần iteration theo insertion order (LRU cache với accessOrder=true). TreeMap khi cần key sorted (range query: `subMap(fromKey, toKey)`, `headMap`, `tailMap`). Cả ba không thread-safe — `Collections.synchronizedMap` hoặc `ConcurrentHashMap`/`ConcurrentSkipListMap`.
+
+</details>
+
+<details>
+<summary><strong>Implement LRU cache dùng LinkedHashMap thế nào?</strong></summary>
+
+**A:** LinkedHashMap với `accessOrder=true` và override `removeEldestEntry`:
+```java
+public class LRUCache<K, V> extends LinkedHashMap<K, V> {
+    private final int capacity;
+    LRUCache(int capacity) {
+        super(capacity, 0.75f, true); // accessOrder=true
+        this.capacity = capacity;
+    }
+    @Override
+    protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+        return size() > capacity;
+    }
+}
+```
+Each get/put moves entry to tail → eldest (LRU) = head. Khi `removeEldestEntry` return true → oldest entry auto-removed. Thread-safe version: `Collections.synchronizedMap(new LRUCache<>(...)))`. Production: dùng Caffeine / Guava Cache với proper LRU/LFU.
+
+</details>
+
+<details>
+<summary><strong>TreeMap range query hoạt động thế nào?</strong></summary>
+
+**A:** TreeMap implement `NavigableMap` — rich API cho range operations: `subMap(fromKey, fromInclusive, toKey, toInclusive)`: entries trong range. `headMap(toKey)`: entries < toKey. `tailMap(fromKey)`: entries >= fromKey. `floorKey(key)`: largest key ≤ given. `ceilingKey(key)`: smallest key ≥ given. `firstKey()`/`lastKey()`: min/max. Ví dụ: `treeMap.subMap("2024-01-01", "2024-12-31")` → tất cả entries trong năm 2024. Dùng cho: date range queries, alphabetical range, price range.
+
+</details>

@@ -79,6 +79,23 @@ Dùng <code>List.of()</code> và <code>Map.of()</code> cho immutable collection.
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa ArrayList và LinkedList là gì?
-1. HashMap xử lý hash collision như thế nào?
-1. Khi nào bạn dùng CopyOnWriteArrayList?
+<details>
+<summary><strong>Sự khác biệt giữa ArrayList và LinkedList là gì?</strong></summary>
+
+**A:** **ArrayList**: dynamic array, O(1) random access (`get(i)`), O(n) insert/delete giữa list (shift elements), cache-friendly vì contiguous memory. **LinkedList**: doubly linked, O(1) insert/delete ở head/tail, O(n) random access (traverse), pointer overhead per node. Thực tế: ArrayList tốt hơn cho hầu hết use case vì cache locality. LinkedList chỉ tốt khi cần O(1) add/remove đầu cuối và không cần random access.
+
+</details>
+
+<details>
+<summary><strong>HashMap xử lý hash collision như thế nào?</strong></summary>
+
+**A:** Java HashMap dùng **chaining**: mỗi bucket là một linked list (Java 7-) hoặc TreeMap khi chain dài ≥ 8 (Java 8+ — `TREEIFY_THRESHOLD`). Khi put: tính `hashCode()`, find bucket, traverse chain tìm key equal; nếu không có → add node. Load factor (default 0.75): khi 75% capacity → resize gấp đôi và rehash. TreeMap trong bucket: O(log n) thay vì O(n) khi nhiều collision — tránh worst case hash DoS.
+
+</details>
+
+<details>
+<summary><strong>Khi nào bạn dùng CopyOnWriteArrayList?</strong></summary>
+
+**A:** Dùng khi **read cực nhiều, write rất ít**: mỗi write tạo một bản copy mới của array → read concurrent không bao giờ block (lock-free read), không cần synchronize khi đọc. Use case điển hình: danh sách listener/subscriber đăng ký một lần rồi ít thay đổi; cache immutable data. Không dùng khi write thường xuyên — copy O(n) mỗi write cực tốn. `ConcurrentHashMap` cho map use case tương tự.
+
+</details>

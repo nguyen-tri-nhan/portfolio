@@ -65,6 +65,23 @@ Dùng direct exchange cho phân phối task đơn giản. Dùng topic cho routin
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa direct và topic exchange là gì?
-1. Điều gì xảy ra với message nếu không có queue nào bind để khớp routing key?
-1. Làm thế nào để implement pub/sub pattern trong RabbitMQ?
+<details>
+<summary><strong>Sự khác biệt giữa direct và topic exchange là gì?</strong></summary>
+
+**A:** **Direct exchange**: route message đến queue có binding key **khớp chính xác** routing key. Ví dụ: binding key "payment.success" → chỉ nhận message với routing key "payment.success". **Topic exchange**: routing key dùng **wildcard** — `*` (một word), `#` (zero hoặc nhiều word). Ví dụ: binding `payment.*` nhận "payment.success" và "payment.failed"; `payment.#` nhận cả "payment.success.retry". Topic linh hoạt hơn cho event routing pattern.
+
+</details>
+
+<details>
+<summary><strong>Điều gì xảy ra với message nếu không có queue nào bind để khớp routing key?</strong></summary>
+
+**A:** Message bị **dropped** (mất) mặc định — RabbitMQ không lưu unrouted message. Nếu publisher set `mandatory=true`: broker return message về publisher qua `ReturnCallback`. Giải pháp tốt hơn: configure **Alternate Exchange (AE)** — khi message không được route, forward đến AE (thường là fanout exchange vào dead-letter queue) để audit/alert. Không dùng `mandatory=true` trong production vì synchronous và tốn resource.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để implement pub/sub pattern trong RabbitMQ?</strong></summary>
+
+**A:** Dùng **Fanout exchange**: exchange broadcast message đến TẤT CẢ queue đang bind — không cần routing key. Mỗi consumer (subscriber) tạo queue riêng và bind vào fanout exchange. Consumer mới → tạo queue mới và bind → tự động nhận message từ thời điểm đó. Ví dụ: order.placed fanout exchange → inventory queue, notification queue, analytics queue — mỗi service nhận bản copy riêng. Topic exchange với `#` routing key cũng đạt pub/sub nhưng với filter capability.
+
+</details>

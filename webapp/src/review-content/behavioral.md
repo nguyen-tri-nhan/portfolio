@@ -95,6 +95,23 @@ Strategy là pattern áp dụng nhiều nhất cho biến đổi business logic.
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Strategy khác if-else thế nào?
-1. Chain of Responsibility được dùng ở đâu trong Spring?
-1. Sự khác biệt giữa Observer và pub/sub messaging?
+<details>
+<summary><strong>Strategy khác if-else thế nào?</strong></summary>
+
+**A:** If-else nhúng algorithm trực tiếp — thêm algorithm mới phải sửa class (vi phạm Open/Closed). **Strategy** tách algorithm thành interface, mỗi implementation là Strategy object; client chọn lúc runtime qua DI. Ví dụ: `PaymentStrategy` với `CreditCardPayment`, `PaypalPayment` — thêm loại mới chỉ cần thêm class, không sửa client. Spring inject `List<PaymentStrategy>` và code map theo type.
+
+</details>
+
+<details>
+<summary><strong>Chain of Responsibility được dùng ở đâu trong Spring?</strong></summary>
+
+**A:** **Spring Security Filter Chain** là ví dụ điển hình: mỗi `Filter` xử lý request rồi quyết định pass xuống filter tiếp theo (`chain.doFilter()`). **HandlerInterceptor chain** trong Spring MVC: `preHandle()` của mỗi interceptor chạy tuần tự. **Spring AOP**: nhiều aspect proxy lồng nhau tạo chain quanh target method. Khác Strategy: Chain cho phép request đi qua nhiều handler tuần tự.
+
+</details>
+
+<details>
+<summary><strong>Sự khác biệt giữa Observer và pub/sub messaging?</strong></summary>
+
+**A:** **Observer** (in-process): subject trực tiếp gọi `update()` trên observer — synchronous, tight coupling về thời gian. **Pub/Sub**: qua **message broker** (Kafka, RabbitMQ) — publisher và subscriber không biết nhau, decoupled về space và thời gian, async delivery. Spring `@EventListener` là Observer in-process; Kafka là pub/sub distributed. Dùng Observer cho domain event trong bounded context; pub/sub cho cross-service communication.
+
+</details>

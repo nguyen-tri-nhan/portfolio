@@ -85,6 +85,23 @@ Dùng Redisson cho distributed lock trong Spring Boot — nó implement Redlock 
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Vấn đề với dùng Redis SETNX đơn giản cho distributed lock là gì?
-1. Thuật toán Redlock là gì?
-1. Làm thế nào để ngăn deadlock với distributed lock nếu lock holder crash?
+<details>
+<summary><strong>Vấn đề với dùng Redis SETNX đơn giản cho distributed lock là gì?</strong></summary>
+
+**A:** Vấn đề: `SETNX key value` để set lock, `DEL key` để release — hai operation không atomic. Nếu process crash sau SETNX nhưng trước DEL → lock **never released** (deadlock). Fix: `SET key value NX EX 30` — set với TTL trong một atomic command. Nhưng vẫn có vấn đề: release sai lock của người khác nếu mình hold lock quá lâu và TTL expired trước khi release.
+
+</details>
+
+<details>
+<summary><strong>Thuật toán Redlock là gì?</strong></summary>
+
+**A:** Redlock (Antirez): acquire lock trên **N/2+1 independent Redis nodes** (thường 5) trong tổng thời gian nhỏ hơn TTL. Nếu không acquire đủ quorum trong thời gian → release tất cả và retry. Mục đích: tránh single point of failure. Tranh cãi: Martin Kleppmann chỉ ra Redlock không an toàn khi có GC pause hoặc clock skew — process nghĩ mình đang hold lock nhưng TTL đã expire. **Recommendation**: dùng Redlock + **fencing token** cho critical sections.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để ngăn deadlock với distributed lock nếu lock holder crash?</strong></summary>
+
+**A:** (1) **TTL (Time-To-Live)**: lock tự expire sau khoảng thời gian cố định — nếu holder crash, lock tự release. Nhưng TTL phải đủ dài cho operation. (2) **Fencing token**: mỗi lần acquire lock nhận một monotonically increasing token; resource server reject request với token cũ hơn token hiện tại — ngăn stale lock holder tác động sau khi TTL hết. (3) **Heartbeat**: holder renew lock periodically; nếu heartbeat dừng → lock expire.
+
+</details>

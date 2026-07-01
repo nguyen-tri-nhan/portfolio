@@ -91,6 +91,35 @@ Trong thực tế, thay pattern này bằng <code>LinkedBlockingQueue</code> x�
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Tại sao wait() phải được gọi bên trong synchronized block?
-1. Spurious wakeup là gì và bạn xử lý nó như thế nào?
-1. Sự khác biệt giữa notify() và notifyAll() là gì?
+<details>
+<summary><strong>wait() và sleep() khác nhau thế nào?</strong></summary>
+
+**A:** **`Thread.sleep(ms)`**: thread ngủ một khoảng thời gian, **giữ lock** — thread khác không access synchronized block được. Dùng cho delay/timing. **`Object.wait()`**: thread ngủ và **release lock** — thread khác có thể enter synchronized block. Phải call trong synchronized block (sinon `IllegalMonitorStateException`). Wait thường kết hợp với condition check + notify. `wait()` có thể return sớm hơn (spurious wakeup) → luôn check condition trong `while` loop:
+```java
+synchronized(lock) {
+    while (!condition) lock.wait();
+    // proceed
+}
+```
+
+</details>
+
+<details>
+<summary><strong>notify() và notifyAll() khác nhau thế nào?</strong></summary>
+
+**A:** **`notify()`**: wake up **một** thread đang wait trên object này — JVM chọn arbitrary. **`notifyAll()`**: wake up **tất cả** threads đang wait — tất cả wake up, compete lại cho lock, chỉ một win. Khi nào dùng notifyAll: (1) Nhiều loại condition khác nhau — producer/consumer có thể có producer wait và consumer wait khác nhau. `notify()` có thể wake up wrong thread. (2) Không chắc chắn ai cần được wake — safe default. notifyAll chậm hơn (wake nhiều thread, thrashing) nhưng correct hơn. Với `Condition` (ReentrantLock): `condition.signal()` và `condition.signalAll()` — có thể có **multiple conditions per lock**.
+
+</details>
+
+<details>
+<summary><strong>Spurious wakeup là gì và tại sao phải dùng while loop?</strong></summary>
+
+**A:** **Spurious wakeup**: `wait()` return mà không bị `notify()`/`notifyAll()` gọi — do OS/hardware interrupt. POSIX spec explicitly allow this. Nếu dùng `if (!condition) wait()`: sau spurious wakeup → condition vẫn false → code tiếp tục với wrong state. **Giải pháp**: luôn dùng `while`:
+```java
+while (!condition) {
+    object.wait();
+}
+```
+Sau mỗi wakeup (spurious hay real): re-check condition → nếu false → wait lại. Pattern đúng 100% theo Java docs và concurrency best practices. `Condition.await()` cũng có spurious wakeup — same rule.
+
+</details>

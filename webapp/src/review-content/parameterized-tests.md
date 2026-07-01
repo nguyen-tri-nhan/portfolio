@@ -95,6 +95,37 @@ Thay thế các test method lặp lại tương tự bằng @ParameterizedTest. 
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Khi nào dùng @MethodSource thay vì @CsvSource?
-1. Làm thế nào để đặt tên mô tả cho parameterized case?
-1. Có thể parameterize với enum value không?
+<details>
+<summary><strong>Khi nào dùng @MethodSource thay vì @CsvSource?</strong></summary>
+
+**A:** **`@CsvSource`**: phù hợp data đơn giản (string, số, enum) inline trong annotation. **`@MethodSource`**: khi data phức tạp (object, collection, dynamically generated), muốn reuse data giữa nhiều test, cần logic tạo data. Ví dụ `@MethodSource`: test với `User` object không thể dùng CSV. Cú pháp: method trả về `Stream<Arguments>` và được đặt tên trong `@MethodSource("provideTestCases")`. Nếu method cùng class: `@MethodSource("provideTestCases")`; khác class: fully qualified method name.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để đặt tên mô tả cho parameterized case?</strong></summary>
+
+**A:** Dùng `name` attribute trong `@ParameterizedTest`:
+```java
+@ParameterizedTest(name = "Input {0} should return {1}")
+@CsvSource({"1, odd", "2, even", "3, odd"})
+void testParity(int input, String expected) { ... }
+```
+Placeholders: `{0}`, `{1}`... cho arguments, `{index}` cho test index, `{displayName}` cho method name, `{arguments}` cho tất cả args joined. Custom name giúp đọc test report rõ ràng hơn thay vì default "[1] 1, odd".
+
+</details>
+
+<details>
+<summary><strong>Có thể parameterize với enum value không?</strong></summary>
+
+**A:** Có — dùng `@EnumSource`:
+```java
+@ParameterizedTest
+@EnumSource(Status.class)
+void testAllStatuses(Status status) {
+    assertNotNull(service.process(status));
+}
+```
+Test chạy với tất cả enum values. Filter: `@EnumSource(value=Status.class, names={"ACTIVE", "PENDING"})` hoặc `mode=EXCLUDE`. Cũng có thể dùng `@MethodSource` trả về `Arrays.stream(Status.values())`.
+
+</details>

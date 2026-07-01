@@ -83,6 +83,23 @@ Luôn ưu tiên constructor injection thay vì field injection (<code>@Autowired
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Inversion of Control là gì và Spring implement nó thế nào?
-1. Sự khác biệt giữa BeanFactory và ApplicationContext là gì?
-1. Spring Boot auto-configuration khác manual @Configuration thế nào?
+<details>
+<summary><strong>IoC container là gì và tại sao quan trọng?</strong></summary>
+
+**A:** **IoC (Inversion of Control) container** quản lý lifecycle và wiring của beans. Thay vì object tự tạo dependencies (`new ServiceB()`), container inject vào — "control" được invert từ object sang container. Lợi ích: (1) Loose coupling — code against interface, không concrete class. (2) Testability — inject mock dễ dàng. (3) Reusability — bean được share. (4) Lifecycle management — container handle initialization, destruction. Spring cung cấp `BeanFactory` (lazy) và `ApplicationContext` (eager, đầy đủ feature hơn). `@Autowired`, `@Inject`, constructor injection đều là cơ chế DI.
+
+</details>
+
+<details>
+<summary><strong>Spring Bean lifecycle từ creation đến destruction là gì?</strong></summary>
+
+**A:** (1) Instantiate — constructor. (2) Populate properties — `@Autowired` field injection. (3) BeanNameAware, BeanFactoryAware — nếu implement. (4) BeanPostProcessor.postProcessBeforeInitialization. (5) **`@PostConstruct`** / InitializingBean.afterPropertiesSet(). (6) Custom init-method. (7) BeanPostProcessor.postProcessAfterInitialization. (8) Bean ready — vào scope. (9) **`@PreDestroy`** / DisposableBean.destroy() — khi context close. Dùng `@PostConstruct` để init sau inject (không phải constructor — vì constructor chưa inject). `@PreDestroy` để cleanup (close connection, flush).
+
+</details>
+
+<details>
+<summary><strong>ApplicationContext và BeanFactory khác nhau thế nào?</strong></summary>
+
+**A:** `BeanFactory`: basic IoC container — lazy initialization, không có advanced features. `ApplicationContext`: extends BeanFactory, thêm: (1) Eager singleton initialization (fail-fast). (2) MessageSource (i18n). (3) ApplicationEventPublisher (event system). (4) ResourceLoader. (5) AOP integration. (6) Environment abstraction. Thực tế: luôn dùng `ApplicationContext`. Implementations: `ClassPathXmlApplicationContext`, `AnnotationConfigApplicationContext`, `SpringApplication` (Boot). `WebApplicationContext`: extends AC, thêm ServletContext — Spring MVC dùng.
+
+</details>

@@ -70,6 +70,23 @@ Trước khi scale horizontally, xác định bottleneck. Thường: thêm DB re
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa horizontal và vertical scaling là gì?
-1. Tại sao service phải stateless để scale horizontally?
-1. Làm thế nào để xác định bottleneck trong hệ thống đang chịu tải?
+<details>
+<summary><strong>Horizontal scaling và vertical scaling khi nào dùng cái nào?</strong></summary>
+
+**A:** **Vertical scaling** (scale up): thêm CPU/RAM vào một server — đơn giản, không cần code change, nhưng có ceiling, single point of failure, downtime khi upgrade. **Horizontal scaling** (scale out): thêm server — phức tạp hơn (load balancing, session, distributed state), không có ceiling lý thuyết, high availability. Chọn vertical: database server (stateful, sharding phức tạp), quick win trong ngắn hạn. Chọn horizontal: stateless web tier, API servers — easy với Kubernetes autoscaling. Best practice: design stateless từ đầu → horizontal scale dễ dàng.
+
+</details>
+
+<details>
+<summary><strong>Bottleneck phổ biến nhất khi scale là gì?</strong></summary>
+
+**A:** (1) **Database**: thường là bottleneck đầu tiên — read replicas, connection pooling, caching, sharding. (2) **Session state**: in-memory session không scale — externalize ra Redis/Memcached. (3) **Single point of failure**: load balancer, auth service không HA. (4) **Synchronous blocking calls**: chain của synchronous calls tạo cascading latency — async messaging. (5) **Shared mutable state**: global cache, counter — distributed coordination overhead. Phương pháp: profile trước khi tối ưu — dùng APM (Datadog, Jaeger) để tìm bottleneck thực sự, không đoán.
+
+</details>
+
+<details>
+<summary><strong>Database read replica giúp scalability thế nào?</strong></summary>
+
+**A:** Read replicas: secondary databases sync asynchronously từ primary. Read traffic (SELECT) route đến replicas — primary chỉ handle writes. Benefit: scale read throughput tuyến tính (thêm replica), giảm tải primary, replica có thể dùng cho reporting/analytics. Trade-off: **replication lag** — replica có thể lag primary vài ms-s. Không dùng replica để read ngay sau write (stale data). Pattern: read-your-own-writes — route read của user đến primary ngay sau write, fallback sang replica sau. Spring: `@Transactional(readOnly=true)` → datasource routing tới replica.
+
+</details>

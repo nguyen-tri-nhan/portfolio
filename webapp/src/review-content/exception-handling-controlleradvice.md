@@ -119,6 +119,32 @@ Luôn trả về cấu trúc error response nhất quán (error code + message +
 
 ## Câu Hỏi Phỏng Vấn
 
-1. @ControllerAdvice khác try-catch trong mỗi controller thế nào?
-1. Spring giải quyết nhiều @ExceptionHandler method theo thứ tự nào?
-1. Làm thế nào để xử lý lỗi validation từ @Valid?
+<details>
+<summary><strong>@ControllerAdvice khác try-catch trong mỗi controller thế nào?</strong></summary>
+
+**A:** try-catch trong mỗi controller: code lặp lại, dễ miss case, không consistent response format. **`@ControllerAdvice`**: centralized exception handling cho tất cả controller — không sửa controller code, consistent ErrorResponse format, dễ maintain. Áp dụng globally hoặc filter theo package/annotation. Kết hợp `@ExceptionHandler` cho từng exception type, `ResponseBodyAdvice` để transform response.
+
+</details>
+
+<details>
+<summary><strong>Spring giải quyết nhiều @ExceptionHandler method theo thứ tự nào?</strong></summary>
+
+**A:** Spring chọn `@ExceptionHandler` **cụ thể nhất** (most specific): `ResourceNotFoundException extends RuntimeException` → handler cho `ResourceNotFoundException` được ưu tiên hơn handler cho `RuntimeException` hoặc `Exception`. Nếu cùng specificity trong `@ControllerAdvice` class → undefined order; nếu nhiều `@ControllerAdvice` class → thứ tự do `@Order` hoặc `Ordered` interface. Local controller `@ExceptionHandler` được ưu tiên hơn global `@ControllerAdvice`.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để xử lý lỗi validation từ @Valid?</strong></summary>
+
+**A:** `@Valid` trên method parameter ném `MethodArgumentNotValidException` (request body) hoặc `ConstraintViolationException` (path/query param). Trong `@ControllerAdvice`:
+```java
+@ExceptionHandler(MethodArgumentNotValidException.class)
+public ResponseEntity<Map<String, String>> handle(MethodArgumentNotValidException ex) {
+    Map<String, String> errors = new HashMap<>();
+    ex.getBindingResult().getFieldErrors()
+      .forEach(e -> errors.put(e.getField(), e.getDefaultMessage()));
+    return ResponseEntity.badRequest().body(errors);
+}
+```
+
+</details>

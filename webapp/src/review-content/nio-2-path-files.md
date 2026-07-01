@@ -54,6 +54,46 @@ Dùng <code>Files.lines()</code> để xử lý log file — stream lazy nên b�
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Khác nhau giữa Files.readAllLines() và Files.lines()?
-1. Xử lý file log 10 GB không bị OutOfMemoryError thế nào?
-1. WatchService dùng để làm gì trong Java?
+<details>
+<summary><strong>Khác nhau giữa Files.readAllLines() và Files.lines()?</strong></summary>
+
+**A:** **`Files.readAllLines()`**: đọc toàn bộ file vào `List<String>` trong memory — đơn giản nhưng tốn RAM cho file lớn. **`Files.lines()`**: trả về **lazy Stream<String>** — đọc từng dòng khi cần (streaming), phù hợp file lớn không fit RAM. Quan trọng: `Files.lines()` mở file resource — phải dùng trong try-with-resources hoặc `Stream.close()` để tránh resource leak:
+```java
+try (Stream<String> lines = Files.lines(path)) {
+    lines.filter(l -> l.contains("ERROR")).forEach(System.out::println);
+}
+```
+
+</details>
+
+<details>
+<summary><strong>Xử lý file log 10 GB không bị OutOfMemoryError thế nào?</strong></summary>
+
+**A:** Dùng **streaming approach** — không load cả file vào memory:
+```java
+try (Stream<String> lines = Files.lines(Paths.get("app.log"))) {
+    lines.filter(l -> l.contains("ERROR"))
+         .limit(1000)
+         .forEach(System.out::println);
+}
+```
+Hoặc dùng `BufferedReader` với `readLine()` trong loop. NIO2 `Files.newBufferedReader()` auto-detects charset. Avoid: `Files.readAllBytes()`, `Files.readAllLines()` — load toàn bộ vào heap. Nếu cần aggregate: dùng Stream reduce/collect với accumulator.
+
+</details>
+
+<details>
+<summary><strong>WatchService dùng để làm gì trong Java?</strong></summary>
+
+**A:** `WatchService` monitor **filesystem events** (create, modify, delete) trên directory mà không cần polling. Dùng cho: config file hot reload, file upload trigger, build tool watch mode. Pattern:
+```java
+WatchService watcher = FileSystems.getDefault().newWatchService();
+path.register(watcher, ENTRY_MODIFY, ENTRY_CREATE);
+WatchKey key;
+while ((key = watcher.take()) != null) {
+    key.pollEvents().forEach(e -> handleEvent(e.context()));
+    key.reset();
+}
+```
+Native OS notification (inotify Linux, FSEvents Mac) — hiệu quả hơn polling.
+
+</details>

@@ -49,9 +49,26 @@ Giữ CI dưới 10 phút — developer sẽ không chờ pipeline chậm và b�
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa CI, CD (Delivery) và CD (Deployment) là gì?
-1. Làm thế nào để đảm bảo CI pipeline vẫn nhanh khi codebase tăng trưởng?
-1. GitOps là gì và ArgoCD implement nó thế nào?
+<details>
+<summary><strong>Sự khác biệt giữa CI, CD (Delivery) và CD (Deployment) là gì?</strong></summary>
+
+**A:** **CI (Continuous Integration)**: tự động build, test, và merge code thường xuyên — phát hiện lỗi sớm. **CD (Continuous Delivery)**: sau CI, artifact sẵn sàng deploy lên production bất cứ lúc nào — nhưng vẫn cần manual approval để deploy thực sự. **CD (Continuous Deployment)**: tự động deploy lên production sau CI pass — không cần manual step. Mature pipeline: CI → Continuous Delivery với canary/feature flag → Continuous Deployment khi confidence cao.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để đảm bảo CI pipeline vẫn nhanh khi codebase tăng trưởng?</strong></summary>
+
+**A:** (1) **Parallel test execution**: chia test suite chạy song song trên nhiều worker. (2) **Test caching**: cache build artifact và test result — chỉ re-run khi file liên quan thay đổi. (3) **Incremental build**: chỉ build/test module bị ảnh hưởng bởi commit (nx, turborepo). (4) **Test pyramid**: nhiều unit test fast, ít integration/E2E test chậm. (5) **Fail fast**: chạy lint/type check trước, unit test trước, integration test cuối.
+
+</details>
+
+<details>
+<summary><strong>GitOps là gì và ArgoCD implement nó thế nào?</strong></summary>
+
+**A:** **GitOps**: Git là single source of truth cho infrastructure và application config — mọi thay đổi qua Git commit/PR, không kubectl/manual. **ArgoCD** implement: (1) Watch Git repo chứa K8s manifests/Helm charts. (2) So sánh desired state (Git) với actual state (cluster). (3) Tự động sync khi phát hiện drift — apply manifest từ Git xuống cluster. (4) Audit trail đầy đủ qua Git history. Rollback = revert Git commit.
+
+</details>
 
 ## Sơ Đồ CI/CD Pipeline
 

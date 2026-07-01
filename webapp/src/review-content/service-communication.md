@@ -96,6 +96,23 @@ Dùng Feign + Circuit Breaker cho sync inter-service call. Publish event lên Ka
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Khi nào bạn chọn gRPC thay vì REST cho inter-service communication?
-1. Trade-off giữa giao tiếp đồng bộ và bất đồng bộ là gì?
-1. Làm thế nào để xử lý lỗi trong sync service-to-service call?
+<details>
+<summary><strong>Synchronous vs asynchronous communication trade-off là gì?</strong></summary>
+
+**A:** **Synchronous** (REST, gRPC): simple request-response, caller block chờ result, easy debugging, tight coupling — caller phải available, latency tích lũy qua chain. **Asynchronous** (Kafka, RabbitMQ): caller không block, loose coupling, higher throughput, fault tolerance (message persist) — complexity cao hơn (eventual consistency, message ordering, idempotency). Chọn sync: cần immediate response (login, payment status query), simple CRUD. Chọn async: background jobs (email, notification), event broadcasting, high throughput ingestion, decoupling giữa services có SLA khác nhau.
+
+</details>
+
+<details>
+<summary><strong>Service mesh như Istio giúp gì cho service communication?</strong></summary>
+
+**A:** Service mesh inject **sidecar proxy** (Envoy) vào mỗi Pod — intercept tất cả network traffic. Benefits: (1) **mTLS automatic**: encrypt và authenticate service-to-service traffic không cần code change. (2) **Traffic management**: retry, circuit breaking, canary routing tại proxy level. (3) **Observability**: distributed tracing, metrics tự động cho mọi service call. (4) **Load balancing**: advanced (least connections, locality-aware). Tradeoff: latency overhead (proxy hop), operational complexity, learning curve. Dùng khi: có nhiều service (>10), cần zero-trust security, muốn centralize cross-cutting concerns.
+
+</details>
+
+<details>
+<summary><strong>Request timeout nên set thế nào trong microservices?</strong></summary>
+
+**A:** Nguyên tắc: timeout phải **nhỏ hơn** timeout của caller. Service chain A → B → C: nếu A timeout sau 3s, B phải timeout sau <3s, C phải timeout sau <B_timeout. Tránh timeout lớn hơn caller — resource bị giữ vô ích. **Aggressive timeout** (fast fail): 500ms-2s cho user-facing services — user experience quan trọng hơn eventual success. **Relaxed timeout**: 30s-60s cho background jobs, batch processing. Kết hợp: timeout + retry + circuit breaker. Sai lầm phổ biến: default timeout quá lớn (30s) → slow cascade failure khi downstream chậm.
+
+</details>

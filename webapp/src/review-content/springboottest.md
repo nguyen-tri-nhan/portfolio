@@ -48,6 +48,35 @@ Dùng @DynamicPropertySource để wire TestContainers vào Spring — đây là
 
 ## Câu Hỏi Phỏng Vấn
 
-1. @DynamicPropertySource làm gì?
-1. Khi nào dùng RANDOM_PORT vs MOCK?
-1. @MockBean ảnh hưởng đến Spring context caching thế nào?
+<details>
+<summary><strong>@SpringBootTest và @WebMvcTest khác nhau thế nào?</strong></summary>
+
+**A:** **`@SpringBootTest`**: load **full application context** — tất cả beans, auto-configuration. Test gần giống production nhất. Chậm (load nhiều). Dùng khi: integration test cần nhiều layer. **`@WebMvcTest(MyController.class)`**: chỉ load **web layer** — Controller, Filter, ControllerAdvice. Không load Service, Repository. Service phải `@MockBean`. Nhanh. Dùng khi: test controller logic, request/response mapping, validation. **`@DataJpaTest`**: chỉ JPA layer — in-memory H2, Repository beans. **`@JsonTest`**: chỉ JSON serialization. Nguyên tắc: dùng slice annotation nhỏ nhất phù hợp với test mục đích.
+
+</details>
+
+<details>
+<summary><strong>MockMvc dùng để test gì và cách dùng?</strong></summary>
+
+**A:** MockMvc: test Spring MVC controllers mà không cần start HTTP server — simulate request/response trong JVM. Setup: `@WebMvcTest` auto-configure. Ví dụ:
+```java
+@Test
+void getUser_shouldReturn200() throws Exception {
+    given(userService.findById(1L)).willReturn(new User(1L, "Alice"));
+    
+    mockMvc.perform(get("/users/1")
+        .header("Authorization", "Bearer token"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value("Alice"));
+}
+```
+Verify: status, headers, response body, redirects. Không test thực tế network — dùng `@SpringBootTest + TestRestTemplate` hoặc WebTestClient cho full integration test.
+
+</details>
+
+<details>
+<summary><strong>@MockBean và @Mock khác nhau thế nào?</strong></summary>
+
+**A:** **`@Mock`** (Mockito): tạo mock thuần Mockito — không tích hợp Spring context. Dùng với `@ExtendWith(MockitoExtension.class)`. **`@MockBean`** (Spring Test): tạo Mockito mock **và register nó vào Spring Application Context** — thay thế bean thực trong context. Dùng khi: test có `@SpringBootTest` hoặc `@WebMvcTest` cần mock một số bean. Ví dụ: `@WebMvcTest` + `@MockBean UserService service` → controller autowire mock service. `@MockBean` cause context reload (slow) — dùng `@Mock` khi không cần Spring context (unit test với constructor injection).
+
+</details>

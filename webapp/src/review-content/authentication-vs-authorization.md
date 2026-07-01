@@ -124,6 +124,23 @@ Bật method security với <code>@EnableMethodSecurity</code> trong config. Dù
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa authentication và authorization là gì?
-1. Spring Security lưu trữ user đã xác thực giữa các request thế nào?
-1. Sự khác biệt giữa @Secured và @PreAuthorize là gì?
+<details>
+<summary><strong>Sự khác biệt giữa authentication và authorization là gì?</strong></summary>
+
+**A:** **Authentication (AuthN)** — xác minh identity: "Bạn là ai?" — verify username/password, JWT, API key. **Authorization (AuthZ)** — kiểm tra quyền: "Bạn được làm gì?" — sau khi biết identity, check permission. HTTP 401 = chưa authenticated; HTTP 403 = authenticated nhưng không authorized. Spring Security: `Authentication` object (AuthN) → `AccessDecisionManager` check authorities (AuthZ).
+
+</details>
+
+<details>
+<summary><strong>Spring Security lưu trữ user đã xác thực giữa các request thế nào?</strong></summary>
+
+**A:** Dùng `SecurityContextHolder` với `ThreadLocal` strategy mặc định — mỗi request thread có `SecurityContext` riêng chứa `Authentication`. Giữa request: session-based auth lưu vào HTTP Session; stateless REST + JWT không lưu session — mỗi request extract từ Authorization header. Để stateless: `SessionCreationPolicy.STATELESS`.
+
+</details>
+
+<details>
+<summary><strong>Sự khác biệt giữa @Secured và @PreAuthorize là gì?</strong></summary>
+
+**A:** **`@Secured({"ROLE_ADMIN"})`** — đơn giản, chỉ check role name, không support SpEL. **`@PreAuthorize("hasRole('ADMIN') && #userId == authentication.principal.id")`** — mạnh hơn, dùng SpEL, có thể truy cập method arguments, authentication object, gọi Spring bean. Cần enable `@EnableMethodSecurity` (Spring Security 6). Prefer `@PreAuthorize` cho flexibility.
+
+</details>

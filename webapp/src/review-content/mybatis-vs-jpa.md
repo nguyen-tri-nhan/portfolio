@@ -54,6 +54,23 @@ Khi hỏi "MyBatis vs JPA": nêu cả hai trade-off, rồi đưa ra recommendati
 
 ## Câu Hỏi Phỏng Vấn
 
-1. N+1 query trong JPA do đâu và fix thế nào?
-1. Dùng cả MyBatis và Spring Data JPA trong cùng Spring Boot project được không?
-1. Khi nào recommend MyBatis cho project mới?
+<details>
+<summary><strong>N+1 query trong JPA do đâu và fix thế nào?</strong></summary>
+
+**A:** N+1: load 1 parent entity list (1 query), rồi access LAZY collection của từng entity → N queries. Ví dụ: 100 Order → access `order.getItems()` mỗi cái → 100 thêm query = 101 total. Fix: (1) **JOIN FETCH**: `SELECT o FROM Order o JOIN FETCH o.items`. (2) **@EntityGraph**: `@EntityGraph(attributePaths="items")` trên repository method. (3) **Batch fetching**: `@BatchSize(size=20)` — load items của 20 order một lần. (4) **DTO projection** với constructor query.
+
+</details>
+
+<details>
+<summary><strong>Dùng cả MyBatis và Spring Data JPA trong cùng Spring Boot project được không?</strong></summary>
+
+**A:** **Có** — hoàn toàn valid. Config hai DataSource hoặc một DataSource với hai transaction manager (chú ý transaction boundary). MyBatis Mapper bean và JPA Repository bean tồn tại song song. Use case: JPA cho domain entity CRUD; MyBatis cho complex report query hoặc batch operation. Dependency: `mybatis-spring-boot-starter` và `spring-boot-starter-data-jpa` cùng trong pom.xml. Chỉ cần đảm bảo `@Primary` transaction manager đúng.
+
+</details>
+
+<details>
+<summary><strong>Khi nào recommend MyBatis cho project mới?</strong></summary>
+
+**A:** Recommend MyBatis cho project mới khi: (1) **SQL-first team**: DBA/BA viết SQL, dev binding kết quả; SQL là source of truth. (2) **Financial system**: audit requirement — muốn thấy chính xác SQL nào chạy. (3) **Complex reporting**: window function, CTE, DB-specific feature không support tốt trong JPQL. (4) **Performance-critical**: cần fine-tune từng query, không muốn JPA query generation overhead. Không recommend khi: team nhỏ, schema sạch, muốn rapid CRUD development.
+
+</details>

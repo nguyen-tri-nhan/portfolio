@@ -67,6 +67,23 @@ Scan image với <code>trivy</code> hoặc <code>docker scout</code> cho vulnera
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Tại sao bạn nên tránh chạy container với root?
-1. .dockerignore file là gì và tại sao quan trọng?
-1. Làm thế nào để xử lý secret cần thiết lúc build time vs runtime?
+<details>
+<summary><strong>Tại sao bạn nên tránh chạy container với root?</strong></summary>
+
+**A:** Container root = root trên host nếu có container escape vulnerability. Attacker có thể: đọc/ghi file nhạy cảm của host, leo thang privilege, attack container khác cùng node. Best practice: thêm `USER nonroot` (hoặc `USER 1001`) vào Dockerfile. Nhiều K8s cluster enforce `PodSecurityPolicy`/`PodSecurityAdmission` block container chạy với uid=0. Spring Boot images từ Buildpacks mặc định dùng non-root user (`cnb`).
+
+</details>
+
+<details>
+<summary><strong>.dockerignore file là gì và tại sao quan trọng?</strong></summary>
+
+**A:** `.dockerignore` liệt kê file/dir không copy vào build context gửi lên Docker daemon. Quan trọng: (1) **Security**: tránh copy `.env`, credentials, private keys vào image. (2) **Performance**: giảm build context size — `node_modules`, `.git`, `target/` có thể hàng GB; Docker daemon phải transfer toàn bộ build context trước khi build. (3) **Cache**: tránh invalidate cache khi file không liên quan thay đổi.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để xử lý secret cần thiết lúc build time vs runtime?</strong></summary>
+
+**A:** **Build time secret** (npm token, private repo): dùng `--secret` flag (BuildKit): `RUN --mount=type=secret,id=npmrc,target=/root/.npmrc npm install` — secret không được lưu trong image layer. **Không** dùng ARG/ENV cho secret vì visible trong `docker history`. **Runtime secret**: inject qua environment variable (K8s Secret, Docker Compose secrets, Vault Agent). Không hardcode secret vào Dockerfile hay image.
+
+</details>

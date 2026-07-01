@@ -103,6 +103,23 @@ Hiểu cơ chế proxy Spring là chìa khóa debug @Transactional/@Cacheable kh
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa Proxy và Decorator?
-1. Tại sao self-invocation bypass Spring AOP?
-1. Sự khác biệt giữa JDK proxy và CGLIB proxy là gì?
+<details>
+<summary><strong>JDK dynamic proxy và CGLIB proxy khác nhau thế nào trong Spring AOP?</strong></summary>
+
+**A:** **JDK dynamic proxy**: tạo proxy implement cùng **interface** — target class phải implement interface. Proxy intercept tất cả method call qua interface. **CGLIB**: tạo subclass của **target class** — không cần interface. Spring dùng CGLIB khi class không có interface. Cả hai dùng cho `@Transactional`, `@Cacheable`, `@Async`. Chú ý: final class/method không thể proxy bằng CGLIB (không subclass được). Spring Boot 2.x default CGLIB cho `@Configuration`, JDK proxy cho interface-based bean. `spring.aop.proxy-target-class=true` force CGLIB.
+
+</details>
+
+<details>
+<summary><strong>Self-invocation vấn đề gì với Spring AOP?</strong></summary>
+
+**A:** Spring AOP proxy wrap bean từ bên ngoài — khi `this.method()` được gọi trong cùng class, bypass proxy → AOP advice không được apply. Ví dụ: `@Transactional` method A gọi `this.methodB()` (cũng `@Transactional`) → methodB không có transaction mới vì bypass proxy. Fix: (1) Inject bean vào chính nó (`@Autowired MyService self`) — gọi qua proxy. (2) Dùng `AopContext.currentProxy()`. (3) Refactor: extract methodB vào service khác. Đây là limitation của proxy-based AOP.
+
+</details>
+
+<details>
+<summary><strong>Proxy pattern dùng để làm gì ngoài Spring AOP?</strong></summary>
+
+**A:** Proxy pattern có nhiều use case: (1) **Lazy initialization**: tạo object thực sự khi cần (expensive resource — DB connection, large object). (2) **Access control**: check permission trước khi delegate (protection proxy). (3) **Caching**: cache kết quả, không gọi real object nếu cached. (4) **Remote proxy**: đại diện cho object ở remote system (RPC stub). (5) **Logging/monitoring**: log mọi method call không cần modify original. (6) **Smart reference**: GC tracking, ref counting. Spring AOP, Hibernate lazy loading, Java RMI đều dùng proxy pattern.
+
+</details>

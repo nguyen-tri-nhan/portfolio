@@ -103,6 +103,30 @@ public class SlidingWindowRateLimiter {
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa token bucket và leaky bucket rate limiting là gì?
-1. Làm thế nào để implement distributed rate limiting qua nhiều gateway instance?
-1. Một response bị rate-limited nên trả về HTTP status code và header nào?
+<details>
+<summary><strong>API Gateway rate limiting dùng thuật toán nào?</strong></summary>
+
+**A:** (1) **Token bucket**: bucket chứa N tokens, mỗi request consume 1 token, token refill theo tốc độ cố định — cho phép burst ngắn. (2) **Leaky bucket**: request vào queue, xử lý theo tốc độ cố định — smooth output, không cho burst. (3) **Fixed window**: đếm request trong window cố định (1 minute) — có edge case burst tại boundary. (4) **Sliding window log**: track timestamp của mỗi request — exact nhưng memory intensive. (5) **Sliding window counter**: kết hợp fixed window + weighted — balance accuracy vs memory. AWS API Gateway, Nginx dùng leaky bucket; Kong, Redis rate-limiting plugin dùng token bucket.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để implement distributed rate limiting?</strong></summary>
+
+**A:** Single instance: in-memory counter đơn giản. Distributed (nhiều API gateway instance): dùng **Redis** làm shared counter. Pattern với Redis:
+```lua
+-- Lua script atomic trong Redis
+local count = redis.call('INCR', key)
+if count == 1 then redis.call('EXPIRE', key, 60) end
+return count
+```
+Tradeoff: Redis là single point (dùng Redis Cluster để HA). Alternative: sticky routing — same client → same gateway instance (đơn giản hơn nhưng không perfect). Redis sorted set cho sliding window log. Thư viện: Bucket4j (Java), Resilience4j RateLimiter.
+
+</details>
+
+<details>
+<summary><strong>Rate limit response trả về gì theo best practice?</strong></summary>
+
+**A:** HTTP **429 Too Many Requests** với headers: `Retry-After: 60` (seconds until reset), `X-RateLimit-Limit: 100` (requests allowed per window), `X-RateLimit-Remaining: 0` (remaining in current window), `X-RateLimit-Reset: 1735689600` (Unix timestamp khi reset). Body: `{"error": "rate_limit_exceeded", "message": "Too many requests. Retry after 60 seconds."}`. Client behavior: đọc `Retry-After` header, wait, rồi retry với exponential backoff nếu vẫn rate limited. Không return 503 (Service Unavailable) cho rate limiting — đó là server error, không phải client error.
+
+</details>

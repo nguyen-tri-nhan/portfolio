@@ -111,6 +111,23 @@ class OrderServiceMockitoTest {
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa spy() và mock()?
-1. Tại sao dùng doReturn() thay vì when().thenReturn() với spy?
-1. @InjectMocks inject mock thế nào?
+<details>
+<summary><strong>Sự khác biệt giữa spy() và mock()?</strong></summary>
+
+**A:** `mock()`: tạo object giả — tất cả method return default value (null, 0, false, empty list). Không gọi real method. `spy()`: wrap **real object** — method không override thì gọi real implementation; có thể stub một số method để override. Ví dụ: `spy` trên `ArrayList` → `add()`, `size()` dùng real ArrayList behavior; chỉ stub `isEmpty()` để return false. Dùng spy khi cần test real behavior nhưng override một vài method cụ thể.
+
+</details>
+
+<details>
+<summary><strong>Tại sao dùng doReturn() thay vì when().thenReturn() với spy?</strong></summary>
+
+**A:** Với `spy`, `when(spy.method())` **gọi real method** trước khi stub — nếu real method ném exception hoặc có side effect, test fail. `doReturn().when(spy).method()` **không gọi real method** — an toàn hơn với spy. Ví dụ: `when(spyList.get(0))` throws `IndexOutOfBoundsException` nếu list empty; `doReturn("value").when(spyList).get(0)` không gọi real `get()`. Rule: với spy, prefer `doReturn/doThrow/doAnswer`.
+
+</details>
+
+<details>
+<summary><strong>@InjectMocks inject mock thế nào?</strong></summary>
+
+**A:** `@InjectMocks` tạo instance của class đang test và inject `@Mock`/`@Spy` field vào nó. Mockito thử inject theo thứ tự: (1) **Constructor injection**: tìm constructor nhận nhiều mock nhất. (2) **Setter injection**: gọi setter method. (3) **Field injection**: set field trực tiếp bằng reflection. Nếu inject fail: Mockito silent (không throw), field có thể null → NullPointerException trong test. Require `@ExtendWith(MockitoExtension.class)` hoặc `MockitoAnnotations.openMocks(this)`.
+
+</details>

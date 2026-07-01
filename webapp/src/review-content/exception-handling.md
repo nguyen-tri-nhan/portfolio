@@ -87,6 +87,23 @@ Trong Spring, annotate exception handler với <code>@ControllerAdvice</code> + 
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa checked và unchecked exception là gì?
-1. Điều gì xảy ra nếu exception được ném trong finally block?
-1. try-with-resources hoạt động như thế nào bên dưới?
+<details>
+<summary><strong>Sự khác biệt giữa checked và unchecked exception là gì?</strong></summary>
+
+**A:** **Checked exception** (extends `Exception`, không phải `RuntimeException`): compiler buộc caller phải catch hoặc declare `throws` — ví dụ IOException, SQLException. Dùng cho recoverable situations. **Unchecked exception** (extends `RuntimeException`): không cần declare — ví dụ NullPointerException, IllegalArgumentException. Dùng cho programming errors hoặc unrecoverable situations. Modern Java: trend về unchecked bởi vì checked gây boilerplate và thường bị swallow.
+
+</details>
+
+<details>
+<summary><strong>Điều gì xảy ra nếu exception được ném trong finally block?</strong></summary>
+
+**A:** Exception trong `finally` **replace** exception từ `try`/`catch` — exception gốc bị mất hoàn toàn, không phải suppressed. Đây là bug nguy hiểm vì mất nguyên nhân gốc. Ví dụ: connection.close() trong finally ném exception → che giấu exception thực từ business logic. Fix: wrap finally body trong try-catch, hoặc dùng **try-with-resources** — resource close exception được suppressed (accessible qua `getSuppressed()`), primary exception được giữ.
+
+</details>
+
+<details>
+<summary><strong>try-with-resources hoạt động như thế nào bên dưới?</strong></summary>
+
+**A:** Compiler transform `try (Resource r = new Resource()) { body }` thành code: (1) Gọi `body`. (2) Khi exit (normal hoặc exception), gọi `r.close()`. (3) Nếu cả body và close() đều throw: body exception được giữ, close exception được **suppressed** (`addSuppressed()`). Resource phải implement `AutoCloseable`. Java 9: có thể dùng effectively-final variable đã khai báo ngoài: `try (existingVar)` — không cần khai báo lại.
+
+</details>

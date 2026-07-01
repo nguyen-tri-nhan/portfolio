@@ -136,6 +136,23 @@ Với REST API stateless, tắt session, dùng JWT hoặc OAuth2 token và thêm
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Spring Security filter chain là gì và được sắp xếp thế nào?
-1. Sự khác biệt giữa authentication và authorization là gì?
-1. Làm thế nào để thêm custom filter vào Spring Security chain?
+<details>
+<summary><strong>Spring Security filter chain hoạt động thế nào?</strong></summary>
+
+**A:** Spring Security là `Filter` chain đặt trước DispatcherServlet. Mỗi request đi qua các filter theo thứ tự: `SecurityContextPersistenceFilter` (load SecurityContext) → `UsernamePasswordAuthenticationFilter` (nếu login request) → `BasicAuthenticationFilter` (Basic Auth) → `BearerTokenAuthenticationFilter` (JWT) → `ExceptionTranslationFilter` → `AuthorizationFilter`. Mỗi filter có thể: authenticate, authorize, modify request, hoặc short-circuit (return 401/403). Custom filter: `addFilterBefore`/`addFilterAfter` trong `SecurityFilterChain` config.
+
+</details>
+
+<details>
+<summary><strong>JWT authentication trong Spring Security thế nào?</strong></summary>
+
+**A:** Flow: (1) Login request → `/auth/login` → verify credentials → generate JWT (HMAC hoặc RSA signed). (2) Client gửi `Authorization: Bearer <token>` trong header. (3) Custom filter (`OncePerRequestFilter`) intercept → extract token → validate signature + expiry → set `SecurityContextHolder`. Implement: `JwtAuthenticationFilter extends OncePerRequestFilter`, trong `doFilterInternal`: parse JWT với `jjwt` library → `UsernamePasswordAuthenticationToken` → `SecurityContextHolder.getContext().setAuthentication(auth)`. Config: `http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)`.
+
+</details>
+
+<details>
+<summary><strong>@PreAuthorize và @Secured khác nhau thế nào?</strong></summary>
+
+**A:** **`@Secured({"ROLE_ADMIN"})`**: đơn giản, chỉ check role — không support SpEL expression. **`@PreAuthorize("hasRole('ADMIN') and #user.id == authentication.principal.id")`**: SpEL expression — flexible, có thể check method params (`#param`), authentication, custom security expressions. `@PostAuthorize`: check sau khi method return — dùng `returnObject` trong expression. Enable: `@EnableMethodSecurity` (Spring Security 6) hoặc `@EnableGlobalMethodSecurity` (deprecated). Best practice: dùng `@PreAuthorize` vì expressive hơn và support parameter-level security.
+
+</details>

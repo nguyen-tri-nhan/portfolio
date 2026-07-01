@@ -48,9 +48,26 @@ Thêm tracing trước khi cần — sau incident thì quá muộn. Sample ở 1
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa trace và span là gì?
-1. Trace context được truyền qua HTTP boundary thế nào?
-1. Sampling là gì và tại sao 100% sampling problematic trong production?
+<details>
+<summary><strong>Sự khác biệt giữa trace và span là gì?</strong></summary>
+
+**A:** **Trace**: toàn bộ hành trình của một request qua nhiều service — identified bởi `traceId`. **Span**: một unit of work trong trace — một RPC call, một DB query, một function call. Mỗi span có `spanId`, `parentSpanId`, timestamp, duration, và tags. Trace là cây span: root span (incoming request) → child spans (downstream call, DB query). Jaeger/Zipkin visualize trace như waterfall diagram.
+
+</details>
+
+<details>
+<summary><strong>Trace context được truyền qua HTTP boundary thế nào?</strong></summary>
+
+**A:** Dùng **HTTP headers** để propagate context: W3C standard: `traceparent: 00-<traceId>-<spanId>-01`. B3 format (Zipkin): `X-B3-TraceId`, `X-B3-SpanId`, `X-B3-ParentSpanId`. Spring Cloud Sleuth/Micrometer Tracing tự động inject headers vào outgoing request (RestTemplate, WebClient, Feign) và extract từ incoming. Service nhận request extract context → tạo child span với parentSpanId = received spanId.
+
+</details>
+
+<details>
+<summary><strong>Sampling là gì và tại sao 100% sampling problematic trong production?</strong></summary>
+
+**A:** **Sampling**: chỉ collect trace cho một phần requests thay vì tất cả. 100% sampling problematic: (1) **Storage cost**: mỗi trace có hàng chục span × metadata → hàng TB/ngày với high traffic. (2) **Performance overhead**: serialization, network call đến tracing backend trên mỗi request. Strategies: **Head-based** (quyết định sample khi request bắt đầu, ví dụ 1%); **Tail-based** (quyết định sau khi request hoàn thành — có thể sample 100% lỗi + 1% thành công). Jaeger/Tempo support adaptive sampling.
+
+</details>
 
 ## Sơ Đồ Distributed Tracing
 

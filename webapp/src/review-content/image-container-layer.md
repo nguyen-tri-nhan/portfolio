@@ -61,6 +61,30 @@ Sắp xếp instruction Dockerfile từ ít-đến-nhiều-thay-đổi-thường
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Tại sao bạn nên copy file descriptor gói trước source code trong Dockerfile?
-1. Điều gì xảy ra với writable layer khi container bị xóa?
-1. Union filesystem cho phép chia sẻ layer giữa container thế nào?
+<details>
+<summary><strong>Tại sao bạn nên copy file descriptor gói trước source code trong Dockerfile?</strong></summary>
+
+**A:** Docker cache layer theo thứ tự instruction. Source code thay đổi thường xuyên; `package.json`/`pom.xml` thay đổi ít hơn. Nếu copy source code trước → mỗi code change invalidate cache từ COPY trở xuống, bao gồm `npm install`/`mvn install` — cực chậm. Copy package files trước:
+```dockerfile
+COPY pom.xml .
+RUN mvn dependency:go-offline  # cache hit nếu pom không đổi
+COPY src/ src/
+RUN mvn package
+```
+Dependency install chỉ re-run khi package file thay đổi.
+
+</details>
+
+<details>
+<summary><strong>Điều gì xảy ra với writable layer khi container bị xóa?</strong></summary>
+
+**A:** Mỗi container có **writable layer** (container layer) trên top của image layers (read-only). Khi container bị xóa (`docker rm`), writable layer bị xóa vĩnh viễn — mọi data được ghi trong container (log, temp file, DB data) mất. Để persist data: dùng **Docker volume** (managed bởi Docker daemon, persist sau khi container xóa) hoặc **bind mount** (map với host directory). Stateful service (DB) phải dùng volume.
+
+</details>
+
+<details>
+<summary><strong>Union filesystem cho phép chia sẻ layer giữa container thế nào?</strong></summary>
+
+**A:** Docker dùng Union filesystem (OverlayFS trên Linux): multiple read-only image layers + writable container layer stack thành một unified view. Nhiều container dùng cùng base image (ví dụ `eclipse-temurin:21-jre`) **chia sẻ image layers** — layer chỉ lưu một lần trên disk và trong memory. Container A và B đều có `eclipse-temurin:21-jre` layer nhưng chỉ download/store một lần → tiết kiệm đáng kể disk và pull time khi cùng host.
+
+</details>

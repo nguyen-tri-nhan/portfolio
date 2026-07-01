@@ -129,6 +129,30 @@ Dùng Filter cho Spring Security (phải chạy trước khi request đến bấ
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Bạn có thể inject Spring bean vào Filter không? Bằng cách nào?
-1. Điều gì xảy ra với interceptor nếu filter ném exception?
-1. Làm thế nào để đăng ký Filter vs Interceptor?
+<details>
+<summary><strong>Bạn có thể inject Spring bean vào Filter không? Bằng cách nào?</strong></summary>
+
+**A:** `Filter` là Servlet API, khởi tạo trước Spring context — inject bình thường không work. Giải pháp: (1) **Extend `OncePerRequestFilter`** (Spring) — abstract class support `@Autowired` vì Spring tạo bean, đăng ký với Servlet container. (2) **`DelegatingFilterProxy`**: Servlet filter chỉ delegate sang Spring bean thực — Spring context manage lifecycle. (3) **Programmatic registration**: `FilterRegistrationBean` trong `@Configuration` — Spring tạo và manage filter bean.
+
+</details>
+
+<details>
+<summary><strong>Điều gì xảy ra với interceptor nếu filter ném exception?</strong></summary>
+
+**A:** Filter chạy **trước** DispatcherServlet — nếu filter ném exception, request **không reach** DispatcherServlet, do đó interceptor **không được gọi**. `preHandle()`, `postHandle()`, `afterCompletion()` đều không được invoke. Exception từ filter phải được handle trong filter tự nó hoặc bởi error page mapping (web.xml / `@WebServlet`). `@ExceptionHandler` trong `@ControllerAdvice` cũng không catch exception từ filter vì nó xử lý sau DispatcherServlet.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để đăng ký Filter vs Interceptor?</strong></summary>
+
+**A:** **Filter**: (1) Annotate `@WebFilter` + `@ServletComponentScan` trên main class. (2) `FilterRegistrationBean` trong `@Configuration` — control order bằng `setOrder()`. **Interceptor**: implement `HandlerInterceptor`, đăng ký trong `@Configuration` extends `WebMvcConfigurer`:
+```java
+@Override
+public void addInterceptors(InterceptorRegistry registry) {
+    registry.addInterceptor(myInterceptor).addPathPatterns("/api/**");
+}
+```
+Filter scope: toàn bộ Servlet container. Interceptor scope: chỉ trong Spring MVC.
+
+</details>

@@ -78,6 +78,23 @@ Dùng Lombok @Builder cho DTO/request nhiều field. Dùng Factory Method khi kh
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Khi nào dùng Builder thay vì constructor?
-1. Sự khác biệt giữa Factory Method và Abstract Factory?
-1. Spring quản lý Singleton bean thế nào?
+<details>
+<summary><strong>Khi nào dùng Builder thay vì constructor?</strong></summary>
+
+**A:** Dùng Builder khi: (1) Class có nhiều optional parameter — tránh telescoping constructor (4-5 overloaded constructors). (2) Muốn immutable object với nhiều field. (3) Các parameter cùng type dễ nhầm lẫn thứ tự — Builder đặt tên rõ ràng. Ví dụ: `HttpRequest.newBuilder().GET().uri(url).timeout(Duration.ofSeconds(5)).build()`. Lombok `@Builder` generate tự động. Java records với compact constructor là alternative cho immutable simple DTO.
+
+</details>
+
+<details>
+<summary><strong>Sự khác biệt giữa Factory Method và Abstract Factory?</strong></summary>
+
+**A:** **Factory Method**: define interface để tạo object, subclass quyết định concrete class nào. Một product, nhiều variant qua subclassing. Ví dụ: `createConnection()` trong `PostgresRepository` vs `MysqlRepository`. **Abstract Factory**: interface để tạo **family of related objects** — tất cả cùng nhau. Ví dụ: `UIFactory` tạo `Button`, `TextField`, `Dialog` — `DarkUIFactory` vs `LightUIFactory` tạo consistent family. Abstract Factory dùng Factory Method nội bộ.
+
+</details>
+
+<details>
+<summary><strong>Spring quản lý Singleton bean thế nào?</strong></summary>
+
+**A:** Spring singleton: **một instance per ApplicationContext** (không phải per JVM như GoF Singleton). Container tạo bean khi context start (eager), giữ trong registry map (key=bean name, value=instance), inject cùng instance cho mọi dependency. Thread-safety: bean phải stateless hoặc dùng synchronized — Spring không tự make bean thread-safe. `@Scope("prototype")`: tạo instance mới mỗi lần inject/request. `@Scope("request")` cho web: một instance per HTTP request.
+
+</details>

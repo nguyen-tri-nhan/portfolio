@@ -67,6 +67,23 @@ Monitor cache hit rate (mục tiêu >90% cho cache thiết kế tốt). Hit rate
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa LRU và LFU eviction là gì?
-1. Redis quyết định evict gì khi memory đầy thế nào?
-1. Metric nào cho biết eviction policy cần điều chỉnh?
+<details>
+<summary><strong>Sự khác biệt giữa LRU và LFU eviction là gì?</strong></summary>
+
+**A:** **LRU (Least Recently Used)**: evict item không được access **gần nhất** — phù hợp khi recent usage là predictor tốt của future access (temporal locality). **LFU (Least Frequently Used)**: evict item được access **ít lần nhất** theo lịch sử — phù hợp khi frequency là predictor tốt hơn. LFU tốt hơn cho data với stable popularity (hot vs cold content); LRU tốt hơn cho access pattern thay đổi theo thời gian. LRU implement đơn giản hơn (LinkedHashMap); LFU cần counter per item.
+
+</details>
+
+<details>
+<summary><strong>Redis quyết định evict gì khi memory đầy thế nào?</strong></summary>
+
+**A:** Phụ thuộc `maxmemory-policy` config: **allkeys-lru** — evict any key theo LRU (phổ biến nhất cho cache). **volatile-lru** — chỉ evict key có TTL, theo LRU. **allkeys-lfu** (Redis 4+) — evict any key theo LFU. **noeviction** — throw error khi memory đầy (default, phù hợp cho data store không phải cache). **allkeys-random** — evict random. Redis dùng **approximate LRU** (sample 5-10 key, evict LRU trong sample) thay vì exact LRU để tránh overhead.
+
+</details>
+
+<details>
+<summary><strong>Metric nào cho biết eviction policy cần điều chỉnh?</strong></summary>
+
+**A:** (1) **Eviction rate cao** (`evicted_keys` tăng liên tục trong `INFO stats`): cache quá nhỏ hoặc TTL quá ngắn — tăng memory hoặc điều chỉnh eviction policy. (2) **Hit rate thấp** (`keyspace_hits/(keyspace_hits+keyspace_misses) < 80%`): data bị evict trước khi được hit — tăng memory. (3) **Memory usage tăng liên tục đến maxmemory**: normal nếu policy là allkeys-lru; problematic nếu noeviction vì sẽ throw error sớm.
+
+</details>

@@ -75,6 +75,23 @@ Thiết kế data model cho eventual consistency nơi bạn dùng nó: dùng tha
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Làm thế nào để giải thích eventual consistency cho stakeholder không kỹ thuật?
-1. Conflict nào có thể phát sinh với eventual consistency và giải quyết thế nào?
-1. Đưa ví dụ khi eventual consistency chấp nhận được vs nguy hiểm.
+<details>
+<summary><strong>Làm thế nào để giải thích eventual consistency cho stakeholder không kỹ thuật?</strong></summary>
+
+**A:** Dùng analogy: "Như bảng thông báo trong văn phòng — khi bạn post thông báo, không phải mọi người thấy ngay, nhưng sau vài phút tất cả sẽ thấy. Trong thời gian đó, một số người thấy thông báo mới, một số chưa." Hoặc DNS: sau khi đổi domain, không phải tất cả DNS server trên thế giới cập nhật ngay — cần 24-48h để propagate. Hệ thống của chúng ta hoạt động tương tự: dữ liệu sẽ đồng bộ, nhưng có thể mất vài giây.
+
+</details>
+
+<details>
+<summary><strong>Conflict nào có thể phát sinh với eventual consistency và giải quyết thế nào?</strong></summary>
+
+**A:** **Write-write conflict**: hai node cùng update cùng record → diverge. Giải pháp: (1) **Last-Write-Wins (LWW)**: dùng timestamp/version — write mới hơn win; có thể mất data. (2) **CRDT**: data structure tự merge được. (3) **Version vectors**: track version mỗi node, detect conflict, prompt user resolve (Google Docs). (4) **Saga với compensating transaction**: undo conflict bằng business logic. Strategy phụ thuộc business: giỏ hàng có thể LWW; financial transaction cần strict consistency.
+
+</details>
+
+<details>
+<summary><strong>Đưa ví dụ khi eventual consistency chấp nhận được vs nguy hiểm.</strong></summary>
+
+**A:** **Chấp nhận được**: social media like count (vài giây lag không ảnh hưởng UX), user profile view (stale avatar OK), product catalog (giá cũ vài giây OK nếu có validation khi checkout), DNS record, CDN cache. **Nguy hiểm**: (1) **Bank transfer** — phải strong consistency, không thể double-spend. (2) **Inventory** — oversell nếu count stale: đặt hàng thành công nhưng hết hàng thực. (3) **Authentication token** — revoke token phải propagate ngay. Dùng strong consistency cho financial, medical, security.
+
+</details>

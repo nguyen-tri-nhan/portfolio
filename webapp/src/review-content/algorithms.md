@@ -61,6 +61,23 @@ Với hầu hết trường hợp, round-robin hoặc least-connections đủ t�
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Tại sao Least Connections tốt hơn Round Robin cho long-lived connection?
-1. Thuật toán power-of-two-choices là gì?
-1. Khi nào bạn dùng IP Hash cho load balancing?
+<details>
+<summary><strong>Tại sao Least Connections tốt hơn Round Robin cho long-lived connection?</strong></summary>
+
+**A:** Round Robin phân phối đều theo vòng tròn bất kể trạng thái server. Với long-lived connection (WebSocket, DB connection), một server có thể đang giữ 100 connection chậm trong khi server khác chỉ có 10 — Round Robin vẫn gửi đều → overload. **Least Connections** gửi request mới đến server ít active connection nhất, phù hợp khi request có thời gian xử lý không đều.
+
+</details>
+
+<details>
+<summary><strong>Thuật toán power-of-two-choices là gì?</strong></summary>
+
+**A:** Thay vì scan tất cả N server (O(N)), chọn ngẫu nhiên **2 server** và gửi đến server ít connection hơn trong hai — O(1). Lý thuyết chứng minh phân phối gần optimal với xác suất cao. Dùng bởi Nginx, HAProxy và nhiều cloud LB. Trade-off: không globally optimal nhưng rất tốt trong practice với overhead cực thấp.
+
+</details>
+
+<details>
+<summary><strong>Khi nào bạn dùng IP Hash cho load balancing?</strong></summary>
+
+**A:** IP Hash luôn route request từ cùng client IP đến cùng server — tạo **sticky session** cho app có in-memory session chưa externalize ra Redis. Nhược điểm: phân phối không đều khi nhiều user sau cùng NAT IP; server down → mất toàn bộ session của nhóm. Best practice: externalize session vào Redis để không cần IP Hash.
+
+</details>

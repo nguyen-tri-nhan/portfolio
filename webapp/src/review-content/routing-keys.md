@@ -67,6 +67,23 @@ Thiết kế taxonomy routing key từ đầu: pattern <code>domain.entity.actio
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa * và # trong topic routing key là gì?
-1. Một message có thể được giao đến nhiều queue không?
-1. Routing key khác nhau thế nào giữa direct và topic exchange?
+<details>
+<summary><strong>Routing key trong RabbitMQ direct exchange là gì?</strong></summary>
+
+**A:** Routing key là string label producer gắn vào message. Direct exchange so sánh routing key với binding key của queue (exact match). Queue binding: `channel.queueBind(queue, exchange, bindingKey)`. Producer publish: `channel.basicPublish(exchange, routingKey, ..., body)`. Nếu `routingKey == bindingKey` → message route đến queue đó. Một queue có thể bind với nhiều binding keys. Routing key khác binding key → message bị discard (hoặc route đến alternate exchange). Use case: `error.order`, `info.order` → route tới queue khác nhau.
+
+</details>
+
+<details>
+<summary><strong>Topic exchange routing pattern thế nào?</strong></summary>
+
+**A:** Topic exchange dùng pattern matching với wildcards trong binding key: `*` match đúng **một word**, `#` match **zero hoặc nhiều word** (word = ký tự giữa các dấu chấm). Ví dụ binding keys: `*.order.error` match `app.order.error` nhưng không match `order.error`. `logs.#` match `logs`, `logs.app`, `logs.app.error`. Producer routing key: `payment.order.failure` → route đến queue bind với `payment.#` và `*.order.*`. Dùng: multi-level categorization — application + module + severity.
+
+</details>
+
+<details>
+<summary><strong>Headers exchange hoạt động thế nào?</strong></summary>
+
+**A:** Headers exchange ignore routing key — route dựa trên **message headers** (key-value pairs). Queue binding specify `x-match` (`all` hoặc `any`) + header conditions. `x-match=all`: tất cả header điều kiện phải match. `x-match=any`: ít nhất một header match. Ví dụ: queue bind `{x-match: all, format: pdf, type: report}` → chỉ message có cả `format=pdf` và `type=report` được route. Linh hoạt hơn routing key nhưng overhead cao hơn (parse headers). Ít dùng hơn direct/topic trong thực tế.
+
+</details>

@@ -82,6 +82,23 @@ Dependency injection của Spring khai thác runtime polymorphism — inject <co
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Giải thích sự khác biệt giữa method overloading và overriding.
-1. JVM quyết định gọi method nào lúc runtime bằng cách nào?
-1. Polymorphism hỗ trợ Open/Closed Principle như thế nào?
+<details>
+<summary><strong>Compile-time và runtime polymorphism khác nhau thế nào?</strong></summary>
+
+**A:** **Compile-time (static) polymorphism**: method overloading — compiler chọn method dựa trên số lượng và type của tham số tại compile time. `add(int, int)` vs `add(double, double)`. **Runtime (dynamic) polymorphism**: method overriding — JVM chọn method implementation dựa trên actual type của object tại runtime. `Animal a = new Dog(); a.speak()` → gọi `Dog.speak()` không phải `Animal.speak()`. Cơ chế: virtual dispatch table (vtable). Từ khóa: `@Override`. Runtime polymorphism là core của OOP — code against interface, behavior varies by concrete type.
+
+</details>
+
+<details>
+<summary><strong>@Override annotation có bắt buộc không?</strong></summary>
+
+**A:** Không bắt buộc về mặt compile — code vẫn chạy đúng nếu không có `@Override`. Nhưng **nên luôn dùng** vì: (1) Compiler verify method thực sự override method ở parent — nếu typo tên method hoặc sai signature, compiler báo lỗi thay vì silently tạo method mới. (2) Readable: intent rõ ràng cho người đọc. (3) IDE support tốt hơn (refactoring, navigation). Ví dụ bug: `public boolean equals(Object o)` đúng, nhưng `public boolean equals(MyClass o)` (sai signature) không override `Object.equals` — không có `@Override` → bug silent.
+
+</details>
+
+<details>
+<summary><strong>Method hiding trong static method là gì?</strong></summary>
+
+**A:** Static method không thể bị override — chỉ có thể bị **hidden**. `class Parent { static void method() {...} }`, `class Child extends Parent { static void method() {...} }` → `Child.method()` hide `Parent.method()`. Khác runtime polymorphism: `Parent p = new Child(); p.method()` → gọi `Parent.method()` (compile-time type quyết định). Với instance method: gọi `Child.method()`. Static method binding là **early binding** (compile time) — không có dynamic dispatch. `@Override` trên static method → compiler error trong Java.
+
+</details>

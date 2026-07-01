@@ -98,9 +98,26 @@ Thêm quality gate làm fail pipeline: coverage test tối thiểu (ví dụ 80%
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Giai đoạn nào mọi CI/CD pipeline production cần có?
-1. Làm thế nào để ngăn secret bị lộ trong CI log?
-1. Quality gate là gì và làm thế nào để implement?
+<details>
+<summary><strong>Giai đoạn nào mọi CI/CD pipeline production cần có?</strong></summary>
+
+**A:** Minimum stages: (1) **Build**: compile, package artifact. (2) **Unit test**: fast, isolated, fail fast. (3) **Static analysis**: lint, type check, security scan (Snyk, SonarQube). (4) **Integration test**: test với real dependency (DB, message queue). (5) **Docker build + push**: build và tag image. (6) **Deploy to staging**: auto deploy. (7) **Smoke test**: verify critical path hoạt động. (8) **Deploy to production**: manual gate hoặc auto. Optional: performance test, E2E test, contract test.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để ngăn secret bị lộ trong CI log?</strong></summary>
+
+**A:** (1) Dùng CI **secret management** (GitHub Secrets, GitLab CI Variables, Jenkins Credentials) — không hardcode trong yaml. (2) Secret được inject vào env var, CI mask giá trị trong log. (3) Không print env var trong script (`printenv`). (4) Dùng `--quiet` flag cho tools có thể log secrets. (5) Scan trước commit với **pre-commit hooks** (gitleaks, detect-secrets). (6) Không log request/response payload chứa credential. (7) Rotate secret thường xuyên — rủi ro leak giảm theo time window.
+
+</details>
+
+<details>
+<summary><strong>Quality gate là gì và làm thế nào để implement?</strong></summary>
+
+**A:** **Quality gate**: tập hợp threshold phải pass trước khi artifact được promote (merge, deploy). Ví dụ: code coverage > 80%, 0 critical vulnerability (SonarQube), p95 latency < 500ms (performance test), contract test pass. Implement: (1) SonarQube Quality Gate: config threshold, tích hợp vào CI — fail build nếu gate không pass. (2) k6 threshold: `thresholds: { http_req_duration: ["p(95)<500"] }` → CI fail nếu vi phạm. (3) GitHub branch protection: require status check pass trước merge.
+
+</details>
 
 ## Sơ Đồ Blue-Green & Canary Deployment
 

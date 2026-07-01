@@ -64,6 +64,23 @@ Thiết kế index xung quanh query thường xuyên nhất. Kiểm tra <code>pg
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Giải thích leftmost prefix rule cho composite index.
-1. Với index (a, b), query nào có thể dùng nó: WHERE b=1, WHERE a=1 hay WHERE a=1 AND b=1?
-1. Thứ tự cột trong composite index ảnh hưởng hiệu năng thế nào?
+<details>
+<summary><strong>Giải thích leftmost prefix rule cho composite index.</strong></summary>
+
+**A:** Index `(a, b, c)` có thể được dùng bởi query filter theo **prefix từ trái**: `WHERE a=?`, `WHERE a=? AND b=?`, `WHERE a=? AND b=? AND c=?` đều dùng index. Nhưng `WHERE b=?` hoặc `WHERE c=?` — không dùng index (thiếu prefix). `WHERE a=? AND c=?` — chỉ dùng phần `a`, không dùng `c`. Index tree được sắp xếp theo (a, rồi b, rồi c) — skip prefix đầu là không navigate được.
+
+</details>
+
+<details>
+<summary><strong>Với index (a, b), query nào có thể dùng nó: WHERE b=1, WHERE a=1 hay WHERE a=1 AND b=1?</strong></summary>
+
+**A:** **`WHERE a=1`** — dùng index, chỉ phần a (range scan). **`WHERE a=1 AND b=1`** — dùng index đầy đủ cả (a,b) — hiệu quả nhất. **`WHERE b=1`** — **không dùng index** vì b không phải leftmost prefix. EXPLAIN sẽ show `key=null` hoặc `type=ALL` cho `WHERE b=1`. Nếu thường xuyên query theo b một mình, cần index riêng trên cột b.
+
+</details>
+
+<details>
+<summary><strong>Thứ tự cột trong composite index ảnh hưởng hiệu năng thế nào?</strong></summary>
+
+**A:** Đặt **cột có cardinality cao** (nhiều distinct values) lên đầu để loại bỏ nhiều row nhất sớm nhất. Tuy nhiên, phải cân bằng với leftmost prefix rule: cột nào được dùng trong WHERE thường xuyên nhất → đặt đầu. Nếu query vừa equality vừa range: đặt equality column trước, range column sau — `(status, created_at)` cho `WHERE status='ACTIVE' AND created_at > ?` tốt hơn ngược lại.
+
+</details>

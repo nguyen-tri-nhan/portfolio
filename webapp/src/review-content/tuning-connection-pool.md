@@ -52,6 +52,23 @@ Pattern incident production điển hình: traffic spike → pool hết → requ
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Tính maximumPoolSize thế nào khi chạy 5 app instance?
-1. Điều gì gây ra "Connection is not available, request timed out" trong HikariCP?
-1. Khi nào cần thêm ProxySQL trước MySQL?
+<details>
+<summary><strong>Cách tìm connection pool size phù hợp cho HikariCP?</strong></summary>
+
+**A:** Formula từ PostgreSQL wiki: `pool_size = (core_count × 2) + effective_spindle_count`. Với SSD/NVMe: effective_spindle = 1. 8 cores → pool = 17. Nhưng đây là starting point — phải đo. Process: (1) Set pool size nhỏ (10), load test. (2) Monitor: `hikaricp.connections.pending` (waiting) và `hikaricp.connections.usage` (active). (3) Nếu pending > 0 thường xuyên → tăng. (4) Nếu DB CPU idle nhưng latency cao → bottleneck không phải pool size. HikariCP: `maximumPoolSize`, `minimumIdle`, `connectionTimeout=30000`.
+
+</details>
+
+<details>
+<summary><strong>Connection pool exhaustion dẫn đến gì?</strong></summary>
+
+**A:** Tất cả connections đang dùng, request mới → chờ trong queue. Nếu chờ quá `connectionTimeout` (HikariCP default 30s) → `SQLTimeoutException: Connection is not available, request timed out after 30000ms`. Cascade: nhiều thread timeout → request queue backup → OutOfMemoryError. Triệu chứng: thread dump thấy nhiều thread blocked tại connection acquisition. Nguyên nhân thường: (1) Slow queries hold connection lâu. (2) Transaction không close đúng cách. (3) Pool size quá nhỏ cho load. Fix: increase pool size (short-term), fix slow queries, optimize transaction scope.
+
+</details>
+
+<details>
+<summary><strong>Leak detection trong HikariCP là gì?</strong></summary>
+
+**A:** `leakDetectionThreshold` (HikariCP): nếu connection được hold lâu hơn threshold (ví dụ 2000ms = 2s) → log warning với stack trace của caller. Giúp phát hiện: connection không close, long-running transaction, forgetting to close ResultSet. Config: `spring.datasource.hikari.leak-detection-threshold=2000`. Trong test: đặt threshold nhỏ (200ms) để phát hiện leak. Không nên enable trong production với threshold quá thấp — false positive warning. Log: `[HikariPool-1] Connection leak detection triggered for ... stack trace`.
+
+</details>

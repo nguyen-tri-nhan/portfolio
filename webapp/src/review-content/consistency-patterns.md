@@ -70,6 +70,23 @@ Với thao tác hiển thị cho user, đảm bảo "read-your-writes" consisten
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa eventual consistency và strong consistency là gì?
-1. "Read-your-writes" consistency là gì và làm thế nào để implement?
-1. CRDT là gì và giúp gì với eventual consistency?
+<details>
+<summary><strong>Sự khác biệt giữa eventual consistency và strong consistency là gì?</strong></summary>
+
+**A:** **Strong consistency**: sau khi write thành công, mọi read tiếp theo (từ bất kỳ node nào) đều thấy giá trị mới nhất — đòi hỏi coordination. **Eventual consistency**: sau write, system *cuối cùng* sẽ hội tụ đến giá trị mới nhất — trong thời gian đó có thể đọc được giá trị cũ (stale). Trade-off: strong consistency có latency cao hơn (phải sync); eventual consistency có availability cao hơn và latency thấp hơn.
+
+</details>
+
+<details>
+<summary><strong>"Read-your-writes" consistency là gì và làm thế nào để implement?</strong></summary>
+
+**A:** **Read-your-writes**: sau khi user A write, user A (cùng session) luôn thấy write đó — kể cả khi đọc từ replica. *Người khác* có thể thấy stale. Implement: (1) Sau write, route read của user đó đến primary tạm thời (dùng session flag). (2) Ghi timestamp write vào session cookie, read request gửi timestamp → replica chờ đủ replication đến timestamp đó rồi mới trả lời. (3) Luôn read from primary cho user context cụ thể.
+
+</details>
+
+<details>
+<summary><strong>CRDT là gì và giúp gì với eventual consistency?</strong></summary>
+
+**A:** **CRDT (Conflict-free Replicated Data Type)**: data structure được thiết kế để tự động merge conflict mà không cần central coordination. Ví dụ: Grow-only Counter (G-Counter) chỉ tăng → merge = max của mỗi node; OR-Set cho set có add/remove; LWW-Register (Last-Write-Wins). CRDTs đảm bảo: (1) Concurrent update từ nhiều node luôn merge được. (2) Kết quả cuối cùng deterministic. Dùng: Redis (HyperLogLog), Riak, Apple Notes offline sync.
+
+</details>

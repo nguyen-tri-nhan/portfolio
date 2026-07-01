@@ -93,6 +93,36 @@ Những vấn đề này tinh tế và phụ thuộc platform — code có thể
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa visibility và atomicity là gì?
-1. Một Java program có thể lặp mãi mãi do vấn đề visibility không?
-1. Memory barrier là gì và liên quan đến volatile như thế nào?
+<details>
+<summary><strong>Happens-before relationship là gì?</strong></summary>
+
+**A:** Happens-before (HB) là **ordering guarantee** trong Java Memory Model: nếu action A HB action B → B sees effect của A — không bị reordering. HB rules: (1) Program order rule: statement trước HB statement sau trong cùng thread. (2) Monitor lock rule: unlock HB subsequent lock on same monitor. (3) Volatile rule: write to volatile HB subsequent read of same volatile. (4) Thread start rule: `Thread.start()` HB mọi action trong thread đó. (5) Thread join rule: mọi action trong thread HB return của `Thread.join()`. HB: nếu không có HB ordering → CPU/compiler có thể reorder → **visibility problem**.
+
+</details>
+
+<details>
+<summary><strong>Tại sao double-checked locking cần volatile?</strong></summary>
+
+**A:** DCL pattern cho singleton:
+```java
+private static volatile Singleton instance;
+static Singleton getInstance() {
+    if (instance == null) {
+        synchronized (Singleton.class) {
+            if (instance == null)
+                instance = new Singleton();
+        }
+    }
+    return instance;
+}
+```
+**Tại sao volatile?** `instance = new Singleton()` là 3 bước: (1) alloc memory, (2) init object, (3) assign reference. Không volatile: JIT có thể reorder → assign reference trước khi init xong → thread khác thấy non-null instance nhưng object chưa init. `volatile` đảm bảo write complete trước khi visible. Java 5+: DCL với volatile là thread-safe.
+
+</details>
+
+<details>
+<summary><strong>Instruction reordering gây vấn đề gì trong concurrent code?</strong></summary>
+
+**A:** CPU và JIT compiler reorder instructions để optimize — safe trong single-thread (không thay đổi observable behavior), nhưng gây issue trong multi-thread. Ví dụ: Thread A: `data = 42; ready = true;` → compiler reorder → `ready = true; data = 42;`. Thread B: `if (ready) print(data);` → thấy `ready=true` nhưng `data` chưa được write → print uninitialized value. Fix: `volatile boolean ready` → establish happens-before, prohibit reorder. Hoặc `synchronized`. `volatile` ngăn reorder với volatile field nhưng không ngăn reorder các write khác xung quanh nó (chỉ HB rule).
+
+</details>

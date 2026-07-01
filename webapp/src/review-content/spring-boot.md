@@ -110,6 +110,23 @@ Hiểu auto-configuration đang đăng ký gì. Dùng flag <code>--debug</code> 
 
 ## Câu Hỏi Phỏng Vấn
 
-1. @SpringBootApplication làm gì?
-1. Spring Boot auto-configuration hoạt động nội bộ thế nào?
-1. Làm thế nào để loại trừ một class auto-configuration cụ thể?
+<details>
+<summary><strong>@SpringBootApplication annotation làm gì?</strong></summary>
+
+**A:** `@SpringBootApplication` là meta-annotation kết hợp ba annotations: (1) **`@Configuration`**: class này là bean definition source. (2) **`@EnableAutoConfiguration`**: activate Spring Boot auto-configuration dựa trên classpath, beans, properties. (3) **`@ComponentScan`**: scan package hiện tại và sub-packages cho `@Component`, `@Service`, `@Repository`, `@Controller`. Auto-configuration: Spring Boot check classpath — nếu có `spring-boot-starter-data-jpa` → auto-configure DataSource, EntityManagerFactory, TransactionManager. Customize: `@SpringBootApplication(exclude={DataSourceAutoConfiguration.class})`.
+
+</details>
+
+<details>
+<summary><strong>Embedded server trong Spring Boot hoạt động thế nào?</strong></summary>
+
+**A:** Spring Boot embed Tomcat (default), Jetty, hoặc Undertow vào fat JAR — không cần deploy WAR vào external server. Khi `mvn package` → JAR chứa tất cả dependencies + embedded server. `java -jar app.jar` → main class start embedded Tomcat → deploy app context vào đó. Benefit: deployment đơn giản (single JAR), version lock (Tomcat version gắn với app), container-friendly. Exclude Tomcat dùng Jetty: `spring-boot-starter-web` exclude `tomcat`, add `spring-boot-starter-jetty`. Config: `server.port`, `server.tomcat.max-threads` trong `application.properties`.
+
+</details>
+
+<details>
+<summary><strong>Auto-configuration cơ chế nào để không xung đột với bean user define?</strong></summary>
+
+**A:** Spring Boot auto-configuration dùng `@ConditionalOnMissingBean` — chỉ tạo bean nếu **không** có bean cùng type đã được define bởi user. Ví dụ: `DataSourceAutoConfiguration` có `@ConditionalOnMissingBean(DataSource.class)` → nếu user define `@Bean DataSource`, auto-config không tạo. Thứ tự: user beans được đăng ký trước auto-config beans. Khác: `@ConditionalOnProperty` — chỉ tạo nếu property có giá trị cụ thể. `@ConditionalOnClass` — chỉ tạo nếu class tồn tại trên classpath. Mechanism: `spring.factories` / `AutoConfiguration.imports` list auto-config classes.
+
+</details>

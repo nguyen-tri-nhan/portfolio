@@ -80,7 +80,23 @@ Trong phỏng vấn, hãy liên kết OOP với Spring: các class <code>@Servic
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Giải thích bốn trụ cột OOP kèm ví dụ từ codebase của bạn.
-1. Khi nào bạn chọn composition thay vì inheritance?
-1. Overloading và overriding khác nhau thế nào?
-1. Java đạt được runtime polymorphism bằng cách nào?
+<details>
+<summary><strong>Giải thích bốn trụ cột OOP kèm ví dụ từ codebase của bạn.</strong></summary>
+
+**A:** (1) **Encapsulation**: ẩn internal state, expose qua method — `private` fields với getter/setter, validation trong setter. (2) **Inheritance**: reuse và extend — `AdminUser extends User`, Spring `@Repository` extends JPA pattern. (3) **Polymorphism**: cùng interface, behavior khác nhau — `PaymentService.pay()` với `CreditCardPayment` và `PaypalPayment` implementation. (4) **Abstraction**: hide complexity — `OrderRepository` interface ẩn JPA implementation, service chỉ biết repository interface.
+
+</details>
+
+<details>
+<summary><strong>Khi nào bạn chọn composition thay vì inheritance?</strong></summary>
+
+**A:** **Composition** (has-a) thường tốt hơn **inheritance** (is-a) vì: (1) Linh hoạt hơn — swap behavior runtime bằng cách inject khác. (2) Tránh tight coupling với parent implementation — thay đổi parent không ảnh hưởng. (3) Tránh diamond problem và deep hierarchy. (4) Testable hơn — inject mock thay vì override. Inheritance hợp lý khi có "is-a" rõ ràng (không chỉ muốn reuse code) và subclass có thể thay thế parent (Liskov). Rule: "Favor composition over inheritance" (GoF principle).
+
+</details>
+
+<details>
+<summary><strong>Overloading và overriding khác nhau thế nào?</strong></summary>
+
+**A:** **Overloading** (compile-time polymorphism): cùng class, cùng tên method, khác parameter type/count — compiler chọn version đúng dựa trên argument type lúc compile. **Overriding** (runtime polymorphism): subclass redefine method của parent với cùng signature — JVM chọn version dựa trên actual object type lúc runtime (`invokevirtual`). Overloading: `log(String)`, `log(Exception)`. Overriding: `Animal.speak()` được Dog override thành "Woof". `@Override` annotation giúp compiler kiểm tra overriding đúng không.
+
+</details>

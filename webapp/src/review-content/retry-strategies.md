@@ -77,6 +77,23 @@ Chỉ retry trên transient error (network timeout, service unavailable). Đừn
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Exponential backoff với jitter là gì và tại sao jitter quan trọng?
-1. Lỗi nào bạn KHÔNG nên retry?
-1. Làm thế nào để phân biệt transient vs permanent failure trong Kafka consumer?
+<details>
+<summary><strong>Exponential backoff với jitter là gì?</strong></summary>
+
+**A:** **Exponential backoff**: delay tăng theo lũy thừa sau mỗi retry — 1s, 2s, 4s, 8s, 16s... **Vấn đề**: nếu nhiều client đều retry sau 8s → thundering herd, spike tải vào server lúc recover. **Jitter**: thêm random delay — `delay = min(cap, base * 2^attempt) + random(0, delay)`. Kết quả: client retry ở thời điểm khác nhau → smooth tải. AWS SDK dùng exponential backoff + jitter mặc định. Spring Retry: `@Retryable(backoff=@Backoff(delay=1000, multiplier=2, maxDelay=30000))`. Công thức: `delay = rand(0, min(cap, initial_delay * 2^attempt))`.
+
+</details>
+
+<details>
+<summary><strong>Khi nào KHÔNG nên retry?</strong></summary>
+
+**A:** Không retry khi: (1) **4xx errors** (400, 401, 403, 422): lỗi từ request của client — retry sẽ cùng fail. Chỉ 429 (rate limit) và 408 (timeout) nên retry. (2) **Non-idempotent operations**: `POST /payment` retry tạo duplicate charge — cần idempotency key trước. (3) **Circuit open**: đang open → fail fast, không retry. (4) **Business logic exception**: data validation fail. (5) **Deadline exceeded**: tổng thời gian đã vượt timeout cho caller. Retry đúng: chỉ với transient errors (503, 502, network timeout, connection refused) và idempotent operations.
+
+</details>
+
+<details>
+<summary><strong>Dead letter queue liên quan đến retry thế nào?</strong></summary>
+
+**A:** Sau N retry thất bại, message không nên discard — route đến **Dead Letter Queue (DLQ)** để: (1) Analyze lý do fail, (2) Retry thủ công sau khi fix bug, (3) Alert/monitoring. RabbitMQ: `x-dead-letter-exchange` trên queue — nếu message reject hoặc expire → automatic route đến DLX. Kafka: DLQ là separate topic — consumer code catch exception sau max retry → produce đến `topic.DLT`. Spring Kafka `@RetryableTopic`: tự động create retry topics + DLT, handle backoff. DLQ pattern: không mất message, cho phép nhìn lại để debug.
+
+</details>

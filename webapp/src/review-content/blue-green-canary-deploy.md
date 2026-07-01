@@ -88,6 +88,23 @@ Dùng Argo Rollouts cho automated canary với Prometheus-based promotion gate. 
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Trade-off chính giữa blue-green và canary deployment là gì?
-1. Argo Rollouts tự động hóa quyết định canary promotion thế nào?
-1. Feature flag là gì và khác canary deployment thế nào?
+<details>
+<summary><strong>Trade-off chính giữa blue-green và canary deployment là gì?</strong></summary>
+
+**A:** **Blue-Green**: switch toàn bộ traffic một lần (0%→100%), rollback nhanh bằng cách switch lại. Cần double infrastructure cost — phải chạy 2 full environment. Bug ảnh hưởng 100% user ngay khi switch. **Canary**: gradually tăng traffic (1%→5%→100%), phát hiện bug sớm với ít user bị ảnh hưởng, infrastructure cost thấp hơn nhưng setup phức tạp hơn.
+
+</details>
+
+<details>
+<summary><strong>Argo Rollouts tự động hóa quyết định canary promotion thế nào?</strong></summary>
+
+**A:** Tích hợp với **analysis providers** (Prometheus, Datadog) để evaluate metrics trong khi rollout tiến hành. Ví dụ: nếu error rate > 5% → tự động rollback; nếu tất cả metrics pass → promote lên step tiếp theo. Kết hợp với `steps` config: `setWeight 20 → pause 5m → setWeight 50 → pause 10m → setWeight 100` tạo progressive rollout với automated guardrails.
+
+</details>
+
+<details>
+<summary><strong>Feature flag là gì và khác canary deployment thế nào?</strong></summary>
+
+**A:** **Feature flag**: code được deploy nhưng feature ẩn sau conditional check (`if featureEnabled("new-ui")`), bật/tắt runtime không cần redeploy, thường per-user/segment. Tools: LaunchDarkly, Unleash. **Canary**: infrastructure-level routing, route % traffic đến new version instance. Feature flag ở code level; canary ở infra level. Nhiều team kết hợp: deploy với flag disabled → dần bật flag theo % user.
+
+</details>

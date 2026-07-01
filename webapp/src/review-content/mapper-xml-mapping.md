@@ -60,6 +60,29 @@ Dùng annotation cho CRUD đơn giản một bảng, XML cho query có điều k
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Rủi ro khi dùng ${} thay vì #{} trong MyBatis?
-1. Lấy primary key tự sinh sau INSERT thế nào?
-1. Namespace trong XML mapper file liên hệ với Mapper interface thế nào?
+<details>
+<summary><strong>Rủi ro khi dùng ${} thay vì #{} trong MyBatis?</strong></summary>
+
+**A:** `#{}` → PreparedStatement parameter: giá trị được escape, ngăn **SQL injection**. `${}` → string substitution trực tiếp vào SQL — **SQL injection vulnerability**: nếu user input, attacker có thể inject SQL. Dùng `${}` chỉ cho column name hoặc table name trong dynamic SQL (không phải giá trị user input): `ORDER BY ${columnName}` với column name whitelist validate. Không bao giờ dùng `${}` cho user-controlled input.
+
+</details>
+
+<details>
+<summary><strong>Lấy primary key tự sinh sau INSERT thế nào?</strong></summary>
+
+**A:** Trong MyBatis XML:
+```xml
+<insert id="insert" useGeneratedKeys="true" keyProperty="id">
+  INSERT INTO users (name, email) VALUES (#{name}, #{email})
+</insert>
+```
+`useGeneratedKeys="true"`: dùng JDBC getGeneratedKeys(). `keyProperty="id"`: set generated key vào field `id` của parameter object. Sau gọi `mapper.insert(user)`, `user.getId()` có giá trị mới. Cho DB không support getGeneratedKeys: dùng `<selectKey>` tag với `keyOrder="AFTER"`.
+
+</details>
+
+<details>
+<summary><strong>Namespace trong XML mapper file liên hệ với Mapper interface thế nào?</strong></summary>
+
+**A:** Namespace trong `<mapper namespace="com.example.UserMapper">` phải **khớp chính xác** với fully-qualified name của Mapper interface. MyBatis scan interface methods và lookup tương ứng trong namespace: method `UserMapper.findById(Long)` → lookup `<select id="findById">` trong namespace `com.example.UserMapper`. Mismatch namespace → `BindingException`. Annotation `@Mapper` hoặc `MapperScan` để MyBatis detect interface tự động.
+
+</details>

@@ -109,6 +109,23 @@ Trong Spring Boot: <code>Repository</code> (interface) + <code>SimpleJpaReposito
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Có thể thêm method mới vào interface mà không phá vỡ implementation hiện tại không?
-1. Abstract method và default method trong Java 8 khác nhau thế nào?
-1. Khi nào bạn chọn abstract class thay vì interface trong codebase lớn?
+<details>
+<summary><strong>Có thể thêm method mới vào interface mà không phá vỡ implementation hiện tại không?</strong></summary>
+
+**A:** **Có** — dùng **default method** (Java 8+): existing implementation không bị break, tự động nhận implementation mặc định. `interface Shape { default double perimeter() { return 0; } }` — tất cả existing Shape implementation không cần sửa. Tuy nhiên: nếu implementation muốn customize → override. Cẩn thận: nếu hai interface cùng có default method trùng tên → class implement cả hai phải override để resolve conflict.
+
+</details>
+
+<details>
+<summary><strong>Abstract method và default method trong Java 8 khác nhau thế nào?</strong></summary>
+
+**A:** **Abstract method**: không có body, subclass **bắt buộc** phải implement — không implement → compile error. **Default method**: có body, implementation có thể override hoặc không — inherit mặc định nếu không override. Abstract method define contract (must implement); default method provide backward-compatible API evolution. Static method trong interface (Java 8+): utility method, không override được, gọi qua `Interface.method()`.
+
+</details>
+
+<details>
+<summary><strong>Khi nào bạn chọn abstract class thay vì interface trong codebase lớn?</strong></summary>
+
+**A:** Abstract class trong codebase lớn khi: (1) Muốn **template method pattern** — define algorithm skeleton với hook methods subclass override — ví dụ Spring `AbstractController`, `AbstractMessageConverter`. (2) Muốn **shared state** (fields) và protected helper methods giữa nhiều subclass. (3) Muốn enforce **constructor contract** — abstract class có constructor, interface không. Interface khi muốn define capability/role mà nhiều class không liên quan có thể implement.
+
+</details>

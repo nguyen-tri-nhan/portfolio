@@ -63,6 +63,23 @@ Với hot read path (ví dụ: API endpoint được query hàng nghìn lần/gi
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Covering index là gì và cải thiện hiệu năng thế nào?
-1. "Index Only Scan" trong output EXPLAIN có nghĩa gì?
-1. Khi nào covering index KHÔNG có lợi?
+<details>
+<summary><strong>Covering index là gì và cải thiện hiệu năng thế nào?</strong></summary>
+
+**A:** **Covering index**: index chứa tất cả column mà query cần (WHERE, SELECT, ORDER BY) — DB không cần access table data, chỉ cần đọc index. Ví dụ: `CREATE INDEX idx ON orders(user_id, status, total)` cho query `SELECT total FROM orders WHERE user_id=? AND status='ACTIVE'` — tất cả column đều có trong index. Giảm I/O dramatically vì index tree nhỏ hơn table nhiều, fit vào buffer pool.
+
+</details>
+
+<details>
+<summary><strong>"Index Only Scan" trong output EXPLAIN có nghĩa gì?</strong></summary>
+
+**A:** `Index Only Scan` trong PostgreSQL EXPLAIN (hoặc `Using index` trong MySQL EXPLAIN Extra) — query được satisfy hoàn toàn từ index mà không cần access heap table. Đây là dấu hiệu **covering index đang hoạt động**. PostgreSQL: phải check visibility map vì MVCC — nếu table chưa được VACUUM, vẫn có thể cần heap access. So sánh: `Index Scan` = dùng index để navigate nhưng vẫn cần fetch row từ table.
+
+</details>
+
+<details>
+<summary><strong>Khi nào covering index KHÔNG có lợi?</strong></summary>
+
+**A:** (1) **SELECT *** — phải include tất cả column vào index, index to bằng table, không có lợi. (2) **Write-heavy table**: mỗi INSERT/UPDATE phải update thêm covering index — overhead ghi tăng. (3) **Column có giá trị lớn** (TEXT, BLOB) trong SELECT — index quá to, chậm hơn table scan. (4) **Low selectivity query trả về nhiều row**: overhead traverse index rồi filter không worth it so với full table scan.
+
+</details>

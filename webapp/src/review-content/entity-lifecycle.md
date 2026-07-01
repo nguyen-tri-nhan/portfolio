@@ -83,6 +83,23 @@ public class Order {
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa managed và detached entity là gì?
-1. Khi nào Hibernate issue UPDATE SQL cho field đã thay đổi?
-1. Mục đích của merge() vs persist() là gì?
+<details>
+<summary><strong>Sự khác biệt giữa managed và detached entity là gì?</strong></summary>
+
+**A:** **Managed**: entity đang được Persistence Context (EntityManager) theo dõi — mọi thay đổi tự động persist khi flush/commit (dirty checking). **Detached**: entity không còn được EntityManager theo dõi — thay đổi sẽ không tự persist, phải gọi `merge()` để reattach. Entity trở thành detached khi: EntityManager close, gọi `detach()`, transaction end (với TRANSACTION scope). DTO pattern tránh detached entity vấn đề.
+
+</details>
+
+<details>
+<summary><strong>Khi nào Hibernate issue UPDATE SQL cho field đã thay đổi?</strong></summary>
+
+**A:** Hibernate issue UPDATE khi: (1) Transaction commit (hoặc `flush()` được gọi) với managed entity đã bị modify. (2) Default: Hibernate flush **tất cả changed entities trong persistence context** trước khi execute query để đảm bảo query thấy data mới nhất. Hibernate default UPDATE tất cả columns (không chỉ changed column) — dùng `@DynamicUpdate` để chỉ update changed columns (giảm lock contention, tốt cho wide table).
+
+</details>
+
+<details>
+<summary><strong>Mục đích của merge() vs persist() là gì?</strong></summary>
+
+**A:** **`persist()`**: thêm **new (transient) entity** vào persistence context — entity chưa có ID, sau commit sẽ INSERT. Throw exception nếu entity đã có ID. **`merge()`**: copy state của **detached entity** vào managed entity — load managed entity từ DB (hoặc tạo mới nếu không có), copy state, return managed entity. Dùng persist() cho create mới; merge() khi nhận detached entity từ bên ngoài (REST API, Session deserialization).
+
+</details>

@@ -21,6 +21,23 @@ Trong phỏng vấn, mô tả quy trình hệ thống: 1) Quan sát triệu ch�
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Mô tả cách chẩn đoán CPU cao trong ứng dụng Java.
-1. Heap dump và thread dump khác nhau thế nào?
-1. Làm sao xác định method nào đang ngốn CPU nhất?
+<details>
+<summary><strong>Mô tả cách chẩn đoán CPU cao trong ứng dụng Java.</strong></summary>
+
+**A:** (1) `top -H -p <pid>` — tìm thread dùng CPU nhiều nhất (TID). (2) Convert TID decimal → hex. (3) `jstack <pid> | grep -A 30 "nid=0x<hex>"` — xem stack trace của thread đó. Thường thấy: infinite loop, busy wait, CAS spin. (4) Async-profiler (`./profiler.sh -e cpu -d 30 -f cpu.html <pid>`) — flame graph trực quan. (5) Check GC: nếu GC thread ngốn CPU → heap full, memory leak. (6) JIT compilation: warm-up phase có thể có CPU spike.
+
+</details>
+
+<details>
+<summary><strong>Heap dump và thread dump khác nhau thế nào?</strong></summary>
+
+**A:** **Heap dump**: snapshot toàn bộ **object trong memory** tại một thời điểm — phân tích memory leak, xem object nào chiếm nhiều heap. Tạo: `jcmd <pid> GC.heap_dump filename.hprof` hoặc `-XX:+HeapDumpOnOutOfMemoryError`. Phân tích: Eclipse MAT, VisualVM. **Thread dump**: snapshot tất cả **thread states và stack trace** — phân tích deadlock, thread block, CPU spike. Tạo: `jstack <pid>` hoặc `kill -3`. Phân tích: TDA, fastthread.io. Heap dump: memory issue; Thread dump: concurrency issue.
+
+</details>
+
+<details>
+<summary><strong>Làm sao xác định method nào đang ngốn CPU nhất?</strong></summary>
+
+**A:** **Async-profiler** là tool tốt nhất: `./profiler.sh -e cpu -d 30 -f cpu.html <pid>` → generate **flame graph** — chiều rộng của block tương ứng % CPU time. Nhìn vào block rộng nhất ở top → method hotspot. Không cần restart app. Alternative: **JFR (Java Flight Recorder)** + JMC: `jcmd <pid> JFR.start duration=60s filename=recording.jfr` → open trong JMC → Method Profiling tab. Dùng sampling-based profiler (không instrumentation) để minimize overhead.
+
+</details>

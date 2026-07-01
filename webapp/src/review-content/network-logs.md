@@ -56,6 +56,23 @@ awk '{sum+=$NF; cnt++} END{print "avg:", sum/cnt}' access.log  # avg response ti
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Kiểm tra process nào đang dùng port 8080 thế nào?
-1. Nhiều TIME_WAIT connection trong ss -s cho thấy gì?
-1. Xem live log nhưng chỉ filter dòng ERROR thế nào?
+<details>
+<summary><strong>Kiểm tra process nào đang dùng port 8080 thế nào?</strong></summary>
+
+**A:** `lsof -i :8080` → hiện PID, command, user đang dùng port. Hoặc `ss -tlnp | grep 8080` (Linux, cần `ss` thay `netstat`). Hoặc `netstat -tulpn | grep 8080` (cũ hơn). Trên macOS: `lsof -nP -iTCP:8080`. Sau khi có PID: `kill <PID>` để dừng, hoặc `ps aux | grep <PID>` để xem chi tiết process. Trong Docker: `docker ps` để xem container nào expose port.
+
+</details>
+
+<details>
+<summary><strong>Nhiều TIME_WAIT connection trong ss -s cho thấy gì?</strong></summary>
+
+**A:** **TIME_WAIT**: sau khi connection đóng, OS giữ 2×MSL (Maximum Segment Lifetime, thường 60s) để ensure delayed packet không làm confused connection mới. Nhiều TIME_WAIT (hàng nghìn): (1) **Bình thường** nếu xử lý nhiều short-lived connection (HTTP/1.1 without keep-alive). (2) **Vấn đề** nếu gần exhausting local port range (65K ports). Fix: `net.ipv4.tcp_tw_reuse=1` (Linux) cho phép reuse TIME_WAIT socket; dùng HTTP keep-alive; tăng local port range `net.ipv4.ip_local_port_range=1024 65535`.
+
+</details>
+
+<details>
+<summary><strong>Xem live log nhưng chỉ filter dòng ERROR thế nào?</strong></summary>
+
+**A:** `tail -f app.log | grep ERROR` — stream log, filter realtime. Tốt hơn với `grep --line-buffered` tránh buffering issue. Nếu dùng journald: `journalctl -f -u myapp | grep ERROR`. Với kubectl: `kubectl logs -f deployment/myapp | grep ERROR`. Highlight thêm: `tail -f app.log | grep --color=always -E "ERROR|WARN|"`. Nếu muốn context xung quanh error: `tail -f app.log | grep -A 5 ERROR` (5 dòng sau).
+
+</details>

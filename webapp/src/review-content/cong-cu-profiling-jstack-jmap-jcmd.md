@@ -51,6 +51,23 @@ Trong production: bật <code>-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Tìm thread nào đang ngốn 100% CPU bằng jstack thế nào?
-1. jstat -gcutil cho biết gì?
-1. Khi nào dùng async-profiler thay vì jmap?
+<details>
+<summary><strong>Tìm thread nào đang ngốn 100% CPU bằng jstack thế nào?</strong></summary>
+
+**A:** (1) `top -H -p <pid>` → tìm TID (thread ID) dùng CPU nhiều nhất. (2) Convert TID decimal → hex: `printf "%x" <TID>`. (3) `jstack <pid> | grep -A 30 "<hex_tid>"` → tìm stack trace của thread đó. Thường thấy: infinite loop, lock contention, GC thread busy. Với async-profiler: `./profiler.sh -e cpu -d 30 -f cpu.html <pid>` → flame graph trực quan hơn.
+
+</details>
+
+<details>
+<summary><strong>jstat -gcutil cho biết gì?</strong></summary>
+
+**A:** `jstat -gcutil <pid> 1000` in mỗi giây: **S0/S1** (Survivor space %), **E** (Eden space %), **O** (Old Gen %), **M** (Metaspace %), **YGC** (Young GC count), **YGCT** (Young GC time), **FGC** (Full GC count), **FGCT** (Full GC time), **GCT** (Total GC time). Cảnh báo: O > 80% → sắp OOM; FGC tăng liên tục → memory leak; FGCT cao → GC pause lớn ảnh hưởng latency.
+
+</details>
+
+<details>
+<summary><strong>Khi nào dùng async-profiler thay vì jmap?</strong></summary>
+
+**A:** **jmap -heap/-histo**: snapshot allocation hiện tại — dùng khi nghi ngờ memory leak (xem object nào chiếm nhiều heap). SafePoint-based → có thể bỏ sót allocation giữa safepoint. **async-profiler**: continuous CPU/allocation sampling với PERF events, không cần safepoint — phát hiện hot method/allocation path trong production. Dùng async-profiler cho CPU profiling và allocation profiling real-time; jmap/jcmd heapdump cho phân tích memory snapshot sau sự cố.
+
+</details>

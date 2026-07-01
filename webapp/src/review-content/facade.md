@@ -106,6 +106,23 @@ Thiết kế service class như facade: expose method use-case đơn giản (pla
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa Facade và Adapter?
-1. Facade có ngăn truy cập trực tiếp vào subsystem không?
-1. Đặt tên một Facade trong Spring Framework.
+<details>
+<summary><strong>Sự khác biệt giữa Facade và Adapter?</strong></summary>
+
+**A:** **Facade**: simplify **complex subsystem** bằng cách cung cấp interface đơn giản hơn — client không cần biết chi tiết bên trong. Focus: simplification. **Adapter**: **convert interface** của một class thành interface khác mà client expect — giải quyết incompatibility. Focus: compatibility. Ví dụ: Facade = `OrderService` hide `InventoryService + PaymentService + NotificationService`. Adapter = wrap legacy `OldPaymentGateway` thành `PaymentProcessor` interface mới.
+
+</details>
+
+<details>
+<summary><strong>Facade có ngăn truy cập trực tiếp vào subsystem không?</strong></summary>
+
+**A:** **Không** — Facade là suggestion/convenience, không enforce restriction. Client vẫn có thể access subsystem class trực tiếp nếu muốn. Facade chỉ cung cấp một cách đơn giản hơn để dùng subsystem. Nếu muốn enforce encapsulation (ngăn truy cập trực tiếp), cần dùng package-private access modifiers, Java modules (module-info.java), hoặc architecture enforcement tool (ArchUnit) — Facade thuần túy không đủ.
+
+</details>
+
+<details>
+<summary><strong>Đặt tên một Facade trong Spring Framework.</strong></summary>
+
+**A:** **`JdbcTemplate`** là Facade điển hình: hide phức tạp của JDBC (tạo connection, PreparedStatement, xử lý ResultSet, close resource, handle exception) sau interface đơn giản: `jdbcTemplate.query("SELECT * FROM users WHERE id=?", rowMapper, id)`. **`RestTemplate`** là Facade cho HTTP client (connection management, serialization, error handling). **`RedisTemplate`** hide Redis connection và serialization. Tất cả đều simplify complex subsystem operations.
+
+</details>

@@ -109,6 +109,23 @@ Dùng profile để: hoán đổi H2 in-memory sang Postgres prod trong dev, b�
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Làm thế nào để kích hoạt nhiều Spring profile?
-1. Sự khác biệt giữa @Profile và @ConditionalOnProperty là gì?
-1. File YAML đặc thù Spring profile được tải như thế nào?
+<details>
+<summary><strong>Spring Profiles hoạt động thế nào?</strong></summary>
+
+**A:** Spring Profiles cho phép đăng ký bean và config khác nhau per environment. Activate: `spring.profiles.active=prod` trong properties, env var `SPRING_PROFILES_ACTIVE=prod`, hoặc `-Dspring.profiles.active=prod`. `@Profile("dev")` trên `@Configuration`/`@Bean` → bean chỉ được tạo khi profile đó active. `application-prod.properties` tự động load khi prod profile active — override `application.properties`. Có thể combine: `spring.profiles.active=prod,monitoring`. Trong test: `@ActiveProfiles("test")`.
+
+</details>
+
+<details>
+<summary><strong>@ConditionalOnProperty và Profile khác nhau thế nào?</strong></summary>
+
+**A:** **Profile**: activate/deactivate toàn bộ group config/bean cho một environment. Use case: dev vs prod behavior khác nhau. **`@ConditionalOnProperty`**: conditional bean registration dựa trên specific property value. Use case: feature flag, optional component. Ví dụ: `@ConditionalOnProperty(name="feature.payment.enabled", havingValue="true")` → PaymentService chỉ được tạo nếu property true — có thể dùng trong bất kỳ profile nào. Profile = coarse-grained environment switch; ConditionalOnProperty = fine-grained feature toggle.
+
+</details>
+
+<details>
+<summary><strong>Test application.properties ưu tiên thế nào so với main?</strong></summary>
+
+**A:** Spring Boot load properties theo thứ tự ưu tiên (cao hơn override thấp hơn): (1) Command line args. (2) System properties. (3) `application-{profile}.properties` trong classpath. (4) `application.properties` trong classpath. Trong test: `src/test/resources/application.properties` override `src/main/resources/application.properties`. `@TestPropertySource(properties={"key=val"})` override tất cả. `@SpringBootTest(properties={...})` cũng override. Best practice: test profile với `@ActiveProfiles("test")` + `application-test.properties` trong `src/test/resources`.
+
+</details>

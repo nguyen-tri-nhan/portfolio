@@ -74,6 +74,23 @@ Kiểm tra ứng dụng để tìm state trong process: in-memory cache, ThreadL
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Điều gì làm cho service trở thành stateless?
-1. Làm thế nào để xử lý file upload trong stateless service?
-1. Sticky session là gì và tại sao là anti-pattern?
+<details>
+<summary><strong>Stateless service là gì và tại sao dễ scale hơn?</strong></summary>
+
+**A:** **Stateless service**: không giữ session state trong memory giữa requests — mỗi request **self-contained** với tất cả cần thiết (token, data). **Stateful**: giữ session state trong memory → cùng user phải route tới cùng instance (sticky session) hoặc state phải sync giữa instances. Scale stateless: thêm instance → load balancer route bất kỳ request đến bất kỳ instance. Scale stateful: cần sticky session (limit flexibility) hoặc distributed session (complexity). Microservices best practice: stateless by design, externalize state ra Redis/DB.
+
+</details>
+
+<details>
+<summary><strong>Externalize session state thế nào với Spring?</strong></summary>
+
+**A:** Spring Session: `spring-session-data-redis` — tự động store session trong Redis thay vì memory. Config: `@EnableRedisHttpSession` + Redis connection. Session ID trong cookie, state trong Redis. Mọi instance share session store → stateless instances. Alternative: JWT (không cần server-side session — token chứa claims, stateless hoàn toàn). JWT stateless: không cần lookup session → faster, nhưng không thể invalidate individual token (chỉ expire). Session + Redis: có thể invalidate bất kỳ session nào (logout force, security revoke).
+
+</details>
+
+<details>
+<summary><strong>Stateless nghĩa là không dùng database không?</strong></summary>
+
+**A:** **Không** — stateless nghĩa là không giữ **per-request/session state trong service memory**. Database persist state là fine — đó là **durable shared state**, không phải per-instance state. Stateless service vẫn: read/write DB, read/write cache, call other services. Distinction: nếu restart instance, không có data loss (tất cả state ở DB/cache). Nếu có in-memory Map tích lũy user sessions → restart mất data → stateful. Shopping cart: stateless = store cart trong Redis/DB (persist across instances); stateful = store trong service memory (lost on restart/failover).
+
+</details>

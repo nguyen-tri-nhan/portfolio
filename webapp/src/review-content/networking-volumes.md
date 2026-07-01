@@ -79,6 +79,23 @@ Trong K8s, Docker volume chuyển thành PersistentVolumeClaim (PVC). Named volu
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa Docker volume và bind mount là gì?
-1. Container trên cùng Docker network giao tiếp thế nào?
-1. Điều gì xảy ra với dữ liệu trong container khi container bị xóa?
+<details>
+<summary><strong>Sự khác biệt giữa Docker volume và bind mount là gì?</strong></summary>
+
+**A:** **Docker volume**: managed bởi Docker daemon (`/var/lib/docker/volumes/`), portable, tối ưu cho performance, không phụ thuộc OS path, dễ backup và migrate. **Bind mount**: map trực tiếp host directory/file vào container — phụ thuộc host path, không portable, nhưng hữu ích trong dev (live reload code). Production: dùng **named volume** (`docker volume create mydata`). Development: bind mount source code vào container để hot reload. Volume persist khi container xóa; bind mount không quản lý bởi Docker.
+
+</details>
+
+<details>
+<summary><strong>Container trên cùng Docker network giao tiếp thế nào?</strong></summary>
+
+**A:** Container trong cùng **user-defined network** (bridge hoặc overlay) có thể communicate qua **container name** làm hostname. Docker DNS tự resolve. `docker network create mynet` → `docker run --network mynet --name db postgres` → container app gọi `db:5432`. Default bridge network không hỗ trợ DNS (dùng IP thay thế). Docker Compose tự tạo network cho mỗi project: tất cả service trong compose file trong cùng network, gọi nhau bằng service name.
+
+</details>
+
+<details>
+<summary><strong>Điều gì xảy ra với dữ liệu trong container khi container bị xóa?</strong></summary>
+
+**A:** Dữ liệu ghi vào **writable container layer** bị xóa vĩnh viễn khi container bị remove (`docker rm`). Dữ liệu ghi vào **volume** (mounted) được preserve — volume tồn tại độc lập với container lifecycle. Dữ liệu ghi vào **bind mount** (host path) được preserve trên host. Quy tắc: DB data, user upload, log cần persist phải dùng volume. Stop container (`docker stop`) không xóa data; Remove (`docker rm`) mới xóa container layer.
+
+</details>

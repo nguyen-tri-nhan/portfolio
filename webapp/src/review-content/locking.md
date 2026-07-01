@@ -74,6 +74,23 @@ Dùng optimistic locking (<code>@Version</code>) cho tình huống low-contentio
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa optimistic và pessimistic locking là gì?
-1. Deadlock trong DB có thể xảy ra khi nào và DB giải quyết thế nào?
-1. @Version implement optimistic locking trong JPA thế nào?
+<details>
+<summary><strong>Sự khác biệt giữa optimistic và pessimistic locking là gì?</strong></summary>
+
+**A:** **Optimistic locking**: assume conflict ít xảy ra — không lock khi đọc, check version khi write; nếu version không khớp → throw exception, client retry. Không có lock overhead, phù hợp read-heavy. **Pessimistic locking**: assume conflict xảy ra — lock row khi đọc (`SELECT FOR UPDATE`), hold lock đến commit/rollback. Đảm bảo không bị concurrent modify, phù hợp write-heavy. Optimistic: tốt cho low-contention scenario; Pessimistic: tốt cho high-contention critical section.
+
+</details>
+
+<details>
+<summary><strong>Deadlock trong DB có thể xảy ra khi nào và DB giải quyết thế nào?</strong></summary>
+
+**A:** Deadlock: Transaction A lock row 1, chờ row 2; Transaction B lock row 2, chờ row 1 — circular wait. DB detect bằng **wait-for graph** — khi phát hiện cycle → chọn một transaction làm victim (thường transaction nhẹ hơn), abort nó với error code. Application phải catch `DeadlockLoserDataAccessException` và retry. Phòng tránh: luôn lock theo thứ tự cố định (always lock row A trước B trong cả hai transaction); giữ transaction ngắn; index đúng để lock range nhỏ hơn.
+
+</details>
+
+<details>
+<summary><strong>@Version implement optimistic locking trong JPA thế nào?</strong></summary>
+
+**A:** `@Version` field (int/long/Timestamp) được Hibernate tự quản lý: mỗi UPDATE increment version. Khi update, Hibernate check: `UPDATE ... WHERE id=? AND version=?`; nếu 0 rows affected (version không khớp — concurrent update) → throw `OptimisticLockException`. Client nhận lỗi → đọc lại entity (mới nhất) → reapply change → retry. Spring Data `save()` tự động dùng `@Version` nếu có. Không cần explicit lock, không có DB lock overhead.
+
+</details>

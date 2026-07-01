@@ -63,6 +63,23 @@ Luôn đặt điều kiện trên cột không aggregate vào WHERE (không ph�
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa WHERE và HAVING là gì?
-1. Bạn có thể dùng HAVING mà không có GROUP BY không?
-1. Thứ tự thực thi SQL là gì?
+<details>
+<summary><strong>Sự khác biệt giữa WHERE và HAVING là gì?</strong></summary>
+
+**A:** **WHERE**: filter rows **trước** khi aggregate — không dùng được aggregate function (`SUM`, `COUNT`). **HAVING**: filter **sau** khi GROUP BY, dùng được aggregate function. Ví dụ: `WHERE age > 18` lọc rows trước; `HAVING COUNT(*) > 5` lọc group sau. Rule: filter non-aggregate condition → WHERE (hiệu quả hơn, loại rows sớm); filter aggregate condition → HAVING. Có thể dùng cả hai: `WHERE age > 18 GROUP BY city HAVING COUNT(*) > 100`.
+
+</details>
+
+<details>
+<summary><strong>Bạn có thể dùng HAVING mà không có GROUP BY không?</strong></summary>
+
+**A:** **Có** — toàn bộ result set được treat như một group. Ví dụ: `SELECT COUNT(*) FROM orders HAVING COUNT(*) > 1000` — trả về count nếu total orders > 1000, trả về empty nếu không. Tương đương với `SELECT COUNT(*) FROM orders WHERE (SELECT COUNT(*) FROM orders) > 1000` nhưng ngắn hơn. Thực tế ít dùng pattern này; thường HAVING đi kèm GROUP BY.
+
+</details>
+
+<details>
+<summary><strong>Thứ tự thực thi SQL là gì?</strong></summary>
+
+**A:** Logical execution order: (1) **FROM / JOIN** — xác định table, join. (2) **WHERE** — filter rows. (3) **GROUP BY** — group rows. (4) **HAVING** — filter groups. (5) **SELECT** — compute column, expression. (6) **DISTINCT** — remove duplicate. (7) **ORDER BY** — sort. (8) **LIMIT/OFFSET** — paginate. Lý do không dùng SELECT alias trong WHERE: alias được resolve ở bước 5, sau bước 2 WHERE. PostgreSQL cho phép dùng alias trong ORDER BY vì ORDER BY ở bước 7.
+
+</details>

@@ -65,6 +65,30 @@ Window function mạnh cho báo cáo nhưng chạy trên DB server — đảm b�
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa ROW_NUMBER và RANK là gì?
-1. Làm thế nào để lấy giá trị hàng trước đó trong SQL?
-1. Bạn có thể dùng window function trong mệnh đề WHERE không?
+<details>
+<summary><strong>Window function khác GROUP BY thế nào?</strong></summary>
+
+**A:** **GROUP BY**: collapse nhiều rows thành **một row per group** — mất individual row data. **Window function** (OVER): tính aggregate **giữ nguyên individual rows** — mỗi row có thêm computed column dựa trên window. Ví dụ: `SELECT name, salary, AVG(salary) OVER (PARTITION BY department) AS dept_avg FROM employees` → mỗi employee row có thêm avg salary của department mình. GROUP BY: `SELECT department, AVG(salary) FROM employees GROUP BY department` → chỉ còn department rows. Dùng window function khi: cần so sánh row với aggregate của nhóm của nó.
+
+</details>
+
+<details>
+<summary><strong>PARTITION BY và ORDER BY trong OVER clause là gì?</strong></summary>
+
+**A:** `OVER (PARTITION BY col1 ORDER BY col2)`: **PARTITION BY**: chia rows thành partitions — window function tính riêng trong mỗi partition (tương tự GROUP BY nhưng không collapse). **ORDER BY**: sắp xếp rows trong partition — quan trọng cho running total, rank, lag/lead. Ví dụ: `ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC)` → rank nhân viên trong mỗi department theo salary. `SUM(salary) OVER (PARTITION BY department ORDER BY hire_date)` → running total salary theo hire date trong mỗi department.
+
+</details>
+
+<details>
+<summary><strong>LAG và LEAD function dùng để làm gì?</strong></summary>
+
+**A:** **`LAG(col, offset, default)`**: truy cập giá trị của row **trước đó** N rows trong window. **`LEAD(col, offset, default)`**: truy cập giá trị của row **tiếp theo** N rows. Default: giá trị trả về khi không có row (đầu/cuối window). Ví dụ: month-over-month growth:
+```sql
+SELECT month, revenue,
+       LAG(revenue, 1, 0) OVER (ORDER BY month) AS prev_revenue,
+       revenue - LAG(revenue, 1, 0) OVER (ORDER BY month) AS growth
+FROM monthly_sales;
+```
+Dùng: time-series analysis (price change, velocity), compare with previous/next row, detect gaps.
+
+</details>

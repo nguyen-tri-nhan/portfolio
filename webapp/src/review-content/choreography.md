@@ -92,6 +92,23 @@ Dùng choreography cho flow đơn giản 2-3 bước. Khi độ phức tạp tă
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Nhược điểm của choreography trong saga dài là gì?
-1. Làm thế nào để debug choreography saga khi bước nào đó fail âm thầm?
-1. Choreography xử lý out-of-order event thế nào?
+<details>
+<summary><strong>Nhược điểm của choreography trong saga dài là gì?</strong></summary>
+
+**A:** (1) **Khó debug**: không có central orchestrator — phải trace event qua nhiều service để hiểu flow. (2) **Cyclic dependencies**: service A emit event → service B handle → emit event → service A handle — tạo tight coupling ẩn. (3) **Khó thêm step mới**: phải cập nhật nhiều service emit/consume đúng event. (4) **Visibility thấp**: không có nơi nào thể hiện toàn bộ business flow — cần distributed tracing để theo dõi.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để debug choreography saga khi bước nào đó fail âm thầm?</strong></summary>
+
+**A:** (1) **Distributed tracing** (Jaeger/Zipkin): trace toàn bộ event chain với correlation ID — thấy được event nào được emit, service nào handle. (2) **Dead Letter Queue (DLQ)**: message fail sau N retry được route đến DLQ — monitor và alert trên DLQ size. (3) **Saga state table**: persist trạng thái saga trong DB — query để biết bước nào chưa hoàn thành. (4) **Centralized logging** với correlation ID để correlate log giữa các service.
+
+</details>
+
+<details>
+<summary><strong>Choreography xử lý out-of-order event thế nào?</strong></summary>
+
+**A:** Event B đến trước Event A (do network, different partition) → service nhận B chưa có context từ A → xử lý sai hoặc error. Giải pháp: (1) **Idempotent consumers + eventual ordering**: lưu event, chờ tất cả dependency đến rồi mới xử lý. (2) **Sequence number/version**: reject event với sequence không khớp, yêu cầu re-delivery theo thứ tự. (3) Đặt tất cả event của một entity vào cùng Kafka partition (message key = entityId) để đảm bảo order trong partition.
+
+</details>

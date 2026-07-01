@@ -47,6 +47,46 @@ Thay tất cả H2 integration test bằng TestContainers Postgres — bắt đ�
 
 ## Câu Hỏi Phỏng Vấn
 
-1. TestContainers có lợi thế gì so với H2?
-1. Làm thế nào để chia sẻ container qua nhiều test class?
-1. TestContainers reuse mode là gì?
+<details>
+<summary><strong>TestContainers giải quyết vấn đề gì trong integration testing?</strong></summary>
+
+**A:** Integration test cần real dependency (DB, Redis, Kafka) — mock không đủ faithful. Options: (1) Shared dev database — data contamination, parallel test conflict. (2) H2 in-memory — không match production DB behavior (SQL dialect, features). (3) **TestContainers**: start **real Docker container** per test suite — isolated, real DB, tear down after test. Spring Boot 3.1+: `@ServiceConnection` annotation tự động configure connection đến container. Ví dụ:
+```java
+@Container
+static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15");
+```
+Test chạy chậm hơn H2 nhưng catch real issues.
+
+</details>
+
+<details>
+<summary><strong>Cách dùng TestContainers với Spring Boot 3.1+ thế nào?</strong></summary>
+
+**A:** Spring Boot 3.1 tích hợp TestContainers với `@ServiceConnection`:
+```java
+@SpringBootTest
+@Testcontainers
+class UserRepositoryTest {
+    @Container
+    @ServiceConnection
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15");
+    
+    @Autowired UserRepository repo;
+    
+    @Test
+    void testSave() {
+        repo.save(new User("Alice"));
+        assertThat(repo.count()).isEqualTo(1);
+    }
+}
+```
+`@ServiceConnection` tự detect container type → auto-configure Spring DataSource. Không cần manually set URL/credentials. Dùng `static` container → shared across test methods trong class (faster).
+
+</details>
+
+<details>
+<summary><strong>TestContainers vs H2 in-memory: khi nào dùng cái nào?</strong></summary>
+
+**A:** **H2 in-memory**: nhanh (không start Docker), đủ cho unit test logic, không cần Docker. Nhưng: behavior khác PostgreSQL/MySQL (type system, locking, specific functions). **TestContainers**: slower startup (pull image, start container), nhưng **real database** — test catch production issues. Chọn: H2 cho service unit test (mock repository); TestContainers cho repository/integration test cần production-like behavior. Rule: nếu test query phức tạp (window functions, JSON operations, specific index behavior) → TestContainers. Nếu đơn giản CRUD → H2 acceptable. Hybrid: H2 cho local rapid dev, TestContainers trong CI.
+
+</details>

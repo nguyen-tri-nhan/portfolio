@@ -84,6 +84,23 @@ Trong Kubernetes, bỏ qua Eureka — dùng Kubernetes Services cho discovery v�
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa client-side và server-side service discovery là gì?
-1. Eureka xử lý khi một service instance bị down thế nào?
-1. Kubernetes service discovery hoạt động thế nào?
+<details>
+<summary><strong>Client-side và server-side service discovery khác nhau thế nào?</strong></summary>
+
+**A:** **Client-side**: client query registry (Eureka) để lấy danh sách instances, tự chọn instance (load balance). Ví dụ: Spring Cloud + Ribbon. Client nhận danh sách IPs, tự decide. Ưu: client control load balancing algorithm. Nhược: mỗi client cần tích hợp registry client library. **Server-side**: client gọi load balancer/API gateway → LB query registry → forward request. Client không cần biết registry. Ví dụ: Kubernetes Service (kube-proxy), AWS ALB. Đơn giản hơn cho client, nhưng LB là hop thêm. Kubernetes dùng DNS-based server-side discovery.
+
+</details>
+
+<details>
+<summary><strong>Kubernetes Service DNS hoạt động thế nào?</strong></summary>
+
+**A:** Kubernetes tạo DNS record cho mỗi Service: `<service-name>.<namespace>.svc.cluster.local`. CoreDNS trong cluster resolve tên này đến ClusterIP của Service. Service → route đến Pod endpoints qua kube-proxy (iptables/IPVS). `my-service.default.svc.cluster.local` → ClusterIP → Pod IP. Trong cùng namespace: có thể dùng `my-service` ngắn gọn. Headless Service (`clusterIP: None`): DNS return trực tiếp Pod IPs thay vì ClusterIP — client tự load balance. StatefulSet + Headless: `pod-0.my-service.default.svc.cluster.local` — stable DNS per pod.
+
+</details>
+
+<details>
+<summary><strong>Health check ảnh hưởng service discovery thế nào?</strong></summary>
+
+**A:** Service registry cần biết instance nào healthy để route traffic. Cơ chế: **Heartbeat** — instance gửi heartbeat định kỳ đến registry (Eureka: 30s); nếu miss 3 heartbeats → deregister. **Active health check** — registry poll `/health` endpoint của instance. Kubernetes: `readinessProbe` quyết định Pod có được add vào Service endpoints không (non-ready Pod không nhận traffic). `livenessProbe` restart container nếu fail. Best practice: readinessProbe cho service discovery (ready to serve); livenessProbe cho restart detection (alive but stuck).
+
+</details>

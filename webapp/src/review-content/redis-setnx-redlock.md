@@ -84,6 +84,23 @@ Dùng Redisson (<code>RLock</code>) trong production thay vì Lua script thô �
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Tại sao phải dùng Lua script để release Redis distributed lock?
-1. Fencing token là gì và tại sao cần?
-1. Tình huống thất bại nào mà Redlock KHÔNG bảo vệ chống lại?
+<details>
+<summary><strong>SETNX tại sao không đủ cho distributed lock?</strong></summary>
+
+**A:** `SETNX key value` (Set if Not eXists) có vấn đề: không atomic với expiry. Pattern: `SETNX lock 1` rồi `EXPIRE lock 30` → nếu crash giữa hai lệnh → lock không có expiry → **deadlock permanent**. Fix bằng Redis 2.6+: `SET key value NX EX 30` — atomic set-with-expiry. Nhưng vẫn còn vấn đề: (1) Lock expire quá sớm khi task chạy lâu → hai client cùng có lock. (2) Client A expire → Client B lấy lock → Client A xong DELETE key của B (sai owner). Fix: value = unique token, chỉ delete nếu value match.
+
+</details>
+
+<details>
+<summary><strong>Redlock algorithm hoạt động thế nào?</strong></summary>
+
+**A:** Redlock (Redis Distributed Lock) của Antirez — dùng **N independent Redis nodes** (khuyến nghị 5): (1) Client ghi timestamp `T1`. (2) Thử acquire lock trên **tất cả N nodes** tuần tự với timeout nhỏ. (3) Lock acquired nếu ≥ `⌊N/2⌋ + 1` nodes thành công (quorum). (4) Validity time = TTL - (T_now - T1) - clock drift. (5) Nếu không đủ quorum: release lock trên tất cả nodes. Đảm bảo: ngay cả khi minority nodes fail, lock vẫn đúng. Vẫn có tranh cãi (Martin Kleppmann): clock drift và GC pause có thể vi phạm safety. Dùng cho: non-critical distributed coordination.
+
+</details>
+
+<details>
+<summary><strong>Khi nào dùng Redis lock thay vì database lock?</strong></summary>
+
+**A:** **Redis lock**: low latency (~1ms), không liên quan đến DB transaction, phù hợp cross-service coordination, distributed job scheduling (chỉ một instance chạy cron). **Database lock** (`SELECT FOR UPDATE`): strong consistency (ACID), tự động release khi transaction end (không cần manage expiry), phù hợp khi operation thực sự phải modify DB atomically. Chọn Redis: idempotent operations, performance critical, rate limiting, cache update coordination. Chọn DB lock: money transfer, inventory update — cần transaction guarantee cùng DB.
+
+</details>

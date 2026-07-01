@@ -77,9 +77,32 @@ Bật <code>enable.idempotence=true</code> và <code>acks=all</code> trên produ
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa acks=1 và acks=all là gì?
-1. enable.idempotence=true làm gì cho Kafka producer?
-1. Rủi ro của auto-commit trong Kafka consumer là gì?
+<details>
+<summary><strong>BlockingQueue giải quyết bài toán producer-consumer thế nào?</strong></summary>
+
+**A:** `BlockingQueue` là thread-safe queue với blocking operations: `put()` block nếu queue full (chờ consumer lấy đi), `take()` block nếu queue empty (chờ producer thêm vào). Tự động handle synchronization, wait/notify — không cần code thủ công. Ví dụ:
+```java
+BlockingQueue<Task> queue = new LinkedBlockingQueue<>(100);
+// Producer: queue.put(task); // block if full
+// Consumer: Task t = queue.take(); // block if empty
+```
+`ArrayBlockingQueue`: bounded, fair option. `LinkedBlockingQueue`: optionally bounded. `SynchronousQueue`: capacity=0, transfer trực tiếp từ producer sang consumer.
+
+</details>
+
+<details>
+<summary><strong>Sự khác biệt giữa LinkedBlockingQueue và ArrayBlockingQueue?</strong></summary>
+
+**A:** **`LinkedBlockingQueue`**: linked list structure, optionally bounded (default `Integer.MAX_VALUE` — effectively unbounded), hai lock riêng biệt cho put và take → higher throughput khi concurrent producer và consumer. **`ArrayBlockingQueue`**: array structure, **bounded** (phải specify capacity khi tạo), một lock cho cả put và take → lower throughput nhưng predictable memory. Fair ordering option trong ArrayBlockingQueue (FIFO per thread). Chọn: LinkedBlockingQueue khi throughput quan trọng; ArrayBlockingQueue khi muốn strict bound và fair ordering.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để gracefully stop consumer thread?</strong></summary>
+
+**A:** Pattern phổ biến: **poison pill** — producer put sentinel value đặc biệt vào queue khi muốn shutdown. Consumer kiểm tra: `if (task == POISON_PILL) break;`. Multiple consumers: put N poison pills (một per consumer). Alternative: dùng `ExecutorService.shutdown()` + `awaitTermination()` — nhưng cần consumer check `Thread.currentThread().isInterrupted()`. Với `BlockingQueue.poll(timeout)` thay vì `take()` → consumer có thể check interrupted flag định kỳ. Best practice: combine poison pill + interrupt handling để robust shutdown.
+
+</details>
 
 ## Sơ Đồ Kafka Producer & Consumer Internals
 

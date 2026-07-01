@@ -57,6 +57,23 @@ Pattern incident production phổ biến nhất: traffic spike → pool hết �
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Điều gì xảy ra khi tất cả HikariCP connection đang được dùng và có request mới?
-1. Tính maximumPoolSize thế nào khi deploy 5 app instance?
-1. Connection leak detection là gì và cấu hình thế nào?
+<details>
+<summary><strong>Điều gì xảy ra khi tất cả HikariCP connection đang được dùng và có request mới?</strong></summary>
+
+**A:** Request mới phải **chờ** (block) tối đa `connectionTimeout` (default 30s). Nếu sau `connectionTimeout` vẫn không có connection → throw `SQLTimeoutException` với message "Connection is not available, request timed out". Trong log thấy: `HikariPool-1 - Connection is not available, request timed out after 30000ms`. Giải pháp: tăng pool size, optimize slow query, hoặc giảm connection hold time.
+
+</details>
+
+<details>
+<summary><strong>Tính maximumPoolSize thế nào khi deploy 5 app instance?</strong></summary>
+
+**A:** DB connection limit thường cố định (PostgreSQL default 100). Mỗi app instance cần pool riêng → tổng connection = instances × pool_size. Công thức: `pool_size_per_instance = (DB_max_connections - reserved) / num_instances`. Ví dụ: DB max 100, reserve 10 cho admin → (100-10)/5 = **18 connections/instance**. Đặt `maximumPoolSize=18`. Nếu scale app, phải giảm pool size per instance hoặc tăng DB max_connections.
+
+</details>
+
+<details>
+<summary><strong>Connection leak detection là gì và cấu hình thế nào?</strong></summary>
+
+**A:** Connection leak: code lấy connection từ pool nhưng không trả lại (quên close, exception không được handle). HikariCP detect bằng `leakDetectionThreshold`: nếu connection được giữ lâu hơn threshold → log warning với stack trace của code lấy connection. Config: `spring.datasource.hikari.leak-detection-threshold=2000` (ms). Warning không release connection, chỉ log — dùng để debug. Luôn dùng try-with-resources hoặc Spring `@Transactional` để đảm bảo connection được trả lại.
+
+</details>

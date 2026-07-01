@@ -87,6 +87,31 @@ Nguyên tắc: mock infrastructure (I/O), test domain. Test với 10+ mock là c
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Rủi ro của over-mocking là gì?
-1. Có nên mock class đang test không?
-1. Điều gì có nghĩa khi setup mock rất đau đớn?
+<details>
+<summary><strong>Khi nào nên mock và khi nào không nên?</strong></summary>
+
+**A:** **Nên mock**: (1) External system (email service, payment API, SMS) — slow, side effects, cost. (2) Time-dependent code (`LocalDateTime.now()`) — inject `Clock` và mock. (3) Non-deterministic behavior (random, network latency). (4) Isolate SUT — test một class mà không cần init toàn bộ dependency graph. **Không nên mock**: (1) Value objects, DTOs — không có logic. (2) Repository → dùng `@DataJpaTest` với real DB thay vì mock. (3) Simple utility (Math, String) — overhead không worth it. (4) Khi mock phức tạp hơn actual impl — sign to use real object.
+
+</details>
+
+<details>
+<summary><strong>Over-mocking là gì và vấn đề gì?</strong></summary>
+
+**A:** Over-mocking: mock quá nhiều dependencies → test brittle và không meaningful. Vấn đề: (1) Test verify implementation details (mock interactions) thay vì behavior — refactor làm test break dù behavior đúng. (2) False confidence: mock ≠ real behavior → test pass nhưng production fail. (3) Test maintenance burden: thay đổi internal implementation → phải update nhiều mock setup. (4) Test không catch integration issues. **Guideline**: prefer testing behavior over implementation. Nếu test phụ thuộc nhiều vào `verify(mock.method()...)` thay vì assert output → over-mocked. Prefer integration test hoặc narrower unit test.
+
+</details>
+
+<details>
+<summary><strong>Spy trong Mockito dùng khi nào?</strong></summary>
+
+**A:** `@Spy` (partial mock): wrap real object, real methods được gọi mặc định — có thể stub specific methods. Dùng khi: muốn test class thực nhưng cần stub một method cụ thể (ví dụ method gọi external service). Ví dụ:
+```java
+@Spy
+EmailService emailService = new EmailService();
+// Stub chỉ sendEmail để tránh thực sự gửi email
+doReturn(true).when(emailService).sendEmail(any());
+// Các method khác vẫn gọi real implementation
+```
+Khác `@Mock`: mock tất cả methods return default (null/0/false). Cẩn thận với spy: dùng `doReturn()` thay vì `when().thenReturn()` — khi stubbing spy, `when()` gọi real method trước khi stub.
+
+</details>

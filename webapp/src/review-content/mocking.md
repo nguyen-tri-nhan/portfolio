@@ -48,6 +48,30 @@ Mock tại service boundary: repo, HTTP client, message publisher. Đừng mock 
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa mock, stub và spy?
-1. Khi nào KHÔNG nên mock?
-1. ArgumentCaptor dùng để làm gì?
+<details>
+<summary><strong>Sự khác biệt giữa mock, stub và spy?</strong></summary>
+
+**A:** **Stub**: trả về giá trị cố định, không verify interaction. **Mock**: verify interaction — kiểm tra method có được gọi không, với argument nào, bao nhiêu lần. **Spy**: wrap real object, gọi real method mặc định, override một số method. Mockito: `mock()` tạo mock (tất cả method trả về default). `spy()` wrap real object. Stub ≈ mock trong Mockito (dùng mock nhưng chỉ setup return, không verify = functionally stub).
+
+</details>
+
+<details>
+<summary><strong>Khi nào KHÔNG nên mock?</strong></summary>
+
+**A:** (1) **Simple value object/POJO**: không cần mock `User`, `Order` — tạo instance thực. (2) **Third-party library infrastructure**: mock `HttpClient`, `JdbcTemplate` che giấu behavior thực — dùng WireMock, TestContainers thay thế. (3) **Class đang test**: mock the class under test = không test gì cả. (4) **Tất cả dependency**: over-mocking tạo test chỉ verify mock behavior, không verify real integration. Rule: mock external dependencies, không mock value/domain object.
+
+</details>
+
+<details>
+<summary><strong>ArgumentCaptor dùng để làm gì?</strong></summary>
+
+**A:** `ArgumentCaptor` capture argument được pass vào mock method để inspect sau:
+```java
+ArgumentCaptor<EmailRequest> captor = ArgumentCaptor.forClass(EmailRequest.class);
+verify(emailService).send(captor.capture());
+EmailRequest captured = captor.getValue();
+assertEquals("user@example.com", captured.getTo());
+```
+Hữu ích khi argument là object được tạo trong method (không accessible từ test). Thay thế: `ArgumentMatchers.argThat()` nếu chỉ cần check condition, không cần toàn bộ object.
+
+</details>

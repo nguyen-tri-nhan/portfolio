@@ -101,6 +101,23 @@ Dùng <code>LongAdder</code> cho metrics counter (request count, error count) kh
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Compare-And-Swap là gì và hoạt động thế nào?
-1. Khi nào bạn chọn LongAdder thay vì AtomicLong?
-1. ABA problem là gì và bạn giải quyết nó thế nào?
+<details>
+<summary><strong>Compare-And-Swap là gì và hoạt động thế nào?</strong></summary>
+
+**A:** CAS là atomic CPU instruction: chỉ ghi giá trị mới vào địa chỉ bộ nhớ nếu giá trị hiện tại bằng expected — trả về true/false. Java `AtomicInteger.compareAndSet()` map xuống `CMPXCHG` (x86). Không cần lock; hardware đảm bảo atomicity. CAS loop: đọc value → tính value mới → CAS; nếu fail (thread khác thay đổi) → retry — là foundation của lock-free data structures.
+
+</details>
+
+<details>
+<summary><strong>Khi nào bạn chọn LongAdder thay vì AtomicLong?</strong></summary>
+
+**A:** `AtomicLong` dùng CAS trên một cell — high contention gây CAS retry liên tục, waste CPU. `LongAdder` chia thành nhiều **striped cells**, mỗi thread update cell riêng, giảm contention drastically; `sum()` cộng tất cả cell khi cần. Dùng **LongAdder** cho counter/metric chỉ cần tổng cuối; **AtomicLong** khi cần atomic CAS hoặc get-and-set cụ thể.
+
+</details>
+
+<details>
+<summary><strong>ABA problem là gì và bạn giải quyết nó thế nào?</strong></summary>
+
+**A:** Thread 1 đọc A, bị preempt. Thread 2 đổi A→B→A. Thread 1 quay lại, CAS thấy A và thành công — nhưng đã có thay đổi trung gian bị bỏ qua. Giải pháp: **`AtomicStampedReference`** — thêm version/stamp vào pair (value, stamp); CAS chỉ thành công khi cả value lẫn stamp khớp, nên A(v1)→B(v2)→A(v3) → CAS fail vì stamp v1≠v3.
+
+</details>

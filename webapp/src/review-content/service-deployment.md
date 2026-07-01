@@ -67,6 +67,23 @@ Luôn dùng systemd thay vì raw <code>nohup</code>: systemd tự restart khi fa
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Tạo systemd service cho Spring Boot app thế nào?
-1. systemctl stop khác kill -9 vào Java process thế nào?
-1. Xem và filter log của systemd service cụ thể thế nào?
+<details>
+<summary><strong>Blue-green deployment hoạt động thế nào?</strong></summary>
+
+**A:** Duy trì **hai production environment** identical: Blue (current live) và Green (new version). Deploy new version lên Green → test Green → switch load balancer để route 100% traffic sang Green → Blue trở thành standby. Rollback: switch LB về Blue (instant). Không cần downtime. Trade-off: tốn chi phí double infrastructure. Giải quyết: database migration phải backward compatible (Blue phải đọc được DB schema sau migration). Kubernetes: Blue/Green với service selector switch: `kubectl patch service myapp -p '{"spec":{"selector":{"version":"green"}}}'`.
+
+</details>
+
+<details>
+<summary><strong>Canary deployment khác blue-green thế nào?</strong></summary>
+
+**A:** **Canary**: route **percentage nhỏ** traffic (1-5%) đến new version, tăng dần nếu không có vấn đề. Không cần double infrastructure — cả hai version chạy song song, traffic split theo weight. **Blue-green**: switch 100% traffic instant. Canary tốt hơn cho: phát hiện vấn đề với real user traffic trước khi full rollout, giảm blast radius. Blue-green tốt cho: cần instant rollback, không muốn split traffic. Kubernetes canary: dùng Argo Rollouts hoặc Flagger tự động tăng traffic % khi metrics OK. Istio: `VirtualService` với weight routing.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để handle database migration trong deployment?</strong></summary>
+
+**A:** Nguyên tắc: migration phải **backward compatible** — old code phải chạy được với schema mới (và ngược lại). Expand-Contract pattern: (1) **Expand**: thêm column mới (nullable hoặc có default), giữ column cũ — old code ignore column mới. (2) Deploy new code (read cả cũ và mới). (3) **Migrate data**. (4) **Contract**: drop column cũ sau khi tất cả traffic đã dùng new code. Không rename column trực tiếp — thêm column mới, copy data, update code, drop cũ. Flyway/Liquibase: version migration, tích hợp vào deploy pipeline.
+
+</details>

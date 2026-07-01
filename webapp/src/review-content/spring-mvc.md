@@ -106,6 +106,23 @@ Dùng <code>ResponseEntity</code> khi cần kiểm soát header hoặc status co
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Giải thích vòng đời xử lý request Spring MVC.
-1. Sự khác biệt giữa @Controller và @RestController là gì?
-1. Spring MVC giải quyết method argument như @RequestBody thế nào?
+<details>
+<summary><strong>DispatcherServlet là gì và hoạt động thế nào?</strong></summary>
+
+**A:** `DispatcherServlet` là **Front Controller** của Spring MVC — single entry point nhận tất cả HTTP request. Flow: (1) Request đến DispatcherServlet. (2) HandlerMapping tìm controller phù hợp theo URL. (3) HandlerAdapter gọi controller method. (4) Controller return ModelAndView (hoặc `@ResponseBody`). (5) ViewResolver resolve view name thành template. (6) View render HTML → response. Khi dùng `@RestController`: bỏ qua ViewResolver, dùng `HttpMessageConverter` (Jackson) convert object thành JSON trực tiếp.
+
+</details>
+
+<details>
+<summary><strong>@RequestMapping và @GetMapping khác nhau thế nào?</strong></summary>
+
+**A:** `@RequestMapping(value="/users", method=RequestMethod.GET)` = `@GetMapping("/users")`. `@GetMapping`, `@PostMapping`, `@PutMapping`, `@DeleteMapping`, `@PatchMapping` là shorthand annotations cho từng HTTP method. `@RequestMapping` ở class level define base path; method level define sub-path. Ví dụ: class `@RequestMapping("/api/users")`, method `@GetMapping("/{id}")` → full path `/api/users/{id}`. Prefer `@GetMapping` etc. cho clarity; dùng `@RequestMapping` ở class level cho common prefix.
+
+</details>
+
+<details>
+<summary><strong>@PathVariable và @RequestParam khác nhau thế nào?</strong></summary>
+
+**A:** **`@PathVariable`**: lấy từ URI path — `GET /users/123` → `@PathVariable Long id` = 123. Required by default. **`@RequestParam`**: lấy từ query string — `GET /users?role=admin` → `@RequestParam String role` = "admin". Optional với default: `@RequestParam(defaultValue="USER") String role`. **`@RequestBody`**: deserialize từ request body (JSON → Java object). `@RequestHeader`: lấy từ HTTP header. Principle: RESTful resources dùng path variable cho identifier (`/users/{id}`); filter/pagination dùng query param (`?page=1&size=10`).
+
+</details>

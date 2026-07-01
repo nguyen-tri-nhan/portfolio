@@ -86,6 +86,23 @@ Với tình huống đặt chỗ hoặc giảm tồn kho, pessimistic an toàn h
 
 ## Câu Hỏi Phỏng Vấn
 
-1. JPA ném exception nào khi xung đột optimistic lock?
-1. @Version hoạt động nội bộ thế nào?
-1. Khi nào pessimistic locking có thể gây deadlock?
+<details>
+<summary><strong>JPA ném exception nào khi xung đột optimistic lock?</strong></summary>
+
+**A:** JPA ném `javax.persistence.OptimisticLockException` (hoặc `jakarta.persistence.OptimisticLockException` trong Jakarta EE). Spring Data JPA wrap thành `ObjectOptimisticLockingFailureException`. Hibernate ném `StaleObjectStateException` nếu version không khớp. Client cần catch và **retry**: đọc lại entity mới nhất → reapply thay đổi → save lại. Annotation `@Retryable` từ Spring Retry tự động retry khi gặp `OptimisticLockingFailureException`.
+
+</details>
+
+<details>
+<summary><strong>@Version hoạt động nội bộ thế nào?</strong></summary>
+
+**A:** Hibernate tự quản lý `@Version` field (int/long/Timestamp). Khi UPDATE entity: generate `UPDATE entity SET ..., version=version+1 WHERE id=? AND version=?`. Nếu 0 rows affected: version không khớp (concurrent update xảy ra) → throw `OptimisticLockException`. Khi đọc entity: load version vào snapshot. Khi INSERT: version=0 (hoặc 0L cho long). Lưu ý: chỉ so sánh version của **entity root**, không theo dõi version của collection item.
+
+</details>
+
+<details>
+<summary><strong>Khi nào pessimistic locking có thể gây deadlock?</strong></summary>
+
+**A:** Deadlock xảy ra khi hai transaction lock theo **thứ tự ngược nhau**: T1 lock A → chờ B; T2 lock B → chờ A → circular wait. Ví dụ: T1 `SELECT FOR UPDATE` account A rồi B; T2 `SELECT FOR UPDATE` account B rồi A. Phòng tránh: (1) **Lock theo thứ tự cố định** — luôn lock account ID nhỏ trước lớn. (2) **Lock ít nhất có thể** — scope nhỏ nhất, transaction ngắn nhất. (3) **Lock timeout**: `@Lock(PESSIMISTIC_WRITE)` với timeout hint để không chờ mãi.
+
+</details>

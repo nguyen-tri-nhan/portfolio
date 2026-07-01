@@ -89,6 +89,23 @@ Dùng <code>@Cacheable</code> (Spring) cho Cache-Aside tự động. Với thund
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Luồng đọc và ghi của Cache-Aside là gì?
-1. Thundering herd problem trong caching là gì?
-1. Khi nào bạn KHÔNG dùng Cache-Aside?
+<details>
+<summary><strong>Luồng đọc và ghi của Cache-Aside là gì?</strong></summary>
+
+**A:** **Đọc**: check cache → HIT → return; MISS → đọc DB → ghi vào cache với TTL → return. **Ghi**: ghi vào DB → **invalidate** (xóa) cache key (không update cache). Lần đọc tiếp theo sẽ MISS và load fresh. Tại sao invalidate thay vì update? Tránh race condition: 2 update đồng thời → update cũ có thể ghi đè update mới trong cache. Cache-Aside còn gọi là **Lazy Loading**.
+
+</details>
+
+<details>
+<summary><strong>Thundering herd problem trong caching là gì?</strong></summary>
+
+**A:** Khi cache key expire, **hàng trăm concurrent request** cùng hit DB → DB bị overwhelm. Giải pháp: (1) **Mutex/Lock**: request đầu tiên acquire lock, load từ DB, populate cache; các request khác wait. (2) **Probabilistic early expiration**: trước khi TTL hết, một request tự expire sớm và refresh. (3) **Stale-While-Revalidate**: trả stale data ngay, async refresh. (4) **Staggered TTL**: tránh nhiều key expire cùng lúc.
+
+</details>
+
+<details>
+<summary><strong>Khi nào bạn KHÔNG dùng Cache-Aside?</strong></summary>
+
+**A:** (1) Data thay đổi liên tục → hit rate thấp, chỉ thêm overhead. (2) Strong consistency bắt buộc — Cache-Aside có window stale. (3) Write-heavy → cache bị invalidate liên tục. (4) Data nhạy cảm không nên cache (PII, security token). (5) Cold start không chịu được — cache empty sau restart → DB phải chịu full load. Thay thế: Write-Through (ghi đồng thời cache và DB), Read-Through (cache tự load từ DB).
+
+</details>

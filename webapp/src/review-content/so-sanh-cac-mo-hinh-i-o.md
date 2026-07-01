@@ -51,6 +51,23 @@ Cho project Java 21+ mới: dùng Virtual Threads với Spring MVC truyền th�
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Khi nào chọn WebFlux thay vì Spring MVC?
-1. Virtual Threads giải quyết vấn đề thread-per-connection thế nào?
-1. Sự khác nhau giữa non-blocking I/O và asynchronous I/O?
+<details>
+<summary><strong>Blocking I/O và Non-blocking I/O khác nhau thế nào?</strong></summary>
+
+**A:** **Blocking I/O**: thread gọi `read()` → block cho đến khi data available — thread bị "frozen", không làm gì khác được. 1000 concurrent connections → 1000 threads (tốn memory). **Non-blocking I/O**: `read()` return ngay — nếu không có data, return EAGAIN. Thread có thể làm việc khác, dùng event loop hoặc selector để check khi data ready. Ít threads, nhiều connections. Java: `java.io` = blocking; `java.nio` với Selector = non-blocking. Nginx, Node.js dùng non-blocking I/O — handle hàng nghìn connections với một thread event loop.
+
+</details>
+
+<details>
+<summary><strong>Sự khác biệt giữa đồng bộ (sync) và bất đồng bộ (async) I/O?</strong></summary>
+
+**A:** **Sync I/O**: caller chịu trách nhiệm check data ready (blocking: chờ; non-blocking: poll) — caller actively involved trong waiting. **Async I/O**: OS notify khi data ready qua callback/signal/future — caller làm việc khác, OS gọi lại khi done. Java AIO (`AsynchronousFileChannel`, `AsynchronousSocketChannel`): submit operation → callback khi complete. **Tóm tắt**: Blocking sync (truyền thống), Non-blocking sync (poll loop), Async (callback/completion handler). Virtual threads (Java 21): blocking syntax nhưng non-blocking behavior — JVM unmount thread khi block.
+
+</details>
+
+<details>
+<summary><strong>Multiplexing I/O (select/epoll) hoạt động thế nào?</strong></summary>
+
+**A:** **select/poll**: một thread monitor nhiều file descriptors (sockets) — `select(fds, timeout)` block cho đến khi ít nhất một FD ready → iterate để tìm FD nào ready → process. O(n) scan, max 1024 FDs. **epoll** (Linux): efficient version — `epoll_ctl` register FD, `epoll_wait` block chờ events, return chỉ FDs ready (not all). O(1) lookup, unlimited FDs. Nginx, Redis, Node.js dùng epoll. Java NIO Selector: abstraction trên epoll/kqueue. Pattern: một thread, nhiều connections, event-driven. Scalable cho I/O-heavy workloads.
+
+</details>

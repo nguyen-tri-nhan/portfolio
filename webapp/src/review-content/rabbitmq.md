@@ -90,6 +90,23 @@ Dùng RabbitMQ cho: task queue, request-reply pattern, routing phức tạp theo
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa Kafka topic và RabbitMQ queue là gì?
-1. Các loại RabbitMQ exchange và khi nào dùng mỗi loại?
-1. RabbitMQ xử lý message chưa được acknowledged thế nào?
+<details>
+<summary><strong>Exchange types trong RabbitMQ là gì?</strong></summary>
+
+**A:** (1) **Direct**: route message theo routing key exact match — queue bind với binding key, message chỉ đến queue có binding key = routing key. (2) **Topic**: routing key là pattern (word.word) với wildcards `*` (một word) và `#` (zero hoặc nhiều word) — `logs.*.error` match `logs.app.error`. (3) **Fanout**: broadcast tất cả message đến mọi bound queue — ignore routing key. (4) **Headers**: route theo header attributes thay vì routing key. Dùng: Direct cho task queue, Fanout cho pub/sub, Topic cho flexible routing.
+
+</details>
+
+<details>
+<summary><strong>Đảm bảo message không bị mất trong RabbitMQ thế nào?</strong></summary>
+
+**A:** Ba lớp bảo vệ: (1) **Publisher confirms**: `channel.confirmSelect()` → broker ack khi message được persist. (2) **Durable queue + persistent message**: queue với `durable=true` survive broker restart; message với `deliveryMode=2` (persistent). (3) **Consumer ack**: `autoAck=false` → consumer gọi `channel.basicAck()` sau khi xử lý xong — nếu consumer die trước khi ack, message requeue. Không ack → message không bị xóa khỏi queue. **Dead Letter Exchange (DLX)**: message không xử lý được → route đến DLX queue để analyze.
+
+</details>
+
+<details>
+<summary><strong>Prefetch count ảnh hưởng consumer thế nào?</strong></summary>
+
+**A:** `channel.basicQos(prefetchCount)` — giới hạn số message broker gửi trước khi consumer ack. Mặc định: không giới hạn → broker dump tất cả message vào consumer buffer → một consumer chậm nhận hết message, consumer khác idle. **prefetchCount=1**: broker chỉ gửi message mới khi consumer ack message trước — fair dispatch. **prefetchCount=10**: cân bằng giữa throughput và fair dispatch. Với multiple consumer: `basicQos(10)` cả hai consumers → mỗi consumer max 10 unacked message, load được balance tốt hơn.
+
+</details>

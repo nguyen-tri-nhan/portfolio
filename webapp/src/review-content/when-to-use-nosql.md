@@ -73,6 +73,23 @@ Bắt đầu với PostgreSQL — ACID, hỗ trợ JSON xuất sắc và scale t
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Trade-off giữa SQL và NoSQL cho financial application là gì?
-1. Mô tả tình huống bạn dùng cả SQL và NoSQL trong cùng hệ thống.
-1. Eventual consistency có nghĩa gì và khi nào chấp nhận được?
+<details>
+<summary><strong>Khi nào nên chọn NoSQL thay vì relational database?</strong></summary>
+
+**A:** Chọn NoSQL khi: (1) **Schema flexible**: schema thay đổi thường xuyên, document structure vary per record (product catalog với different attributes). (2) **Horizontal scale write-heavy**: cần scale writes across nodes (RDBMS khó shard write). (3) **Specific data model**: graph data (Neo4j), time series (InfluxDB), full-text search (Elasticsearch). (4) **Very high throughput**: Redis cho caching, Cassandra cho IoT sensor data (write-heavy, time-ordered). (5) **Simple access pattern**: no complex JOIN. Tránh NoSQL khi: cần ACID transactions across documents, complex reporting với ad-hoc queries, data highly relational.
+
+</details>
+
+<details>
+<summary><strong>MongoDB khi nào phù hợp hơn PostgreSQL?</strong></summary>
+
+**A:** MongoDB phù hợp: (1) **Document-oriented data**: mỗi document tự chứa related data (user profile + preferences + settings) — không cần JOIN. (2) **Nested/hierarchical data**: product catalog với deeply nested specs. (3) **Rapid iteration**: schema-less cho phép thêm field mà không migration. (4) **High write throughput with sharding**: Mongo built-in sharding. PostgreSQL phù hợp: relational data với nhiều JOINs, cần ACID full compliance, complex reporting, financial data. Thực tế: PostgreSQL có JSONB (document-like) — nhiều team dùng Postgres với JSONB thay vì MongoDB để tránh complexity.
+
+</details>
+
+<details>
+<summary><strong>Eventual consistency trong NoSQL ảnh hưởng thế nào đến application?</strong></summary>
+
+**A:** Eventual consistency: sau write, read từ replica khác nhau có thể return stale data — data "eventually" consistent. Application phải handle: (1) **Read-your-own-writes**: sau user update profile, read có thể thấy old data → route read đến primary. (2) **Lost updates**: hai concurrent writes cùng document → last write wins (hoặc conflict) → implement optimistic concurrency. (3) **Non-monotonic reads**: read A thấy new value, read B thấy old value → confusing UX. Patterns: accept eventual consistency (social feed OK if slightly stale), use consistent read when needed (Mongo `{readConcern: "linearizable"}`), design for idempotency.
+
+</details>

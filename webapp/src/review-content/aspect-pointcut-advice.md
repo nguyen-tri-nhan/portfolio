@@ -154,6 +154,31 @@ Kết hợp pointcut <code>@annotation</code> với annotation tùy chỉnh cho 
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa joinpoint và pointcut là gì?
-1. Khi nào dùng @Around thay vì @Before + @AfterReturning?
-1. Làm thế nào để truyền argument từ pointcut sang advice method?
+<details>
+<summary><strong>Sự khác biệt giữa joinpoint và pointcut là gì?</strong></summary>
+
+**A:** **Joinpoint** là một điểm cụ thể trong execution flow (một method invocation cụ thể). **Pointcut** là biểu thức khớp với tập hợp joinpoint — ví dụ `execution(* com.example.service.*.*(..))` khớp tất cả method trong package service. Pointcut là filter/selector; joinpoint là điểm thực tế bị match. Trong Spring AOP, joinpoint luôn là method execution.
+
+</details>
+
+<details>
+<summary><strong>Khi nào dùng @Around thay vì @Before + @AfterReturning?</strong></summary>
+
+**A:** Dùng **`@Around`** khi cần: skip method (không gọi `proceed()`), modify input args, modify return value, hoặc wrap trong try-catch để quyết định re-throw hay swallow exception. Ví dụ: caching, circuit breaker. Dùng **`@Before` + `@AfterReturning`** khi chỉ cần observe (logging, audit) — intent tường minh hơn và ít nguy cơ quên gọi `proceed()`.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để truyền argument từ pointcut sang advice method?</strong></summary>
+
+**A:** Dùng **`args()` binding** trong pointcut expression:
+```java
+@Around("execution(* service.*.*(..)) && args(userId, ..)")
+public Object log(ProceedingJoinPoint pjp, String userId) throws Throwable {
+    log.info("userId={}", userId);
+    return pjp.proceed();
+}
+```
+Tên `userId` trong `args()` phải khớp tên parameter trong advice. Cũng dùng `@annotation(ann)` để inject annotation instance, `target(bean)` để inject target object.
+
+</details>

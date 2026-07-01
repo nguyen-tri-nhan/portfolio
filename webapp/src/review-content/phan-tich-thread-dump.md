@@ -52,6 +52,23 @@ Khi thấy CPU cao: 1) <code>top -H</code> tìm thread nóng, 2) convert TID san
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Tương quan thread OS CPU cao với Java stack trace thế nào?
-1. BLOCKED trong thread dump có nghĩa gì?
-1. Xác nhận deadlock từ thread dump thế nào?
+<details>
+<summary><strong>Tương quan thread OS CPU cao với Java stack trace thế nào?</strong></summary>
+
+**A:** (1) `top -H -p <java_pid>` → thấy TID (Linux thread ID, decimal) ngốn CPU cao. (2) Convert decimal → hex: TID 12345 → 0x3039. (3) `jstack <java_pid> | grep -B 1 "nid=0x3039" -A 30` → tìm Java thread với `nid=0x3039` (native id). (4) Xem stack trace của thread đó — top frame là code đang chạy. Thường thấy: vòng lặp trong business logic, CAS spin loop, GC thread. Shortcut: `kill -3 <pid>` print thread dump vào stdout.
+
+</details>
+
+<details>
+<summary><strong>BLOCKED trong thread dump có nghĩa gì?</strong></summary>
+
+**A:** Thread ở trạng thái **BLOCKED**: đang chờ **monitor lock** (synchronized block/method) đang bị giữ bởi thread khác. Thread dump hiện: `- waiting to lock <0x12345> (a com.example.Foo)` → lock object. Tìm thread đang giữ lock đó: `- locked <0x12345>`. Nhiều thread BLOCKED trên cùng lock → contention. Khác với WAITING (chờ condition/timeout không liên quan đến lock). BLOCKED + nhiều thread = potential deadlock hoặc lock contention bottleneck.
+
+</details>
+
+<details>
+<summary><strong>Xác nhận deadlock từ thread dump thế nào?</strong></summary>
+
+**A:** Thread dump tự động detect deadlock và print ở cuối: `Found one Java-level deadlock:`. Xem manual: (1) Tìm tất cả thread BLOCKED. (2) Với mỗi thread, xem `waiting to lock <addr>`. (3) Tìm thread đang giữ `<addr>` đó (grep "locked <addr>"). (4) Check thread đó có đang chờ lock khác không. Nếu có cycle → deadlock. Ví dụ: Thread A giữ lock 1 chờ lock 2; Thread B giữ lock 2 chờ lock 1 → deadlock. Fix: lock theo thứ tự cố định.
+
+</details>

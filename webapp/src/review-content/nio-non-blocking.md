@@ -54,6 +54,23 @@ while (true) {
 
 ## Câu Hỏi Phỏng Vấn
 
-1. ByteBuffer.flip() có vai trò gì?
-1. Selector cho phép một thread xử lý hàng nghìn kết nối thế nào?
-1. Zero-copy là gì và FileChannel.transferTo() dùng nó thế nào?
+<details>
+<summary><strong>ByteBuffer.flip() có vai trò gì?</strong></summary>
+
+**A:** ByteBuffer có hai mode: **write mode** (sau `clear()`: position=0, limit=capacity — dùng để write data vào) và **read mode** (sau `flip()`: limit=current_position, position=0 — dùng để read data đã write). `flip()` chuyển từ write sang read mode: đặt limit tại vị trí write dừng, reset position về 0. Không gọi `flip()` trước read → đọc từ position hiện tại đến capacity → có thể đọc garbage. Sau đọc xong: `compact()` (keep unread) hoặc `clear()` (reset) để quay về write mode.
+
+</details>
+
+<details>
+<summary><strong>Selector cho phép một thread xử lý hàng nghìn kết nối thế nào?</strong></summary>
+
+**A:** Thay vì thread-per-connection (blocking), Selector model: (1) Register nhiều `SocketChannel` với một `Selector` kèm interest ops (OP_READ, OP_WRITE). (2) Một thread gọi `selector.select()` — block cho đến khi ít nhất một channel ready. (3) Iterate qua `selectedKeys()`, xử lý từng ready channel (đọc/ghi non-blocking). (4) Quay lại `select()`. OS dùng `epoll` (Linux) để notify efficiently — không scan tất cả connection mỗi lần. Nền tảng của Netty event loop.
+
+</details>
+
+<details>
+<summary><strong>Zero-copy là gì và FileChannel.transferTo() dùng nó thế nào?</strong></summary>
+
+**A:** Normal file send: disk → kernel buffer → user space buffer → kernel socket buffer → network. **Zero-copy**: disk → kernel buffer → socket buffer — skip user space copy. `FileChannel.transferTo(position, count, socketChannel)` dùng OS `sendfile()` syscall: data không đi qua user space → giảm CPU copy, giảm context switch, tốc độ cao hơn nhiều cho file transfer. Dùng trong: static file server, file streaming. Kafka dùng zero-copy cho consumer fetch — đây là lý do Kafka có throughput cao.
+
+</details>

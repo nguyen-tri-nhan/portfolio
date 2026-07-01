@@ -69,6 +69,23 @@ Trong Spring app, viết query analytics phức tạp dưới dạng native SQL 
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa WHERE và HAVING là gì?
-1. Giải thích INNER JOIN vs LEFT JOIN bằng ví dụ.
-1. Window function khác GROUP BY thế nào?
+<details>
+<summary><strong>Sự khác biệt giữa HAVING và WHERE?</strong></summary>
+
+**A:** **`WHERE`**: filter rows **trước** khi GROUP BY — không dùng aggregate functions. **`HAVING`**: filter groups **sau** GROUP BY — có thể dùng aggregate functions (`COUNT`, `SUM`, `AVG`). Ví dụ: `SELECT department, COUNT(*) FROM employees WHERE salary > 50000 GROUP BY department HAVING COUNT(*) > 5`. WHERE lọc employee có salary > 50k trước; HAVING chỉ giữ department có hơn 5 employees sau group. Sai phổ biến: dùng HAVING thay WHERE (chậm hơn — WHERE filter sớm hơn, ít row hơn để group).
+
+</details>
+
+<details>
+<summary><strong>Giải thích LEFT JOIN và INNER JOIN với ví dụ.</strong></summary>
+
+**A:** **INNER JOIN**: chỉ trả row có **match trong cả hai bảng**. **LEFT JOIN**: trả **tất cả row của bảng trái** + matched rows từ bảng phải (NULL nếu không match). `SELECT u.name, o.total FROM users u LEFT JOIN orders o ON u.id = o.user_id` → user không có order vẫn xuất hiện (order columns = NULL). INNER JOIN → user đó bị loại. Dùng LEFT JOIN: muốn tất cả users kể cả chưa có order. INNER JOIN: chỉ muốn user có order. RIGHT JOIN = LEFT JOIN reversed (ít dùng). FULL OUTER JOIN: tất cả rows từ cả hai bảng.
+
+</details>
+
+<details>
+<summary><strong>EXPLAIN output trong MySQL có nghĩa gì?</strong></summary>
+
+**A:** Key columns: `type` — access method (tệ nhất → tốt nhất: ALL → index → range → ref → eq_ref → const). `ALL` = full table scan. `key` — index được dùng (NULL = không dùng index). `rows` — estimated rows scanned. `Extra` — thêm info: "Using filesort" (sort không dùng index — slow), "Using temporary" (temp table — slow), "Using index" (covering index — fast). Action: nếu `type=ALL` và rows nhiều → thêm index. Nếu "Using filesort" → thêm index trên ORDER BY column.
+
+</details>

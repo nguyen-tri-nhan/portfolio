@@ -58,6 +58,23 @@ Dùng <code>kill -15</code> (SIGTERM) trước — graceful shutdown của Sprin
 
 ## Câu Hỏi Phỏng Vấn
 
-1. kill -9 và kill -15 khác nhau thế nào?
-1. Chạy ứng dụng Java background và giữ nó chạy sau khi logout thế nào?
-1. Tìm thư mục nào đang chiếm nhiều disk nhất thế nào?
+<details>
+<summary><strong>kill -9 và kill -15 khác nhau thế nào?</strong></summary>
+
+**A:** **`kill -15` (SIGTERM)**: graceful shutdown signal — process nhận được, có thể handle: flush data, close connection, cleanup trước khi exit. Spring Boot handle SIGTERM → graceful shutdown (chờ active request hoàn thành). **`kill -9` (SIGKILL)**: force kill — OS terminate process ngay lập tức, không thể catch hay ignore. Process không có cơ hội cleanup → có thể để lại incomplete data, open file, lock. Luôn thử SIGTERM trước, SIGKILL là last resort.
+
+</details>
+
+<details>
+<summary><strong>Chạy ứng dụng Java background và giữ nó chạy sau khi logout thế nào?</strong></summary>
+
+**A:** (1) **nohup**: `nohup java -jar app.jar > app.log 2>&1 &` — output vào nohup.out, process survive logout. (2) **systemd** (production): tạo service file, `systemctl start myapp` — auto-restart khi crash, start on boot. (3) **screen/tmux**: tạo session persist qua logout: `screen -S myapp`, chạy app, `Ctrl+A+D` để detach, `screen -r myapp` để resume. systemd là best practice cho production.
+
+</details>
+
+<details>
+<summary><strong>Tìm thư mục nào đang chiếm nhiều disk nhất thế nào?</strong></summary>
+
+**A:** `du -sh /* 2>/dev/null | sort -rh | head -20` — hiện top thư mục lớn nhất. Drill down: `du -sh /var/* | sort -rh | head -10`. `ncdu` là TUI tool đẹp hơn: `ncdu /` — interactive browse theo tree. Để tìm file lớn nhất: `find / -type f -size +100M -exec ls -lh {} ; 2>/dev/null | sort -k5 -rh`. Với Java apps: check `/tmp` (temp file), log directory, GC log, heap dump.
+
+</details>

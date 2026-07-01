@@ -61,6 +61,23 @@ Sau khi có heap dump: 1) Chạy "Leak Suspects" report trong MAT trước — t
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Shallow heap và retained heap khác nhau thế nào?
-1. Tìm memory leak bằng Eclipse MAT thế nào?
-1. Kể ba nguyên nhân memory leak phổ biến trong Java.
+<details>
+<summary><strong>Shallow heap và retained heap khác nhau thế nào?</strong></summary>
+
+**A:** **Shallow heap**: memory của chính object đó — chỉ tính các field trực tiếp, không tính objects nó reference. `String` object: ~48 bytes. **Retained heap**: tổng memory sẽ được giải phóng nếu object này bị GC — bao gồm tất cả object mà object này **giữ duy nhất** (transitively reachable và không có GC root khác). `String[] strings` có retained heap = shallow(array) + sum(shallow(string_i)). Trong Eclipse MAT: retained heap của object lớn hơn shallow → object đó là root của memory leak.
+
+</details>
+
+<details>
+<summary><strong>Tìm memory leak bằng Eclipse MAT thế nào?</strong></summary>
+
+**A:** (1) **Leak Suspects Report**: MAT tự detect object chiếm >1% heap. (2) **Dominator Tree**: liệt kê object theo retained heap giảm dần — tìm object "unexpected large" ở top. (3) **OQL** (Object Query Language): `SELECT * FROM java.util.HashMap WHERE this.size > 10000` — tìm collection quá lớn. (4) **Unreachable objects**: object không còn reachable nhưng chưa GC — dấu hiệu soft/weak reference issue. (5) So sánh hai heap dump (trước và sau) bằng `Histogram` → tìm class count tăng liên tục.
+
+</details>
+
+<details>
+<summary><strong>Kể ba nguyên nhân memory leak phổ biến trong Java.</strong></summary>
+
+**A:** (1) **ThreadLocal không gọi remove()**: ThreadLocal trong thread pool không được clear → giữ object lâu dài theo thread lifetime. (2) **Static collection tăng không giới hạn**: `static Map cache = new HashMap()` được add mà không remove — không bị GC. (3) **Listener/Observer không deregister**: đăng ký listener nhưng không remove khi object không còn cần → listener giữ reference → object không được GC. Thêm: ClassLoader leak trong hot deploy, inner class ẩn giữ reference đến outer class.
+
+</details>

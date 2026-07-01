@@ -109,6 +109,23 @@ Cho inter-service call nội bộ trong môi trường microservice đa ngôn ng
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Ưu điểm chính của gRPC so với REST là gì?
-1. Protocol Buffers là gì và tại sao dùng với gRPC?
-1. gRPC có thể dùng từ browser không?
+<details>
+<summary><strong>gRPC có ưu điểm gì so với REST trong service-to-service communication?</strong></summary>
+
+**A:** (1) **Protobuf binary**: nhỏ hơn JSON 3-10x, serialize/deserialize nhanh hơn. (2) **HTTP/2 multiplexing**: nhiều request trên cùng connection, không head-of-line blocking. (3) **Streaming**: bidirectional streaming (không chỉ request-response). (4) **Strict contract** (proto file): type-safe, code generation, breaking change detection. (5) **Lower latency**: binary + HTTP/2 + persistent connection. Nhược điểm: không human-readable (debug khó hơn), browser không native support (cần gRPC-Web), learning curve. Dùng gRPC: internal microservices cần performance; REST: public API, browser clients.
+
+</details>
+
+<details>
+<summary><strong>REST idempotency là gì và tại sao quan trọng?</strong></summary>
+
+**A:** **Idempotent**: gọi N lần cho cùng result như gọi 1 lần. HTTP methods: `GET`, `HEAD`, `OPTIONS` — idempotent và safe. `PUT`, `DELETE` — idempotent (không safe). `POST`, `PATCH` — không idempotent (thường). Quan trọng với retry: nếu network fail sau server xử lý nhưng trước response → client retry. Idempotent endpoint: retry an toàn. `POST /orders` retry tạo duplicate order (vấn đề). Fix: idempotency key — `POST /orders` với header `Idempotency-Key: uuid` → server deduplicate bằng key.
+
+</details>
+
+<details>
+<summary><strong>HTTP/2 multiplexing giải quyết vấn đề gì của HTTP/1.1?</strong></summary>
+
+**A:** HTTP/1.1 **Head-of-Line Blocking**: một connection chỉ có một request đang flight — request sau phải chờ request trước xong. Workaround: mở nhiều parallel connection (6-8 per origin) → resource overhead, TCP slow start mỗi connection. **HTTP/2 multiplexing**: nhiều **stream** trong một TCP connection — independent frames interleaved. Request A đang chờ response không block Request B. Kết quả: ít connections, không HOL blocking, header compression (HPACK), server push. gRPC xây trên HTTP/2 → inherit tất cả benefits này cho service communication.
+
+</details>

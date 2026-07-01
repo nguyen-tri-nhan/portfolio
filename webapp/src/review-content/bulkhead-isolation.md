@@ -57,6 +57,23 @@ Luôn định nghĩa fallback method — Bulkhead không có fallback chỉ thro
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Bulkhead giải quyết vấn đề gì mà shared thread pool không làm được?
-1. Thread pool bulkhead và semaphore bulkhead khác nhau thế nào?
-1. Bulkhead bổ sung cho Circuit Breaker thế nào?
+<details>
+<summary><strong>Bulkhead giải quyết vấn đề gì mà shared thread pool không làm được?</strong></summary>
+
+**A:** Với **shared thread pool**: service A chậm chiếm toàn bộ thread pool → request đến service B (bình thường) cũng bị queue/timeout → cascade failure. **Bulkhead** cô lập: mỗi downstream service có thread pool/semaphore riêng → service A saturate chỉ ảnh hưởng pool của A, service B không bị ảnh hưởng. Tên từ "bulkhead" trong tàu thủy — vách ngăn ngăn chìm toàn tàu.
+
+</details>
+
+<details>
+<summary><strong>Thread pool bulkhead và semaphore bulkhead khác nhau thế nào?</strong></summary>
+
+**A:** **Thread pool bulkhead**: dedicated thread pool cho mỗi service call; caller thread submit task, pool thread execute — cho phép timeout đang-executing call. Overhead: thread creation, context switch. **Semaphore bulkhead**: giới hạn concurrent call bằng Semaphore; caller thread tự execute — overhead thấp hơn nhiều nhưng không timeout đang-executing call. Resilience4j default: semaphore. Hystrix (deprecated): thread pool.
+
+</details>
+
+<details>
+<summary><strong>Bulkhead bổ sung cho Circuit Breaker thế nào?</strong></summary>
+
+**A:** Circuit Breaker theo dõi failure rate theo thời gian, mở khi vượt threshold — chờ service đang down recover. Bulkhead giới hạn concurrent requests — ngăn service slow (chưa fail) chiếm quá nhiều resource. Scenario: service A slow (5s thay vì 50ms) → CB chưa trigger nhưng thread pool đang fill up → Bulkhead kích hoạt. Kết hợp: Bulkhead ngăn resource exhaustion trong khi CB chờ failure rate đủ để trip.
+
+</details>

@@ -112,6 +112,23 @@ Dùng slice test để tăng tốc: @DataJpaTest cho repo, @WebMvcTest cho contr
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa @SpringBootTest và @DataJpaTest?
-1. Tại sao ưu tiên TestContainers hơn H2 cho JPA test?
-1. Slice test cải thiện CI speed thế nào?
+<details>
+<summary><strong>Sự khác biệt giữa @SpringBootTest và @DataJpaTest?</strong></summary>
+
+**A:** **`@SpringBootTest`**: load **full ApplicationContext** — tất cả beans, auto-configuration, web layer. Chậm hơn nhưng test real integration. Dùng cho end-to-end test. **`@DataJpaTest`**: load **chỉ JPA slice** — entity, repository, JPA config, in-memory DB (H2 default) — không load service, controller, security. Nhanh hơn nhiều. Tương tự: `@WebMvcTest` (MVC slice), `@DataMongoTest`, `@DataRedisTest`. Principle: dùng slice test khi chỉ cần test một layer.
+
+</details>
+
+<details>
+<summary><strong>Tại sao ưu tiên TestContainers hơn H2 cho JPA test?</strong></summary>
+
+**A:** H2 là in-memory DB khác với PostgreSQL/MySQL về: (1) **SQL dialect**: H2 không support tất cả syntax (window function, JSON, specific type). (2) **Behavior**: H2 có thể pass test nhưng fail production (constraint handling, sequence behavior). (3) **Migration**: Flyway/Liquibase script cho production DB có thể syntax error trong H2. TestContainers chạy **actual Docker container** của production DB — test chính xác hơn, tránh "works in test, fails in prod".
+
+</details>
+
+<details>
+<summary><strong>Slice test cải thiện CI speed thế nào?</strong></summary>
+
+**A:** `@SpringBootTest` load full context mất 10-30s mỗi test class. Slice test load partial context mất 1-3s. Với 100 test class: full = 1000s-3000s; slice = 100s-300s. Ngoài ra, Spring **cache ApplicationContext** — test class dùng cùng config tái sử dụng context. `@MockBean` phá cache (tạo context mới). Tip: nhóm test dùng cùng mock setup vào cùng class, minimize `@MockBean` để maximize context reuse, dùng `@DirtiesContext` chỉ khi thực sự cần.
+
+</details>

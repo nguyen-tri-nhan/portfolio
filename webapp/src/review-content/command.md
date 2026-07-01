@@ -125,6 +125,29 @@ Dùng Command cho bất kỳ UI action cần undo, bất kỳ operation nên đ�
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Command cho phép undo/redo thế nào?
-1. Vai trò của Invoker trong Command pattern?
-1. Làm thế nào để implement job queue với Command?
+<details>
+<summary><strong>Command cho phép undo/redo thế nào?</strong></summary>
+
+**A:** Mỗi Command object implement cả `execute()` và `undo()`. Maintain hai stack: **undo stack** và **redo stack**. Khi execute command: push vào undo stack. Khi undo: pop từ undo stack, gọi `undo()`, push vào redo stack. Khi redo: pop từ redo stack, gọi `execute()`, push vào undo stack. Command phải lưu đủ state để đảo ngược — ví dụ DrawCommand lưu trước/sau color, vị trí.
+
+</details>
+
+<details>
+<summary><strong>Vai trò của Invoker trong Command pattern?</strong></summary>
+
+**A:** **Invoker** là object quyết định khi nào thực thi command, nhưng không biết command làm gì cụ thể — chỉ gọi `command.execute()`. Invoker tách biệt người gửi yêu cầu khỏi người thực thi. Ví dụ: Button (Invoker) giữ Command object, khi click → gọi `execute()` — Button không biết command là SaveFile hay DeleteRecord. Cho phép swap command ở runtime, queue/delay/log command, hỗ trợ undo.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để implement job queue với Command?</strong></summary>
+
+**A:** Mỗi job là một Command object (implement `execute()`). Queue (LinkedBlockingQueue) giữ pending commands. Worker thread poll từ queue và gọi `execute()`. Command có thể serialize (lưu DB hoặc message queue) để survive restart. Ví dụ:
+```java
+BlockingQueue<Command> queue = new LinkedBlockingQueue<>();
+queue.put(new SendEmailCommand(user));
+queue.put(new GenerateReportCommand(params));
+worker.execute(() -> { while(true) queue.take().execute(); });
+```
+
+</details>

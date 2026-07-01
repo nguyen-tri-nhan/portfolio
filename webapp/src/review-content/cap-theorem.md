@@ -62,6 +62,23 @@ CAP là framework để suy luận về trade-off, không phải checklist nghi�
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Hệ thống có thể CA (consistent và available nhưng không partition-tolerant) không?
-1. Đưa ví dụ về hệ thống CP và AP và giải thích lựa chọn.
-1. PACELC là gì và mở rộng CAP thế nào?
+<details>
+<summary><strong>Hệ thống có thể CA (consistent và available nhưng không partition-tolerant) không?</strong></summary>
+
+**A:** Single-node RDBMS là CA về lý thuyết. Nhưng trong distributed system: network partition **luôn có thể xảy ra** — bạn không thể chọn không partition-tolerant, chỉ có thể chọn behavior *khi* partition xảy ra. CAP thực sự là: partition xảy ra → chọn **C** (reject request giữ consistency) hay **A** (tiếp tục serve có thể stale). Đa số distributed system chọn giữa CP hoặc AP.
+
+</details>
+
+<details>
+<summary><strong>Đưa ví dụ về hệ thống CP và AP và giải thích lựa chọn.</strong></summary>
+
+**A:** **CP**: ZooKeeper, etcd — khi partition, từ chối write để giữ consistency — đúng đắn cho distributed coordination, leader election, config management. **AP**: Cassandra, DynamoDB (default), Amazon S3 — khi partition, tiếp tục serve stale data — phù hợp cho user timeline, shopping cart, counter (merge conflict sau). Cassandra tunable: `QUORUM` (CP-leaning) hoặc `ONE` (AP-leaning). Không có đúng/sai — phụ thuộc business requirement.
+
+</details>
+
+<details>
+<summary><strong>PACELC là gì và mở rộng CAP thế nào?</strong></summary>
+
+**A:** CAP chỉ nói về behavior khi có partition. **PACELC** (Daniel Abadi): *khi Partition → chọn Availability hay Consistency*; *Else (bình thường) → chọn Latency hay Consistency*. Cassandra là PA/EL — partition chọn Availability; bình thường với ONE chọn Latency. MySQL Cluster là PC/EC — luôn chọn Consistency kể cả khi không có partition (sync replication). PACELC capture thực tế hơn CAP.
+
+</details>

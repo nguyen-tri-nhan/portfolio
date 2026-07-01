@@ -106,6 +106,33 @@ Dùng Resilience4j với Spring Cloud OpenFeign cho inter-service call. Áp dụ
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa Resilience4j Bulkhead và Circuit Breaker là gì?
-1. @TimeLimiter hoạt động với CompletableFuture thế nào?
-1. slow-call-rate-threshold trong cấu hình circuit breaker là gì?
+<details>
+<summary><strong>Cấu hình CircuitBreaker trong Resilience4j thế nào?</strong></summary>
+
+**A:** `CircuitBreakerConfig.custom().failureRateThreshold(50).waitDurationInOpenState(Duration.ofSeconds(30)).slidingWindowSize(10).build()`. Key params: `failureRateThreshold` — % failures để open circuit. `waitDurationInOpenState` — thời gian OPEN trước khi thử HALF_OPEN. `slidingWindowSize` — số call cuối để tính failure rate. `permittedNumberOfCallsInHalfOpenState` — số call thử trong HALF_OPEN. Spring Boot: `resilience4j.circuitbreaker.instances.myService.failure-rate-threshold=50` trong `application.yml` + `@CircuitBreaker(name="myService", fallbackMethod="fallback")`.
+
+</details>
+
+<details>
+<summary><strong>@Retry và @CircuitBreaker kết hợp thế nào?</strong></summary>
+
+**A:** Dùng cả hai: Retry wrap bên trong, CircuitBreaker bên ngoài — đúng thứ tự. `@CircuitBreaker(name="x") @Retry(name="x") public Result call() {...}`. Flow: CircuitBreaker check → nếu OPEN → fail fast (không retry). Nếu CLOSED → gọi method → nếu fail → Retry thử lại (N lần) → nếu vẫn fail sau retry → CircuitBreaker record failure. Thứ tự annotation quan trọng: Spring AOP xử lý outer annotation trước. `@RateLimiter` + `@CircuitBreaker` + `@Retry`: RateLimiter → CircuitBreaker → Retry.
+
+</details>
+
+<details>
+<summary><strong>Fallback method trong Resilience4j nhận tham số nào?</strong></summary>
+
+**A:** Fallback method phải có **cùng return type** và **cùng tham số** như original method, **thêm** exception parameter ở cuối. Ví dụ:
+```java
+@CircuitBreaker(name="x", fallbackMethod="fallback")
+public String callService(String userId) { ... }
+
+private String fallback(String userId, Exception e) {
+    log.warn("Fallback for userId={}", userId, e);
+    return "default response";
+}
+```
+Nếu fallback không match signature → Resilience4j throw `NoSuchMethodException`. Có thể có nhiều fallback method với exception type khác nhau — Resilience4j chọn fallback match exception type gần nhất.
+
+</details>

@@ -58,6 +58,47 @@ MyBatis dynamic SQL dùng XML tag để build SQL có điều kiện — loại 
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Tag <where> giải quyết vấn đề gì so với hardcode "WHERE 1=1"?
-1. Viết batch INSERT 100 record bằng MyBatis thế nào?
-1. Biểu thức OGNL kiểm tra list không rỗng thế nào?
+<details>
+<summary><strong>Tag <where> giải quyết vấn đề gì so với hardcode "WHERE 1=1"?</strong></summary>
+
+**A:** `WHERE 1=1` là workaround phổ biến: luôn có WHERE, append condition bằng `AND` — nhưng sinh SQL xấu khi không có condition nào. **`<where>`** tag MyBatis thông minh hơn: nếu có ít nhất một condition → thêm WHERE và bỏ AND/OR thừa ở đầu; nếu không có condition nào → không thêm WHERE. Tương tự `<trim prefix="WHERE" prefixOverrides="AND|OR">`. Clean SQL, không cần workaround.
+
+</details>
+
+<details>
+<summary><strong>Viết batch INSERT 100 record bằng MyBatis thế nào?</strong></summary>
+
+**A:** Dùng `<foreach>` tag trong mapper XML:
+```xml
+<insert id="batchInsert">
+  INSERT INTO users (name, email) VALUES
+  <foreach collection="list" item="u" separator=",">
+    (#{u.name}, #{u.email})
+  </foreach>
+</insert>
+```
+Hoặc dùng ExecutorType.BATCH trong session:
+```java
+try (SqlSession session = factory.openSession(ExecutorType.BATCH)) {
+    users.forEach(u -> session.insert("insertUser", u));
+    session.commit();
+}
+```
+
+</details>
+
+<details>
+<summary><strong>Biểu thức OGNL kiểm tra list không rỗng thế nào?</strong></summary>
+
+**A:** Trong MyBatis `<if test="...">`, dùng OGNL expression:
+```xml
+<if test="ids != null and ids.size() > 0">
+  AND id IN
+  <foreach collection="ids" item="id" open="(" separator="," close=")">
+    #{id}
+  </foreach>
+</if>
+```
+Cũng có thể: `ids != null and !ids.isEmpty()`. OGNL hỗ trợ: null check, method call, ternary, `instanceof`. Lưu ý: dùng `and`/`or` thay vì `&&`/`||` trong XML (& cần escape).
+
+</details>

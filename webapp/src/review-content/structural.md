@@ -76,6 +76,32 @@ Spring AOP implement Proxy và Decorator một cách trong suốt — @Transacti
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa Decorator và Proxy?
-1. Sự khác biệt giữa Adapter và Facade?
-1. Java I/O dùng Decorator thế nào?
+<details>
+<summary><strong>Adapter và Facade pattern khác nhau thế nào?</strong></summary>
+
+**A:** **Adapter**: chuyển đổi interface **không tương thích** thành interface client expect — wrap existing class để "fit in". Ví dụ: `OldPaymentProcessor` có method `processPayment(amount)`, nhưng hệ thống mới cần `pay(Money)` → Adapter implement `pay()` gọi `processPayment()`. **Facade**: tạo interface **đơn giản hóa** cho subsystem phức tạp — hide complexity, không nhất thiết phải convert interface. Ví dụ: `OrderFacade.placeOrder()` internally gọi `InventoryService`, `PaymentService`, `NotificationService`. Adapter: incompatible interface → compatible. Facade: complex subsystem → simple interface.
+
+</details>
+
+<details>
+<summary><strong>Decorator pattern dùng thế nào trong Java?</strong></summary>
+
+**A:** Decorator wrap object để add behavior tại runtime mà không modify class. Java I/O streams là ví dụ điển hình: `new BufferedInputStream(new FileInputStream("file"))` — Buffered decorate FileInputStream, thêm buffering. Implement:
+```java
+interface Coffee { double cost(); }
+class SimpleCoffee implements Coffee { public double cost() { return 1.0; } }
+class MilkDecorator implements Coffee {
+    Coffee wrapped;
+    public double cost() { return wrapped.cost() + 0.5; }
+}
+```
+Stack decorators: `new MilkDecorator(new SugarDecorator(new SimpleCoffee()))`. Khác inheritance: multiple independent decorators có thể combine, không class explosion.
+
+</details>
+
+<details>
+<summary><strong>Composite pattern dùng khi nào?</strong></summary>
+
+**A:** Composite pattern khi cần treat **individual objects và groups of objects uniformly** — tree structure. Interface chung cho cả leaf và composite: `Component { void render() }`. `Leaf implements Component` (no children). `Composite implements Component` (has List<Component> children) — `render()` delegate to all children. Ví dụ: File system (File và Directory đều có `size()`, `delete()`), UI components (Button và Panel đều có `draw()`), Menu system (MenuItem và Menu đều có `click()`). Client code không cần biết đang deal với leaf hay composite.
+
+</details>

@@ -82,6 +82,23 @@ class OrderCheckoutSimulation extends Simulation {
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa load test và stress test?
-1. Percentile nào (p50/p95/p99) quan trọng nhất cho user experience?
-1. Làm thế nào để tích hợp performance test vào CI/CD?
+<details>
+<summary><strong>Sự khác biệt giữa load test và stress test?</strong></summary>
+
+**A:** **Load test**: test hệ thống tại **expected load** (hoặc vài lần expected) trong thời gian dài — verify behavior, latency, error rate tại normal + peak traffic. **Stress test**: tăng load **vượt capacity** cho đến khi hệ thống fail — tìm breaking point, behavior khi overload (graceful degradation hay crash). **Soak test**: load bình thường trong thời gian dài (24-72h) — phát hiện memory leak, resource exhaustion theo thời gian. **Spike test**: tăng load đột ngột — test autoscaler, circuit breaker.
+
+</details>
+
+<details>
+<summary><strong>Percentile nào (p50/p95/p99) quan trọng nhất cho user experience?</strong></summary>
+
+**A:** **p99** quan trọng nhất vì: user experience bị chi phối bởi **slowest requests**. Nếu p99 = 5s, 1% user chờ 5s mỗi operation — với 10K user, 100 người chờ 5s. SLO thường dùng p99. **p50** (median): response time typical, không đại diện cho tail latency — median 100ms không nói lên được nếu p99 = 10s. **p95** balance giữa representative và outlier. Rule: alert trên p99 cho real user impact; p50 cho overall throughput health. "99th percentile is the 1% that matters most" (Jeff Atwood).
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để tích hợp performance test vào CI/CD?</strong></summary>
+
+**A:** (1) Chạy lightweight load test (k6, Gatling) sau deploy lên staging environment. (2) Define **performance budget**: p95 latency < 500ms, error rate < 0.1%, RPS > 100. (3) CI pipeline fail nếu budget vi phạm. (4) Chạy full stress test định kỳ (nightly, weekly) thay vì mỗi commit (quá tốn thời gian). (5) Trend tracking: so sánh với baseline previous run — alert khi regression > 20%. Tools: k6 Cloud, Gatling Enterprise, GitHub Actions với threshold check.
+
+</details>

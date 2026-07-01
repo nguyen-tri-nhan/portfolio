@@ -117,6 +117,23 @@ Dùng <code>@Nested</code> để nhóm test theo method — tạo output rõ rà
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa @BeforeEach và @BeforeAll?
-1. @ExtendWith hoạt động thế nào?
-1. Khi nào @TestInstance(PER_CLASS) hữu ích?
+<details>
+<summary><strong>Sự khác biệt giữa @BeforeEach và @BeforeAll?</strong></summary>
+
+**A:** **`@BeforeEach`**: chạy **trước mỗi test method** trong class — mỗi test có fresh state. **`@BeforeAll`**: chạy **một lần trước tất cả test** trong class — phải là `static` method (vì instance chưa tạo). Dùng `@BeforeEach` cho setup cần fresh per test (mock setup, DB state). Dùng `@BeforeAll` cho expensive setup chạy một lần (start server, load test data file). Tương tự: `@AfterEach` và `@AfterAll`.
+
+</details>
+
+<details>
+<summary><strong>@ExtendWith hoạt động thế nào?</strong></summary>
+
+**A:** `@ExtendWith` đăng ký **Extension** cho JUnit 5 — thay thế JUnit 4 `@RunWith`. Extension hook vào lifecycle: `BeforeAllCallback`, `BeforeEachCallback`, `AfterEachCallback`, parameter resolution (`ParameterResolver`). Ví dụ: `@ExtendWith(MockitoExtension.class)` → tự động init `@Mock`, `@InjectMocks`; `@ExtendWith(SpringExtension.class)` → load Spring context. `@SpringBootTest` đã include `SpringExtension` ngầm. Nhiều extension có thể stack: `@ExtendWith({A.class, B.class})`.
+
+</details>
+
+<details>
+<summary><strong>Khi nào @TestInstance(PER_CLASS) hữu ích?</strong></summary>
+
+**A:** Mặc định JUnit 5 tạo instance mới cho mỗi test method (PER_METHOD) — `@BeforeAll` phải static. `@TestInstance(Lifecycle.PER_CLASS)`: dùng chung một instance cho tất cả test trong class. Hữu ích khi: (1) `@BeforeAll` muốn access instance field (không thể static). (2) Muốn share state giữa test (controversial — test nên independent). (3) Kotlin: companion object không cần cho static member. Trade-off: test có thể leak state sang nhau, order dependency.
+
+</details>

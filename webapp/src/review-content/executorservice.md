@@ -100,6 +100,35 @@ Trong Spring app hiện đại, ưu tiên <code>CompletableFuture</code> thay v�
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Sự khác biệt giữa execute() và submit() trong ExecutorService là gì?
-1. Làm thế nào để xử lý exception từ Future.get()?
-1. Sự khác biệt giữa shutdown() và shutdownNow() là gì?
+<details>
+<summary><strong>Sự khác biệt giữa execute() và submit() trong ExecutorService là gì?</strong></summary>
+
+**A:** **`execute(Runnable)`**: không trả về gì, exception trong task bị silent (logged bởi thread's uncaught exception handler). **`submit(Callable/Runnable)`**: trả về `Future` — có thể `get()` kết quả, `cancel()`, track completion. Exception trong task được wrap và re-thrown khi gọi `future.get()` dưới dạng `ExecutionException`. Prefer `submit()` trong production để handle exception và có thể timeout với `get(timeout, unit)`.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để xử lý exception từ Future.get()?</strong></summary>
+
+**A:** `future.get()` throw `ExecutionException` wrapping exception thực, và `InterruptedException` nếu thread bị interrupt:
+```java
+try {
+    Result r = future.get(5, TimeUnit.SECONDS);
+} catch (ExecutionException e) {
+    Throwable cause = e.getCause(); // exception thực
+    log.error("Task failed", cause);
+} catch (TimeoutException e) {
+    future.cancel(true);
+} catch (InterruptedException e) {
+    Thread.currentThread().interrupt(); // restore interrupt status
+}
+```
+
+</details>
+
+<details>
+<summary><strong>Sự khác biệt giữa shutdown() và shutdownNow() là gì?</strong></summary>
+
+**A:** **`shutdown()`**: graceful — không nhận task mới nhưng chờ task đang chạy và queued task hoàn thành. Sau đó gọi `awaitTermination()` để block chờ. **`shutdownNow()`**: forceful — interrupt tất cả đang chạy, trả về list task chưa start. Task đang chạy vẫn phải tự check `Thread.interrupted()` để dừng. Best practice: `shutdown()` → `awaitTermination(60, SECONDS)` → nếu không xong → `shutdownNow()`.
+
+</details>

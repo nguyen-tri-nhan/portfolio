@@ -21,6 +21,23 @@ Nhiều công ty tech gốc Trung Quốc (Alibaba, Baidu ecosystem) ưa MyBatis 
 
 ## Câu Hỏi Phỏng Vấn
 
-1. #{} và ${} trong MyBatis khác nhau thế nào?
-1. MyBatis ngăn SQL injection thế nào so với nối chuỗi?
-1. Khi nào chọn MyBatis thay vì JPA/Hibernate?
+<details>
+<summary><strong>#{} và ${} trong MyBatis khác nhau thế nào?</strong></summary>
+
+**A:** `#{param}` → PreparedStatement parameter (`?`) — JDBC escape, an toàn SQL injection. `${param}` → string substitution trực tiếp vào SQL — nguy hiểm SQL injection với user input. Dùng `${}` chỉ cho column name/table name (dynamic SQL với whitelist validate): `ORDER BY ${column}`. Ví dụ: `WHERE id = #{userId}` (safe) vs `WHERE ${field} = #{value}` (unsafe nếu field là user input).
+
+</details>
+
+<details>
+<summary><strong>MyBatis ngăn SQL injection thế nào so với nối chuỗi?</strong></summary>
+
+**A:** String concatenation: `"SELECT * FROM users WHERE id = " + userId` — attacker inject `1 OR 1=1` → trả về tất cả user. MyBatis với `#{userId}`: generate `SELECT * FROM users WHERE id = ?` và bind parameter qua JDBC PreparedStatement — DB xử lý giá trị là data, không phải SQL syntax. PreparedStatement cũng có performance benefit: DB cache execution plan cho parameterized query.
+
+</details>
+
+<details>
+<summary><strong>Khi nào chọn MyBatis thay vì JPA/Hibernate?</strong></summary>
+
+**A:** Chọn **MyBatis** khi: (1) Cần kiểm soát SQL hoàn toàn — complex query, stored procedure, DB-specific optimization. (2) Legacy DB với schema không phù hợp ORM convention. (3) DBA viết SQL, Java dev mapping kết quả. (4) Report/analytics query phức tạp. Chọn **JPA/Hibernate** khi: domain model phức tạp với nhiều quan hệ, muốn tự động dirty checking, cần database-agnostic code, team quen với ORM pattern. Kết hợp cả hai trong cùng project là valid.
+
+</details>

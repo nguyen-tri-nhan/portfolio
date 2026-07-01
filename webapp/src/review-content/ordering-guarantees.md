@@ -57,6 +57,23 @@ Dùng entity ID (orderId, userId) làm Kafka message key cho entity-level orderi
 
 ## Câu Hỏi Phỏng Vấn
 
-1. Kafka có thể đảm bảo thứ tự qua các partition không?
-1. Làm thế nào để đảm bảo tất cả event của một user được xử lý theo thứ tự?
-1. Exactly-once semantics trong Kafka là gì và đạt được thế nào?
+<details>
+<summary><strong>Kafka có thể đảm bảo thứ tự qua các partition không?</strong></summary>
+
+**A:** **Không** — Kafka chỉ đảm bảo **thứ tự trong một partition**. Message trong partition P1 có thể được xử lý theo thứ tự; nhưng không có đảm bảo thứ tự *giữa* P1 và P2. Consumer group: mỗi partition được assign cho một consumer — thứ tự trong partition được giữ. Để đảm bảo thứ tự của một entity (user, order): route tất cả event của entity đó vào cùng partition bằng **message key** = entityId → same key → same partition → in-order.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào để đảm bảo tất cả event của một user được xử lý theo thứ tự?</strong></summary>
+
+**A:** Set **message key = userId** khi produce vào Kafka. Kafka hash(key) % num_partitions → same userId luôn vào cùng partition → consumer xử lý in-order. Trong producer: `ProducerRecord<>(topic, userId.toString(), eventData)`. Consumer: một partition chỉ có một consumer (trong consumer group) → single-threaded processing trong partition → order đảm bảo. Cẩn thận: thêm partition → hash thay đổi → event của cùng user có thể vào partition khác trong thời gian transition.
+
+</details>
+
+<details>
+<summary><strong>Exactly-once semantics trong Kafka là gì và đạt được thế nào?</strong></summary>
+
+**A:** **EOS** trong Kafka: mỗi message được xử lý đúng một lần end-to-end — không mất, không duplicate. Đạt được với: (1) **Idempotent producer** (`enable.idempotence=true`): dedup retry ở broker layer. (2) **Transactional API**: `producer.beginTransaction() → produce → consumer.commitSync() → producer.commitTransaction()`. Consumer với `isolation.level=read_committed`. Kafka Streams tự động EOS khi `processing.guarantee=exactly_once_v2`. Overhead: ~20% throughput reduction, latency tăng.
+
+</details>
