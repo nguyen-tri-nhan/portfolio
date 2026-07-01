@@ -166,7 +166,306 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
     ]
   },
   {
-    "title": "2. Concurrency",
+    "title": "2. Java Versions",
+    "icon": "☕",
+    "topics": [
+      {
+        "name": "Version History Overview",
+        "file": "java-version-history",
+        "subs": []
+      },
+      {
+        "name": "Java 7 & 8 (Lambda, Stream, Optional)",
+        "file": "java-7-8",
+        "subs": []
+      },
+      {
+        "name": "Java 9–11 (Modules, var, HTTP Client)",
+        "file": "java-9-11",
+        "subs": []
+      },
+      {
+        "name": "Java 12–16 (Records, Text Blocks, Patterns)",
+        "file": "java-12-16",
+        "subs": []
+      },
+      {
+        "name": "Java 17 LTS (Sealed Classes)",
+        "file": "java-17",
+        "subs": []
+      },
+      {
+        "name": "Java 21 LTS (Virtual Threads)",
+        "file": "java-21",
+        "subs": []
+      },
+      {
+        "name": "Java 22–25 (Gatherers, Structured Concurrency)",
+        "file": "java-22-25",
+        "subs": []
+      }
+    ]
+  },
+  {
+    "title": "3. Kotlin",
+    "icon": "🟣",
+    "topics": [
+      {
+        "name": "Kotlin Cơ Bản",
+        "file": "kotlin-basics",
+        "subs": [
+          {
+            "name": "Data Class",
+            "file": "kotlin-data-class"
+          },
+          {
+            "name": "Null Safety",
+            "file": "kotlin-null-safety"
+          },
+          {
+            "name": "Sealed Class",
+            "file": "kotlin-sealed-class"
+          },
+          {
+            "name": "Object & Companion",
+            "file": "kotlin-object-companion"
+          },
+          {
+            "name": "Kotlin vs Java",
+            "file": "kotlin-vs-java"
+          }
+        ]
+      },
+      {
+        "name": "Coroutines",
+        "file": "kotlin-coroutines",
+        "subs": [
+          {
+            "name": "Coroutines Cơ Bản",
+            "file": "kotlin-coroutines-basics"
+          },
+          {
+            "name": "Exception & Cancellation",
+            "file": "kotlin-coroutines-advanced"
+          },
+          {
+            "name": "Dispatchers",
+            "file": "kotlin-dispatcher"
+          },
+          {
+            "name": "Flow",
+            "file": "kotlin-flow"
+          }
+        ]
+      },
+      {
+        "name": "Kotlin Features",
+        "file": "kotlin-features",
+        "subs": [
+          {
+            "name": "Scope Functions",
+            "file": "kotlin-scope-functions"
+          },
+          {
+            "name": "Extension Functions",
+            "file": "kotlin-extension-functions"
+          },
+          {
+            "name": "Higher-Order Functions",
+            "file": "kotlin-higher-order-functions"
+          },
+          {
+            "name": "Delegation",
+            "file": "kotlin-delegation"
+          }
+        ]
+      },
+      {
+        "name": "Collections & DSL",
+        "file": "kotlin-collections-dsl",
+        "subs": [
+          {
+            "name": "Collections & Sequences",
+            "file": "kotlin-collections"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "4. Python",
+    "icon": "🐍",
+    "topics": [
+      {
+        "name": "Python Cơ Bản",
+        "file": "python-basics",
+        "subs": [
+          {
+            "name": "Data Types",
+            "file": "python-data-types"
+          },
+          {
+            "name": "Comprehensions",
+            "file": "python-comprehensions"
+          },
+          {
+            "name": "Type Hints",
+            "file": "python-type-hints"
+          },
+          {
+            "name": "OOP",
+            "file": "python-oop"
+          }
+        ]
+      },
+      {
+        "name": "Advanced Python",
+        "file": "python-advanced",
+        "subs": [
+          {
+            "name": "Decorators",
+            "file": "python-decorators"
+          },
+          {
+            "name": "Generators",
+            "file": "python-generators"
+          },
+          {
+            "name": "Context Managers",
+            "file": "python-context-managers"
+          },
+          {
+            "name": "Functional Programming",
+            "file": "python-functional"
+          }
+        ]
+      },
+      {
+        "name": "Python Internals",
+        "file": "python-internals-overview",
+        "subs": [
+          {
+            "name": "GIL",
+            "file": "python-gil"
+          },
+          {
+            "name": "Memory Model",
+            "file": "python-memory-model"
+          },
+          {
+            "name": "Metaclass & ABC",
+            "file": "python-metaclass"
+          },
+          {
+            "name": "CPython & Bytecode",
+            "file": "python-internals"
+          }
+        ]
+      },
+      {
+        "name": "Async & Web",
+        "file": "python-async-web",
+        "subs": [
+          {
+            "name": "async/await & asyncio",
+            "file": "python-async-await"
+          },
+          {
+            "name": "FastAPI",
+            "file": "python-fastapi"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "5. ReactJS",
+    "icon": "⚛️",
+    "topics": [
+      {
+        "name": "React Hooks",
+        "file": "react-hooks",
+        "subs": [
+          {
+            "name": "useState & useReducer",
+            "file": "react-usestate-usereducer"
+          },
+          {
+            "name": "useEffect & useLayoutEffect",
+            "file": "react-useeffect"
+          },
+          {
+            "name": "useMemo & useCallback",
+            "file": "react-usememo-usecallback"
+          },
+          {
+            "name": "useRef & forwardRef",
+            "file": "react-useref"
+          },
+          {
+            "name": "Custom Hooks",
+            "file": "react-custom-hooks"
+          }
+        ]
+      },
+      {
+        "name": "React Internals",
+        "file": "react-internals",
+        "subs": [
+          {
+            "name": "Virtual DOM",
+            "file": "react-virtual-dom"
+          },
+          {
+            "name": "Reconciliation & Fiber",
+            "file": "react-reconciliation"
+          }
+        ]
+      },
+      {
+        "name": "State Management",
+        "file": "react-state",
+        "subs": [
+          {
+            "name": "Context API",
+            "file": "react-context"
+          },
+          {
+            "name": "Redux & Redux Toolkit",
+            "file": "react-redux"
+          },
+          {
+            "name": "Zustand",
+            "file": "react-zustand"
+          }
+        ]
+      },
+      {
+        "name": "Patterns & Performance",
+        "file": "react-patterns",
+        "subs": [
+          {
+            "name": "Component Patterns",
+            "file": "react-component-patterns"
+          },
+          {
+            "name": "Performance Optimization",
+            "file": "react-performance"
+          },
+          {
+            "name": "Suspense & Error Boundary",
+            "file": "react-suspense"
+          },
+          {
+            "name": "React Router v6",
+            "file": "react-router"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "6. Concurrency",
     "icon": "⚡",
     "topics": [
       {
@@ -257,7 +556,7 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
     ]
   },
   {
-    "title": "3. Spring Ecosystem",
+    "title": "7. Spring Ecosystem",
     "icon": "🍃",
     "topics": [
       {
@@ -357,7 +656,149 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
     ]
   },
   {
-    "title": "4. Database",
+    "title": "8. Quarkus",
+    "icon": "⚡",
+    "topics": [
+      {
+        "name": "Quarkus Cơ Bản",
+        "file": "quarkus-basics",
+        "subs": [
+          {
+            "name": "Quarkus Basics",
+            "file": "quarkus-basics"
+          },
+          {
+            "name": "CDI & Dependency Injection",
+            "file": "quarkus-cdi"
+          },
+          {
+            "name": "Configuration",
+            "file": "quarkus-config"
+          },
+          {
+            "name": "Quarkus vs Spring Boot",
+            "file": "quarkus-vs-spring"
+          }
+        ]
+      },
+      {
+        "name": "RESTEasy Reactive",
+        "file": "quarkus-rest",
+        "subs": [
+          {
+            "name": "RESTEasy Reactive",
+            "file": "quarkus-rest"
+          },
+          {
+            "name": "Mutiny (Uni & Multi)",
+            "file": "quarkus-mutiny"
+          }
+        ]
+      },
+      {
+        "name": "Persistence",
+        "file": "quarkus-panache",
+        "subs": [
+          {
+            "name": "Panache ORM",
+            "file": "quarkus-panache"
+          }
+        ]
+      },
+      {
+        "name": "Native & Performance",
+        "file": "quarkus-native",
+        "subs": [
+          {
+            "name": "GraalVM Native Image",
+            "file": "quarkus-native"
+          },
+          {
+            "name": "Testing",
+            "file": "quarkus-testing"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "9. Design Patterns",
+    "icon": "🎨",
+    "topics": [
+      {
+        "name": "Creational",
+        "file": "creational",
+        "subs": [
+          {
+            "name": "Singleton",
+            "file": "singleton"
+          },
+          {
+            "name": "Factory Method",
+            "file": "factory-method"
+          },
+          {
+            "name": "Builder",
+            "file": "builder"
+          },
+          {
+            "name": "Prototype",
+            "file": "prototype"
+          }
+        ]
+      },
+      {
+        "name": "Structural",
+        "file": "structural",
+        "subs": [
+          {
+            "name": "Adapter",
+            "file": "adapter"
+          },
+          {
+            "name": "Decorator",
+            "file": "decorator"
+          },
+          {
+            "name": "Facade",
+            "file": "facade"
+          },
+          {
+            "name": "Proxy",
+            "file": "proxy"
+          }
+        ]
+      },
+      {
+        "name": "Behavioral",
+        "file": "behavioral",
+        "subs": [
+          {
+            "name": "Strategy",
+            "file": "strategy"
+          },
+          {
+            "name": "Observer",
+            "file": "observer"
+          },
+          {
+            "name": "Template Method",
+            "file": "template-method"
+          },
+          {
+            "name": "Command",
+            "file": "command"
+          },
+          {
+            "name": "Chain of Responsibility",
+            "file": "chain-of-responsibility"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "10. Database",
     "icon": "🗄️",
     "topics": [
       {
@@ -501,7 +942,7 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
     ]
   },
   {
-    "title": "5. Microservices",
+    "title": "11. Microservices",
     "icon": "🔗",
     "topics": [
       {
@@ -569,7 +1010,7 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
     ]
   },
   {
-    "title": "6. Messaging",
+    "title": "12. Messaging",
     "icon": "📨",
     "topics": [
       {
@@ -633,7 +1074,7 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
     ]
   },
   {
-    "title": "7. System Design",
+    "title": "13. System Design",
     "icon": "🏗️",
     "topics": [
       {
@@ -768,7 +1209,75 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
     ]
   },
   {
-    "title": "8. Cloud & DevOps",
+    "title": "14. Testing",
+    "icon": "🧪",
+    "topics": [
+      {
+        "name": "Unit Test",
+        "file": "unit-test",
+        "subs": [
+          {
+            "name": "JUnit 5 Annotations",
+            "file": "junit-5-annotations"
+          },
+          {
+            "name": "Parameterized Tests",
+            "file": "parameterized-tests"
+          }
+        ]
+      },
+      {
+        "name": "Mocking",
+        "file": "mocking",
+        "subs": [
+          {
+            "name": "Mockito (Mock / Spy / Captor)",
+            "file": "mockito-mock-spy-captor"
+          },
+          {
+            "name": "When to Mock",
+            "file": "when-to-mock"
+          }
+        ]
+      },
+      {
+        "name": "Integration Test",
+        "file": "integration-test",
+        "subs": [
+          {
+            "name": "@SpringBootTest",
+            "file": "springboottest"
+          },
+          {
+            "name": "TestContainers",
+            "file": "testcontainers"
+          }
+        ]
+      },
+      {
+        "name": "Contract Testing",
+        "file": "contract-testing",
+        "subs": [
+          {
+            "name": "Pact",
+            "file": "pact"
+          }
+        ]
+      },
+      {
+        "name": "Performance Testing",
+        "file": "performance-testing",
+        "subs": [
+          {
+            "name": "JMeter / Gatling / k6",
+            "file": "jmeter-gatling-k6"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "15. Cloud & DevOps",
     "icon": "☁️",
     "topics": [
       {
@@ -842,151 +1351,7 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
     ]
   },
   {
-    "title": "9. Testing",
-    "icon": "🧪",
-    "topics": [
-      {
-        "name": "Unit Test",
-        "file": "unit-test",
-        "subs": [
-          {
-            "name": "JUnit 5 Annotations",
-            "file": "junit-5-annotations"
-          },
-          {
-            "name": "Parameterized Tests",
-            "file": "parameterized-tests"
-          }
-        ]
-      },
-      {
-        "name": "Mocking",
-        "file": "mocking",
-        "subs": [
-          {
-            "name": "Mockito (Mock / Spy / Captor)",
-            "file": "mockito-mock-spy-captor"
-          },
-          {
-            "name": "When to Mock",
-            "file": "when-to-mock"
-          }
-        ]
-      },
-      {
-        "name": "Integration Test",
-        "file": "integration-test",
-        "subs": [
-          {
-            "name": "@SpringBootTest",
-            "file": "springboottest"
-          },
-          {
-            "name": "TestContainers",
-            "file": "testcontainers"
-          }
-        ]
-      },
-      {
-        "name": "Contract Testing",
-        "file": "contract-testing",
-        "subs": [
-          {
-            "name": "Pact",
-            "file": "pact"
-          }
-        ]
-      },
-      {
-        "name": "Performance Testing",
-        "file": "performance-testing",
-        "subs": [
-          {
-            "name": "JMeter / Gatling / k6",
-            "file": "jmeter-gatling-k6"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "title": "10. Design Patterns",
-    "icon": "🎨",
-    "topics": [
-      {
-        "name": "Creational",
-        "file": "creational",
-        "subs": [
-          {
-            "name": "Singleton",
-            "file": "singleton"
-          },
-          {
-            "name": "Factory Method",
-            "file": "factory-method"
-          },
-          {
-            "name": "Builder",
-            "file": "builder"
-          },
-          {
-            "name": "Prototype",
-            "file": "prototype"
-          }
-        ]
-      },
-      {
-        "name": "Structural",
-        "file": "structural",
-        "subs": [
-          {
-            "name": "Adapter",
-            "file": "adapter"
-          },
-          {
-            "name": "Decorator",
-            "file": "decorator"
-          },
-          {
-            "name": "Facade",
-            "file": "facade"
-          },
-          {
-            "name": "Proxy",
-            "file": "proxy"
-          }
-        ]
-      },
-      {
-        "name": "Behavioral",
-        "file": "behavioral",
-        "subs": [
-          {
-            "name": "Strategy",
-            "file": "strategy"
-          },
-          {
-            "name": "Observer",
-            "file": "observer"
-          },
-          {
-            "name": "Template Method",
-            "file": "template-method"
-          },
-          {
-            "name": "Command",
-            "file": "command"
-          },
-          {
-            "name": "Chain of Responsibility",
-            "file": "chain-of-responsibility"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "title": "11. Linux & Deployment",
+    "title": "16. Linux & Deployment",
     "icon": "🐧",
     "topics": [
       {
@@ -1005,46 +1370,5 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
         "subs": []
       }
     ]
-  },
-  {
-    "title": "12. Java Versions",
-    "icon": "☕",
-    "topics": [
-      {
-        "name": "Version History Overview",
-        "file": "java-version-history",
-        "subs": []
-      },
-      {
-        "name": "Java 7 & 8 (Lambda, Stream, Optional)",
-        "file": "java-7-8",
-        "subs": []
-      },
-      {
-        "name": "Java 9–11 (Modules, var, HTTP Client)",
-        "file": "java-9-11",
-        "subs": []
-      },
-      {
-        "name": "Java 12–16 (Records, Text Blocks, Patterns)",
-        "file": "java-12-16",
-        "subs": []
-      },
-      {
-        "name": "Java 17 LTS (Sealed Classes)",
-        "file": "java-17",
-        "subs": []
-      },
-      {
-        "name": "Java 21 LTS (Virtual Threads)",
-        "file": "java-21",
-        "subs": []
-      },
-      {
-        "name": "Java 22–25 (Gatherers, Structured Concurrency)",
-        "file": "java-22-25",
-        "subs": []
-      }
-    ]
   }
-];
+];;
