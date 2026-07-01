@@ -1370,5 +1370,83 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
         "subs": []
       }
     ]
+  },
+  {
+    "title": "17. AI & Agents",
+    "icon": "🤖",
+    "topics": [
+      {
+        "name": "AI Agent Fundamentals",
+        "file": "agentic-loop",
+        "subs": [
+          {
+            "name": "Agentic Loop & ReAct",
+            "file": "agentic-loop"
+          },
+          {
+            "name": "Function Calling & Tool Use",
+            "file": "function-calling"
+          },
+          {
+            "name": "Agent Memory",
+            "file": "agent-memory"
+          }
+        ]
+      },
+      {
+        "name": "MCP & Protocols",
+        "file": "mcp-overview",
+        "subs": [
+          {
+            "name": "MCP Overview",
+            "file": "mcp-overview"
+          },
+          {
+            "name": "Build MCP Server",
+            "file": "mcp-server-build"
+          },
+          {
+            "name": "A2A Protocol",
+            "file": "a2a-protocol"
+          }
+        ]
+      },
+      {
+        "name": "Frameworks",
+        "file": "google-adk",
+        "subs": [
+          {
+            "name": "Google ADK",
+            "file": "google-adk"
+          },
+          {
+            "name": "LangGraph",
+            "file": "langgraph"
+          }
+        ]
+      },
+      {
+        "name": "Production AI",
+        "file": "rag-pattern",
+        "subs": [
+          {
+            "name": "RAG Pattern",
+            "file": "rag-pattern"
+          },
+          {
+            "name": "Prompt Engineering",
+            "file": "prompt-engineering"
+          },
+          {
+            "name": "LLM Gateway (LiteLLM)",
+            "file": "llm-gateway"
+          },
+          {
+            "name": "AI Observability",
+            "file": "ai-observability"
+          }
+        ]
+      }
+    ]
   }
 ];;
