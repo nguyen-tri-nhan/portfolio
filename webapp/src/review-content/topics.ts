@@ -794,6 +794,20 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
             "file": "chain-of-responsibility"
           }
         ]
+      },
+      {
+        "name": "Architecture Patterns",
+        "file": "ddd-basics",
+        "subs": [
+          {
+            "name": "DDD Basics",
+            "file": "ddd-basics"
+          },
+          {
+            "name": "Hexagonal Architecture",
+            "file": "hexagonal-architecture"
+          }
+        ]
       }
     ]
   },
@@ -1205,6 +1219,46 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
             "file": "capacity-planning"
           }
         ]
+      },
+      {
+        "name": "Resilience Patterns",
+        "file": "circuit-breaker",
+        "subs": [
+          {
+            "name": "Circuit Breaker",
+            "file": "circuit-breaker"
+          },
+          {
+            "name": "Retry & Backoff",
+            "file": "retry-backoff"
+          },
+          {
+            "name": "Bulkhead",
+            "file": "bulkhead"
+          },
+          {
+            "name": "Fallback & Graceful Degradation",
+            "file": "fallback-degradation"
+          }
+        ]
+      },
+      {
+        "name": "Data Patterns",
+        "file": "event-sourcing",
+        "subs": [
+          {
+            "name": "Event Sourcing",
+            "file": "event-sourcing"
+          },
+          {
+            "name": "Saga Pattern",
+            "file": "saga-pattern"
+          },
+          {
+            "name": "Outbox Pattern",
+            "file": "outbox-pattern"
+          }
+        ]
       }
     ]
   },
@@ -1498,6 +1552,72 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
           {
             "name": "WebSocket & SSE",
             "file": "websocket-sse"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "19. Observability",
+    "icon": "🔭",
+    "topics": [
+      {
+        "name": "Logging",
+        "file": "structured-logging",
+        "subs": [
+          {
+            "name": "Structured Logging",
+            "file": "structured-logging"
+          }
+        ]
+      },
+      {
+        "name": "Metrics",
+        "file": "metrics-prometheus",
+        "subs": [
+          {
+            "name": "Metrics & Prometheus",
+            "file": "metrics-prometheus"
+          }
+        ]
+      },
+      {
+        "name": "Tracing",
+        "file": "distributed-tracing",
+        "subs": [
+          {
+            "name": "Distributed Tracing",
+            "file": "distributed-tracing"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "20. Security",
+    "icon": "🔒",
+    "topics": [
+      {
+        "name": "Auth & Identity",
+        "file": "oauth2-oidc",
+        "subs": [
+          {
+            "name": "OAuth2 & OIDC",
+            "file": "oauth2-oidc"
+          },
+          {
+            "name": "JWT Security",
+            "file": "jwt-security"
+          }
+        ]
+      },
+      {
+        "name": "OWASP",
+        "file": "owasp-top10",
+        "subs": [
+          {
+            "name": "OWASP Top 10",
+            "file": "owasp-top10"
           }
         ]
       }

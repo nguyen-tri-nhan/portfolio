@@ -1,136 +1,132 @@
 ---
-key: "Saga Pattern"
-title: "Saga Pattern"
-crumb: "5. Microservices"
+key: saga-pattern
+title: Saga Pattern
+crumb: 13. System Design > Data Patterns
 ---
 
-Saga quản lý distributed transaction qua microservice bằng cách chia thành chuỗi local transaction, mỗi cái publish event hoặc command để trigger bước tiếp theo.
+Saga là pattern quản lý distributed transaction qua nhiều service mà không cần 2PC (Two-Phase Commit) — dùng chuỗi local transaction và **compensating transaction** để đảm bảo consistency.
 
 ## Điểm Chính
 
-- Vấn đề: không có ACID transaction đơn nào spanning nhiều service.
-- Saga: mỗi service commit cục bộ và publish event; khi thất bại, compensating transaction hoàn tác các bước trước.
-- <strong>Choreography</strong>: service phản ứng với event — decoupled nhưng khó theo dõi.
-- <strong>Orchestration</strong>: saga orchestrator trung tâm điều phối — dễ monitor hơn, điểm kiểm soát duy nhất.
-- Compensating transaction: ngược lại của hành động gốc (ví dụ: hoàn tiền sau khi giao hàng thất bại).
+- **Tại sao không dùng 2PC**: giao thức blocking, lock resource trên nhiều service đồng thời → giảm availability, không phù hợp với microservices loosely coupled
+- **Choreography**: các service tự phối hợp qua event — OrderService publish OrderCreated → PaymentService xử lý → publish PaymentProcessed → InventoryService xử lý; đơn giản nhưng flow khó theo dõi
+- **Orchestration**: SagaOrchestrator trung tâm điều phối từng bước, gọi từng service theo thứ tự và xử lý lỗi; dễ debug hơn nhưng tạo coupling vào orchestrator
+- **Compensating transaction**: hành động đảo ngược bước đã thành công khi bước sau thất bại (refund payment nếu inventory reservation thất bại)
+- **Thiếu isolation**: saga không có isolation như ACID — các transaction khác có thể thấy intermediate state trong khi saga đang chạy
+- **Idempotency**: mỗi bước phải idempotent vì có thể được retry khi network error hoặc service restart
+- **Saga log**: orchestrator lưu state của saga để có thể resume sau khi crash và restart
+- **Eventual consistency**: sau khi saga hoàn thành (thành công hoặc compensate xong), hệ thống mới nhất quán
 
 ## Ví Dụ Code
 
-*Saga Pattern: happy path + compensation flow + OrderService initiator + InventoryService participant with both forward and compensating transactions*
+*Orchestration-based saga cho luồng đặt hàng trong Kotlin — điều phối Payment, Inventory, Shipping với compensation.*
 
-```java
-// ✅ Saga Pattern: managing distributed transactions without 2PC
-// Problem: placing an order spans 3 services (Inventory, Payment, Shipping)
-// No single DB transaction across services → use Saga: chain of local transactions + compensation
+```kotlin
+enum class SagaStep { PAYMENT, INVENTORY, SHIPPING }
+enum class SagaStatus { STARTED, COMPLETED, COMPENSATING, FAILED }
 
-// ─── Happy path flow (Choreography via Kafka events) ───
-// 1. OrderService:    CREATE order → publish "order.created"
-// 2. InventoryService: reserve stock → publish "stock.reserved"  (or "stock.failed")
-// 3. PaymentService:  charge card   → publish "payment.completed" (or "payment.failed")
-// 4. ShippingService: schedule ship → publish "shipping.scheduled"
-// 5. OrderService:    update status → COMPLETED
+data class SagaState(
+    val sagaId: String,
+    val orderId: String,
+    val completedSteps: MutableList<SagaStep> = mutableListOf(),
+    var status: SagaStatus = SagaStatus.STARTED
+)
 
-// ─── Compensation flow (if payment fails) ───
-// 3. PaymentService:  publish "payment.failed"
-// 2. InventoryService: listens to "payment.failed" → release reservation (compensating tx)
-// 1. OrderService:    listens to "payment.failed" or "stock.failed" → cancel order
+class OrderSaga(
+    private val paymentService: PaymentService,
+    private val inventoryService: InventoryService,
+    private val shippingService: ShippingService,
+    private val sagaRepository: SagaRepository
+) {
+    fun execute(order: Order): Result<Unit> {
+        val state = SagaState(sagaId = generateId(), orderId = order.id)
+        sagaRepository.save(state)
 
-// ✅ OrderService: initiate saga
-@Service
-public class OrderSagaInitiator {
-    @Autowired KafkaTemplate<String, Object> kafka;
+        return runCatching {
+            // Step 1: Process payment
+            paymentService.processPayment(order.id, order.totalAmount)
+            state.completedSteps.add(SagaStep.PAYMENT)
+            sagaRepository.save(state)
 
-    @Transactional
-    public Order placeOrder(PlaceOrderRequest request) {
-        // Local transaction: persist order in PENDING state
-        Order order = new Order(request.getCustomerId(), request.getItems(), OrderStatus.PENDING);
-        Order saved = orderRepository.save(order);
+            // Step 2: Reserve inventory
+            inventoryService.reserveItems(order.id, order.items)
+            state.completedSteps.add(SagaStep.INVENTORY)
+            sagaRepository.save(state)
 
-        // Publish saga start event — Outbox pattern recommended for reliability
-        kafka.send("order.created", String.valueOf(saved.getId()),
-            new OrderCreatedEvent(saved.getId(), saved.getCustomerId(),
-                                  saved.getItems(), saved.getTotal()));
-        return saved;
-    }
+            // Step 3: Schedule shipping
+            shippingService.scheduleDelivery(order.id, order.shippingAddress)
+            state.completedSteps.add(SagaStep.SHIPPING)
 
-    // Compensation: listen for failure events and cancel the order
-    @KafkaListener(topics = {"stock.reservation.failed", "payment.failed"}, groupId = "order-service")
-    @Transactional
-    public void onSagaFailure(SagaFailureEvent event) {
-        log.warn("Saga failed for orderId={}, reason={}", event.getOrderId(), event.getReason());
-        orderRepository.updateStatus(event.getOrderId(), OrderStatus.CANCELLED);
-        kafka.send("order.cancelled",
-            new OrderCancelledEvent(event.getOrderId(), event.getReason()));
-    }
-}
-
-// ✅ InventoryService: react to saga event, publish next or compensation
-@Service
-public class InventorySagaParticipant {
-    @Autowired KafkaTemplate<String, Object> kafka;
-
-    @KafkaListener(topics = "order.created", groupId = "inventory-service")
-    @Transactional
-    public void onOrderCreated(OrderCreatedEvent event) {
-        try {
-            // Local transaction: atomically check + reserve stock
-            reservationService.reserveForOrder(event.getOrderId(), event.getItems());
-            // Publish success → triggers next saga step (PaymentService)
-            kafka.send("stock.reserved",
-                new StockReservedEvent(event.getOrderId(), event.getCustomerId(), event.getTotal()));
-        } catch (InsufficientStockException e) {
-            // Publish failure → triggers compensation in OrderService
-            kafka.send("stock.reservation.failed",
-                new StockReservationFailedEvent(event.getOrderId(), e.getMessage()));
+            state.status = SagaStatus.COMPLETED
+            sagaRepository.save(state)
+        }.onFailure { error ->
+            compensate(state, order, error)
         }
     }
 
-    // Compensation: release reservation when payment fails
-    @KafkaListener(topics = "payment.failed", groupId = "inventory-service")
-    @Transactional
-    public void onPaymentFailed(PaymentFailedEvent event) {
-        reservationService.releaseReservation(event.getOrderId());
-        log.info("Released stock reservation for orderId={}", event.getOrderId());
+    private fun compensate(state: SagaState, order: Order, cause: Throwable) {
+        state.status = SagaStatus.COMPENSATING
+        sagaRepository.save(state)
+
+        // Compensate in reverse order
+        val stepsToCompensate = state.completedSteps.reversed()
+        stepsToCompensate.forEach { step ->
+            runCatching {
+                when (step) {
+                    SagaStep.PAYMENT -> paymentService.refundPayment(order.id)
+                    SagaStep.INVENTORY -> inventoryService.releaseReservation(order.id)
+                    SagaStep.SHIPPING -> shippingService.cancelDelivery(order.id)
+                }
+            }.onFailure { compensationError ->
+                // Log and alert — manual intervention may be required
+                log.error("Compensation failed for step $step", compensationError)
+            }
+        }
+
+        state.status = SagaStatus.FAILED
+        sagaRepository.save(state)
     }
+}
+
+interface PaymentService {
+    fun processPayment(orderId: String, amount: Long)
+    fun refundPayment(orderId: String)    // compensating transaction
+}
+
+interface InventoryService {
+    fun reserveItems(orderId: String, items: List<OrderItem>)
+    fun releaseReservation(orderId: String)    // compensating transaction
+}
+
+interface ShippingService {
+    fun scheduleDelivery(orderId: String, address: String)
+    fun cancelDelivery(orderId: String)    // compensating transaction
 }
 ```
 
 ## Ứng Dụng Thực Tế
 
-Bắt đầu với choreography (đơn giản hơn), chuyển sang orchestration (Temporal, Axon, AWS Step Functions) khi saga phức tạp (5+ bước, nhiều compensation). Luôn làm mỗi bước idempotent — Kafka giao at-least-once.
+Saga pattern là lựa chọn tiêu chuẩn trong hệ thống e-commerce microservices khi một đơn hàng cần xác nhận thanh toán, trừ tồn kho, và đặt lịch giao hàng qua 3 service độc lập. Orchestration phù hợp khi flow phức tạp và cần dễ debug; choreography phù hợp cho flow đơn giản hơn với ít service hơn. Luôn cần monitor các saga bị stuck ở trạng thái COMPENSATING để phát hiện kịp thời các trường hợp cần can thiệp thủ công.
 
 ## Câu Hỏi Phỏng Vấn
 
 <details>
-<summary><strong>Compensating transaction là gì? Ví dụ cụ thể.</strong></summary>
+<summary><strong>Saga vs 2PC — tại sao microservices ưu tiên Saga?</strong></summary>
 
-**A:** Khi một step trong saga fail, không thể rollback các step đã committed (distributed system không có 2PC atomic). Thay vào đó, chạy compensating transaction để undo effect: Order saga — `createOrder` → `chargePayment` → `reserveInventory`. Nếu `reserveInventory` fail → chạy `refundPayment` (compensate `chargePayment`) và `cancelOrder` (compensate `createOrder`). Compensating transaction là business operation, không phải DB rollback. Cần design idempotent — có thể gọi nhiều lần.
+**A:** 2PC yêu cầu một coordinator lock resource trên tất cả participant trong suốt quá trình — nếu bất kỳ participant nào chậm hoặc down, toàn bộ transaction bị block. Điều này vi phạm nguyên tắc loose coupling và ảnh hưởng nghiêm trọng đến availability của toàn hệ thống. Saga thay vào đó dùng chuỗi local transaction độc lập — mỗi service commit ngay, không giữ lock. Khi có lỗi, compensating transaction được chạy để undo các bước đã thành công. Saga chấp nhận eventual consistency thay vì strong consistency của 2PC, phù hợp với nature của distributed systems.
 
 </details>
 
 <details>
-<summary><strong>Choreography và Orchestration Saga có trade-off gì?</strong></summary>
+<summary><strong>Choreography vs Orchestration — trade-offs là gì?</strong></summary>
 
-**A:** Choreography (event-driven): services react to events, không có central coordinator. Ưu: loose coupling, resilient (không single point of failure). Nhược: flow khó trace, business logic phân tán khắp services, testing complex. Orchestration (centralized): Saga Orchestrator gọi services theo thứ tự, handle compensation. Ưu: flow rõ ràng, dễ debug, single place implement logic. Nhược: orchestrator là central dependency, có thể trở thành bottleneck. Chọn choreography cho simple flow ít steps; orchestration cho complex saga nhiều steps và compensation logic phức tạp.
+**A:** Choreography không có điểm trung tâm — mỗi service biết phải làm gì khi nhận event từ service khác, dẫn đến loose coupling và dễ scale độc lập. Nhược điểm là flow phân tán qua nhiều service nên rất khó debug và visualize toàn bộ transaction. Orchestration có SagaOrchestrator trung tâm nắm toàn bộ flow logic — dễ debug, dễ monitor, và dễ handle exception. Nhược điểm là orchestrator trở thành điểm tập trung logic và potential single point of coupling. Orchestration thường được ưu tiên cho saga phức tạp nhiều bước, choreography cho flow đơn giản.
 
 </details>
 
-## Sơ Đồ Choreography vs Orchestration
+<details>
+<summary><strong>Compensating transaction là gì và có giống database rollback không?</strong></summary>
 
-```mermaid
-flowchart TB
-    subgraph Choreo["Choreography (Event-Driven)"]
-        OS1["Order Service"] -->|OrderCreated| PS1["Payment Service"]
-        PS1 -->|PaymentOK| IS1["Inventory Service"]
-        IS1 -->|StockReserved| NS1["Notification"]
-        PS1 -->|PaymentFailed| OC1["Order Service\ncompensate: cancel order"]
-    end
+**A:** Compensating transaction là hành động nghiệp vụ đảo ngược tác động của một bước đã commit, ví dụ refundPayment để đảo ngược processPayment. Khác với database rollback — rollback xóa hoàn toàn thay đổi trong một transaction, compensating transaction tạo ra một transaction mới trái chiều. Điều này có nghĩa là trong khoảng thời gian giữa bước ban đầu và compensating transaction, các hệ thống khác có thể đã nhìn thấy intermediate state. Compensating transaction phải được thiết kế cẩn thận vì chính nó cũng có thể thất bại — cần retry và alerting khi compensation fails.
 
-    subgraph Orch["Orchestration (Centralized)"]
-        Orch1["Saga Orchestrator"] -->|"1. processPayment"| PS2["Payment"]
-        Orch1 -->|"2. reserveStock"| IS2["Inventory"]
-        Orch1 -->|"3. ship"| SS2["Shipping"]
-        PS2 -->|failed| Orch1
-        Orch1 -->|"compensate: refund"| PS2
-    end
-```
+</details>

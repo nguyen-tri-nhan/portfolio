@@ -1,118 +1,140 @@
 ---
-key: "Structured Logging"
-title: "Structured Logging"
-crumb: "8. Cloud & DevOps › Monitoring"
+key: structured-logging
+title: Structured Logging
+crumb: 19. Observability > Logging
 ---
 
-Structured logging xuất log entry dưới dạng JSON (hoặc key-value pair) thay vì plain text, làm log có thể parse bằng máy và cho phép filter và aggregate mạnh mẽ trong hệ thống log.
+Structured logging ghi log dưới dạng JSON machine-parseable thay vì plain text — cho phép query, filter, và aggregate log hiệu quả trên hệ thống tập trung như ELK hoặc Loki.
 
 ## Điểm Chính
 
-- JSON log: mỗi field có thể query trong ELK/Loki (<code>log.level = "ERROR" AND service = "order-service"</code>).
-- Field chuẩn: timestamp, level, service, traceId, spanId, userId, message.
-- MDC (Mapped Diagnostic Context): key-value pair thread-local được thêm vào mọi log line.
-- Tránh log dữ liệu nhạy cảm: password, số thẻ tín dụng, PII (tuân thủ GDPR).
-- Log level: ERROR (cần hành động), WARN (điều tra), INFO (vận hành), DEBUG (chỉ development).
+- **JSON format**: mỗi log line là một JSON object với các field cố định — `timestamp`, `level`, `message`, `service`, `traceId`, `spanId`, `userId`, `requestId`, `duration`
+- **Correlation ID / Trace ID**: ID duy nhất được propagate qua tất cả service call trong một request — giúp tìm toàn bộ log liên quan đến một request trên nhiều service
+- **MDC (Mapped Diagnostic Context)**: thread-local map trong Java/Kotlin tự động inject context (traceId, userId) vào mọi log line trong request — không cần pass thủ công
+- **Log levels**: TRACE < DEBUG < INFO < WARN < ERROR; production nên set minimum INFO, chỉ ERROR cho các alert cần action ngay
+- **Không log sensitive data**: passwords, token, credit card number, PII tuyệt đối không được xuất hiện trong log — dùng masking hoặc hashing nếu cần reference
+- **Centralized logging**: ELK Stack (Elasticsearch + Logstash + Kibana) hoặc Loki + Grafana — index theo traceId/userId để query nhanh
+- **Log sampling**: với high-throughput service, sample DEBUG log (ví dụ 10%) thay vì log 100% để tránh quá tải storage
+- **Contextual fields**: thêm business context vào log — `orderId`, `paymentMethod`, `productCategory` — giúp debug nghiệp vụ nhanh hơn
 
 ## Ví Dụ Code
 
-*Logback JSON config + MDC filter + log correlation với traceId*
+*Kotlin Spring Boot với Logback JSON encoder, MDC tự động inject traceId/userId vào mọi log line.*
 
-```xml
-<!-- logback-spring.xml: JSON output via logstash-logback-encoder -->
-<configuration>
-  <springProfile name="!local">
-    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
-      <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-        <!-- include MDC fields in every log entry -->
-        <includeMdcKeyName>traceId</includeMdcKeyName>
-        <includeMdcKeyName>spanId</includeMdcKeyName>
-        <includeMdcKeyName>requestId</includeMdcKeyName>
-        <includeMdcKeyName>userId</includeMdcKeyName>
-        <includeMdcKeyName>orderId</includeMdcKeyName>
-        <!-- mask sensitive fields -->
-        <fieldNames>
-          <timestamp>@timestamp</timestamp>
-          <message>message</message>
-        </fieldNames>
-      </encoder>
-    </appender>
-    <root level="INFO"><appender-ref ref="JSON"/></root>
-  </springProfile>
-  <!-- local: human-readable pattern -->
-  <springProfile name="local">
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-      <encoder><pattern>%d{HH:mm:ss} [%X{traceId}] %-5level %logger{36} - %msg%n</pattern></encoder>
-    </appender>
-    <root level="DEBUG"><appender-ref ref="CONSOLE"/></root>
-  </springProfile>
-</configuration>
+```kotlin
+// MDC Filter — inject context for every request
+@Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
+class MdcContextFilter : OncePerRequestFilter() {
 
-// ── MDC Filter: inject correlation IDs into every request ───────────────────
-@Component @Order(1)
-public class MdcLoggingFilter extends OncePerRequestFilter {
-    @Override
-    protected void doFilterInternal(HttpServletRequest req,
-                                    HttpServletResponse res,
-                                    FilterChain chain) throws IOException, ServletException {
-        // Propagate trace ID from upstream (e.g. API Gateway, Zipkin)
-        String traceId = Optional.ofNullable(req.getHeader("X-B3-TraceId"))
-                                 .orElse(UUID.randomUUID().toString().replace("-",""));
-        MDC.put("traceId",   traceId);
-        MDC.put("spanId",    UUID.randomUUID().toString().substring(0,16));
-        MDC.put("requestId", UUID.randomUUID().toString());
-        MDC.put("userId",    extractUserId(req));   // from JWT claim
-        MDC.put("path",      req.getRequestURI());
-        res.setHeader("X-Trace-Id", traceId);      // return to client for debugging
+    override fun doFilterInternal(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        filterChain: FilterChain
+    ) {
         try {
-            chain.doFilter(req, res);
+            // Extract or generate trace ID (W3C traceparent or custom header)
+            val traceId = request.getHeader("X-Trace-Id")
+                ?: request.getHeader("traceparent")?.extractTraceId()
+                ?: UUID.randomUUID().toString()
+
+            val requestId = UUID.randomUUID().toString()
+
+            // MDC auto-injects these fields into every log line in this thread
+            MDC.put("traceId", traceId)
+            MDC.put("requestId", requestId)
+            MDC.put("httpMethod", request.method)
+            MDC.put("httpPath", request.requestURI)
+
+            // Propagate traceId downstream
+            response.setHeader("X-Trace-Id", traceId)
+
+            filterChain.doFilter(request, response)
         } finally {
-            MDC.clear();  // IMPORTANT: clear to avoid thread pool contamination
+            MDC.clear()  // Always clear to avoid leaking between requests
         }
     }
 }
 
-// ── Service layer: log with business context ─────────────────────────────────
-@Service @Slf4j
-public class OrderService {
-    public Order placeOrder(OrderRequest req) {
-        MDC.put("orderId", req.getOrderId());  // add order-specific context
-        log.info("Placing order for user={} items={}", req.getUserId(), req.getItemCount());
-        try {
-            Order order = processOrder(req);
-            // JSON output: {"@timestamp":"...","level":"INFO","traceId":"abc123",
-            //   "requestId":"def456","userId":"u1","orderId":"o99","message":"Order placed"}
-            log.info("Order placed successfully status={} total={}", order.getStatus(), order.getTotal());
-            return order;
-        } catch (PaymentDeclinedException e) {
-            log.warn("Payment declined reason={} amount={}", e.getReason(), req.getTotal());
-            throw e;
-        } catch (Exception e) {
-            log.error("Unexpected error placing order", e);  // stack trace included in JSON
-            throw e;
+// Service — structured logging with SLF4J
+@Service
+class OrderService(private val log: Logger = LoggerFactory.getLogger(OrderService::class.java)) {
+
+    fun processOrder(request: PlaceOrderRequest): Order {
+        // Add business context to MDC for this operation
+        MDC.put("customerId", request.customerId)
+        MDC.put("orderValue", request.totalAmount.toString())
+
+        log.info("Processing order",
+            kv("customerId", request.customerId),
+            kv("itemCount", request.items.size),
+            kv("totalAmount", request.totalAmount)
+        )
+
+        val startTime = System.currentTimeMillis()
+
+        return try {
+            val order = createOrder(request)
+
+            log.info("Order created successfully",
+                kv("orderId", order.id),
+                kv("durationMs", System.currentTimeMillis() - startTime)
+            )
+            order
+        } catch (e: InsufficientInventoryException) {
+            // WARN for expected business errors
+            log.warn("Order failed — insufficient inventory",
+                kv("customerId", request.customerId),
+                kv("productId", e.productId),
+                kv("requestedQty", e.requestedQty),
+                kv("availableQty", e.availableQty)
+            )
+            throw e
+        } catch (e: Exception) {
+            // ERROR for unexpected failures requiring action
+            log.error("Unexpected error processing order",
+                kv("customerId", request.customerId),
+                e
+            )
+            throw e
         } finally {
-            MDC.remove("orderId");
+            MDC.remove("customerId")
+            MDC.remove("orderValue")
         }
     }
 }
+
+// logback-spring.xml — JSON output via logstash-logback-encoder
+// <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+//   <includeCallerData>false</includeCallerData>
+//   <includeMdcKeyName>traceId</includeMdcKeyName>
+//   <includeMdcKeyName>requestId</includeMdcKeyName>
+// </encoder>
 ```
 
 ## Ứng Dụng Thực Tế
 
-Chuyển từ pattern-based logging sang JSON với <code>logstash-logback-encoder</code>. Điều này làm log có thể tìm kiếm trong Kibana hoặc Loki không cần regex parsing. Thêm trace ID vào MDC khi vào request để bạn có thể tìm tất cả log cho một request trong một query.
+Trong hệ thống microservices, structured logging kết hợp với traceId propagation cho phép engineer query toàn bộ log của một user request trải qua 5-6 service chỉ với một filter `traceId = "abc123"` trong Kibana. Khi có incident, thay vì phải SSH vào từng server đọc log file, team có thể search và correlate log từ tất cả service trong vài giây. MDC đặc biệt quan trọng trong async code — cần manually propagate MDC context sang coroutine hay thread pool vì MDC là thread-local.
 
 ## Câu Hỏi Phỏng Vấn
 
 <details>
-<summary><strong>Structured logging là gì và lợi ích so với text logging?</strong></summary>
+<summary><strong>Tại sao structured logging tốt hơn plain text logging?</strong></summary>
 
-**A:** Structured logging: log theo format machine-readable (JSON) thay vì free-text. Ví dụ: `{"timestamp":"2024-01-15T10:30:00","level":"ERROR","traceId":"abc123","userId":"42","message":"Payment failed","errorCode":"INSUFFICIENT_FUNDS"}`. Lợi ích: (1) Search/filter trong Elasticsearch/Splunk chính xác: `errorCode:INSUFFICIENT_FUNDS AND userId:42`. (2) Metrics từ logs: count bằng field cụ thể. (3) Correlation với traceId qua services. Text logging: `"User 42 payment failed: insufficient funds"` → phải parse regex để extract fields.
+**A:** Plain text log như `"User 123 placed order for $50"` rất khó parse bằng máy — để filter, cần regex phức tạp và dễ sai khi format thay đổi. Structured logging ghi JSON với field cố định — `userId: "123"`, `action: "place_order"`, `amount: 50` — cho phép query chính xác như `userId = "123" AND amount > 100` trong Elasticsearch hay Loki. Ngoài ra, thêm field mới vào JSON không breaking existing query, trong khi thay đổi format text string có thể break tất cả parsing logic. Structured logging cũng dễ index và aggregate hơn để tạo dashboard và alert.
 
 </details>
 
 <details>
-<summary><strong>MDC (Mapped Diagnostic Context) là gì?</strong></summary>
+<summary><strong>MDC là gì và hoạt động như thế nào trong multi-threaded environment?</strong></summary>
 
-**A:** MDC: thread-local key-value store để attach context vào tất cả log statements trong request. Ví dụ: `MDC.put("traceId", "abc123"); MDC.put("userId", "42");` → mọi log.info() trong request tự động include traceId và userId mà không cần pass vào từng method. Trong Spring Boot: Spring Security filter có thể set MDC, hoặc dùng Spring Cloud Sleuth/Micrometer Tracing tự động inject traceId/spanId vào MDC. Nhớ `MDC.clear()` sau request (thread pool reuse thread — MDC bị leak nếu không clear).
+**A:** MDC (Mapped Diagnostic Context) là thread-local map do SLF4J cung cấp — mỗi thread có một MDC map riêng. Khi Logback format log line, nó tự động đọc tất cả key-value trong MDC của thread hiện tại và thêm vào output JSON. Điều này cho phép set traceId một lần trong request filter rồi mọi log call trong request đó — dù ở service layer hay repository layer — đều tự động có traceId mà không cần pass qua parameter. Vấn đề với async code: khi spawn coroutine hay submit task vào ExecutorService, thread mới không có MDC của thread cha. Cần dùng `MDCContext` cho Kotlin coroutines hoặc `MDC.getCopyOfContextMap()` để manually copy MDC sang thread mới.
+
+</details>
+
+<details>
+<summary><strong>Làm thế nào propagate traceId qua HTTP call giữa các service?</strong></summary>
+
+**A:** Khi Service A gọi Service B qua HTTP, traceId phải được truyền theo qua HTTP header. Standard hiện tại là W3C Trace Context với header `traceparent` có format `version-traceId-spanId-flags`. Với Spring Boot, nếu dùng Micrometer Tracing hoặc OpenTelemetry, việc propagation được tự động hóa qua instrumented RestTemplate hay WebClient. Nếu dùng custom header như `X-Trace-Id`, cần viết ClientHttpRequestInterceptor đọc traceId từ MDC và add vào outbound request, đồng thời viết filter ở Service B đọc header đó và set vào MDC. Service B cũng cần giữ nguyên traceId thay vì tạo mới để toàn bộ flow có cùng một traceId.
 
 </details>
