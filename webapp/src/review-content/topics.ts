@@ -1448,5 +1448,59 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
         ]
       }
     ]
+  },
+  {
+    "title": "18. API & Communication",
+    "icon": "🔌",
+    "topics": [
+      {
+        "name": "REST & HTTP",
+        "file": "restful-design",
+        "subs": [
+          {
+            "name": "RESTful Design",
+            "file": "restful-design"
+          },
+          {
+            "name": "API Best Practices",
+            "file": "api-best-practices"
+          },
+          {
+            "name": "OpenAPI & Swagger",
+            "file": "openapi-swagger"
+          }
+        ]
+      },
+      {
+        "name": "gRPC",
+        "file": "grpc-deep",
+        "subs": [
+          {
+            "name": "gRPC Deep Dive",
+            "file": "grpc-deep"
+          }
+        ]
+      },
+      {
+        "name": "GraphQL",
+        "file": "graphql",
+        "subs": [
+          {
+            "name": "GraphQL",
+            "file": "graphql"
+          }
+        ]
+      },
+      {
+        "name": "Real-time",
+        "file": "websocket-sse",
+        "subs": [
+          {
+            "name": "WebSocket & SSE",
+            "file": "websocket-sse"
+          }
+        ]
+      }
+    ]
   }
 ];;
