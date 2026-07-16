@@ -1622,5 +1622,112 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
         ]
       }
     ]
+  },
+  {
+    "title": "21. .NET",
+    "icon": "💜",
+    "topics": [
+      {
+        "name": "C# Cơ Bản",
+        "file": "csharp-vs-java",
+        "subs": []
+      },
+      {
+        "name": "ASP.NET Core",
+        "file": "aspnet-core",
+        "subs": []
+      },
+      {
+        "name": "Entity Framework Core",
+        "file": "ef-core",
+        "subs": []
+      },
+      {
+        "name": ".NET Async & Task",
+        "file": "dotnet-async",
+        "subs": []
+      },
+      {
+        "name": "DI & Middleware",
+        "file": "dotnet-di-middleware",
+        "subs": []
+      },
+      {
+        "name": "Concurrency",
+        "file": "dotnet-concurrency",
+        "subs": []
+      },
+      {
+        "name": "Memory & GC",
+        "file": "dotnet-memory-gc",
+        "subs": []
+      },
+      {
+        "name": "C# Nâng Cao",
+        "file": "csharp-advanced",
+        "subs": []
+      },
+      {
+        "name": "Testing (xUnit & Moq)",
+        "file": "dotnet-testing",
+        "subs": []
+      },
+      {
+        "name": "Security (JWT & Policy)",
+        "file": "aspnet-security",
+        "subs": []
+      }
+    ]
+  },
+  {
+    "title": "22. Ruby",
+    "icon": "💎",
+    "topics": [
+      {
+        "name": "Ruby Cơ Bản",
+        "file": "ruby-basics",
+        "subs": []
+      },
+      {
+        "name": "OOP & Modules",
+        "file": "ruby-oop",
+        "subs": []
+      },
+      {
+        "name": "Ruby vs Java",
+        "file": "ruby-vs-java",
+        "subs": []
+      },
+      {
+        "name": "Rails Cơ Bản",
+        "file": "ruby-rails",
+        "subs": []
+      },
+      {
+        "name": "Concurrency & GIL",
+        "file": "ruby-concurrency",
+        "subs": []
+      },
+      {
+        "name": "Metaprogramming",
+        "file": "ruby-metaprogramming",
+        "subs": []
+      },
+      {
+        "name": "Testing (RSpec & FactoryBot)",
+        "file": "ruby-testing",
+        "subs": []
+      },
+      {
+        "name": "Rails Nâng Cao",
+        "file": "rails-advanced",
+        "subs": []
+      },
+      {
+        "name": "Ruby Internals",
+        "file": "ruby-internals",
+        "subs": []
+      }
+    ]
   }
 ];;
