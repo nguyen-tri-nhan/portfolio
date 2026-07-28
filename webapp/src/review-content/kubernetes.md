@@ -74,9 +74,270 @@ spec:
           failureThreshold: 3
 ```
 
+## YAML Files Cho 1 Service
+
+Không có con số cố định — phụ thuộc vào complexity. Chia theo 3 tier:
+
+**Minimum (2 file)** — dev/test:
+```
+deployment.yaml    ← pods + replicas + container spec
+service.yaml       ← expose port (ClusterIP)
+```
+
+**Typical Production (5-6 file)**:
+```
+deployment.yaml    ← pods, replicas, resource limits, probes
+service.yaml       ← ClusterIP / LoadBalancer
+ingress.yaml       ← HTTP routing, domain, TLS termination
+configmap.yaml     ← non-sensitive config (env vars, feature flags)
+secret.yaml        ← sensitive data (DB password, JWT key)
+hpa.yaml           ← HorizontalPodAutoscaler (auto-scaling)
+```
+
+**Full Production (8-10 file)**:
+```
++ pdb.yaml           ← PodDisruptionBudget (min pods khi rolling update)
++ serviceaccount.yaml ← RBAC identity
++ networkpolicy.yaml  ← restrict pod-to-pod traffic
++ pvc.yaml            ← PersistentVolumeClaim (nếu cần persistent storage)
+```
+
+**Các file bổ sung quan trọng:**
+
+```yaml
+# hpa.yaml — auto-scale khi CPU > 70%
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: order-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: order-service
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+```
+
+```yaml
+# pdb.yaml — đảm bảo luôn có ít nhất 2 pod trong khi drain node / rolling update
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: order-pdb
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: order-service
+```
+
+```yaml
+# ingress.yaml — HTTP routing + TLS
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: order-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: api.example.com
+      http:
+        paths:
+          - path: /orders
+            pathType: Prefix
+            backend:
+              service:
+                name: order-service
+                port:
+                  number: 80
+  tls:
+    - hosts: [api.example.com]
+      secretName: tls-secret
+```
+
+```yaml
+# service.yaml — expose pod ra trong cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+spec:
+  selector:
+    app: order-service       # match label trong deployment
+  ports:
+    - port: 80
+      targetPort: 8080       # port container đang listen
+  type: ClusterIP            # chỉ accessible trong cluster (dùng Ingress để expose ra ngoài)
+```
+
+```yaml
+# configmap.yaml — non-sensitive config (env vars, feature flags)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: order-config
+data:
+  APP_ENV: "production"
+  LOG_LEVEL: "INFO"
+  KAFKA_BROKERS: "kafka:9092"
+  CACHE_TTL_SECONDS: "300"
+```
+
+```yaml
+# secret.yaml — sensitive data, base64 encoded
+# Tạo base64: echo -n "mypassword" | base64
+apiVersion: v1
+kind: Secret
+metadata:
+  name: order-secret
+type: Opaque
+data:
+  DB_PASSWORD: cGFzc3dvcmQxMjM=   # "password123"
+  JWT_SECRET: c2VjcmV0a2V5MTIz    # "secretkey123"
+  REDIS_PASSWORD: cmVkaXMxMjM=
+```
+
+**Thực tế với nhiều service → dùng Helm Chart:**
+
+Microservices với 10 services × 6 file = ~60 YAML files. Helm template hóa toàn bộ — chỉ cần sửa `values.yaml`:
+
+```
+my-service/
+├── Chart.yaml
+├── values.yaml            ← chỉ sửa file này (image tag, replicas, env...)
+└── templates/
+    ├── deployment.yaml    ← {{ .Values.image.tag }}, {{ .Values.replicas }}
+    ├── service.yaml
+    ├── ingress.yaml
+    ├── configmap.yaml
+    ├── hpa.yaml
+    └── secret.yaml
+```
+
+**values.yaml — file duy nhất cần thay đổi giữa các môi trường:**
+
+```yaml
+# values.yaml — default values (production)
+replicaCount: 3
+
+image:
+  repository: myregistry/order-service
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  host: api.example.com
+  path: /orders
+  tls: true
+  secretName: tls-secret
+
+resources:
+  requests:
+    cpu: "250m"
+    memory: "512Mi"
+  limits:
+    cpu: "500m"
+    memory: "1Gi"
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+config:
+  APP_ENV: "production"
+  LOG_LEVEL: "INFO"
+  KAFKA_BROKERS: "kafka:9092"
+
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    initialDelaySeconds: 45
+  readiness:
+    path: /actuator/health/readiness
+    initialDelaySeconds: 30
+```
+
+**Helm template dùng values — deployment.yaml trong templates/:**
+
+```yaml
+# templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-{{ .Chart.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probes.liveness.path }}
+              port: {{ .Values.service.targetPort }}
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+          {{- if .Values.autoscaling.enabled }}
+          # HPA sẽ handle replicas — không hardcode
+          {{- end }}
+```
+
+**Override values.yaml theo môi trường:**
+
+```bash
+# Deploy lên staging với image tag mới và chỉ 1 replica
+helm upgrade --install order-service ./my-service \
+  --values values.yaml \
+  --set image.tag=1.2.0 \
+  --set replicaCount=1 \
+  --set config.APP_ENV=staging \
+  --namespace staging
+
+# Deploy lên production
+helm upgrade --install order-service ./my-service \
+  --values values.yaml \
+  --values values.production.yaml \   # override file riêng cho prod
+  --namespace production
+```
+
+```yaml
+# values.production.yaml — chỉ chứa thứ khác với default
+replicaCount: 5
+image:
+  tag: "1.2.0"
+autoscaling:
+  maxReplicas: 20
+```
+
 ## Ứng Dụng Thực Tế
 
-Luôn đặt resource <code>requests</code> và <code>limits</code> — nếu không, HPA không thể tính utilization và pod có thể được schedule trên node quá tải. Map Spring Boot Actuator health endpoint với liveness/readiness probe.
+Luôn đặt resource <code>requests</code> và <code>limits</code> — nếu không, HPA không thể tính utilization và pod có thể được schedule trên node quá tải. Map Spring Boot Actuator health endpoint với liveness/readiness probe. Dùng PDB để tránh downtime khi drain node — <code>minAvailable: 2</code> đảm bảo rolling update không làm drop traffic.
 
 ## Câu Hỏi Phỏng Vấn
 
@@ -98,6 +359,27 @@ Luôn đặt resource <code>requests</code> và <code>limits</code> — nếu kh
 <summary><strong>ConfigMap và Secret khác nhau thế nào?</strong></summary>
 
 **A:** ConfigMap: non-sensitive configuration (app.properties, feature flags) — stored plaintext trong etcd. Secret: sensitive data (passwords, API keys, certificates) — base64 encoded (không encrypted by default). Để thực sự secure Secrets: bật etcd encryption at rest, dùng Sealed Secrets hoặc External Secrets Operator (pull từ AWS Secrets Manager / HashiCorp Vault). Secret inject vào Pod: environment variable (`secretKeyRef`) hoặc volume mount (file — prefer vì không expose trong `kubectl describe pod`).
+
+</details>
+
+<details>
+<summary><strong>1 microservice cần bao nhiêu YAML file trong K8s? Helm giải quyết vấn đề gì?</strong></summary>
+
+**A:** Không cố định — chia theo tier: **Minimum** (2 file: Deployment + Service) để chạy được; **Typical production** (5-6 file: + Ingress + ConfigMap + Secret + HPA); **Full production** (8-10 file: + PodDisruptionBudget + ServiceAccount + NetworkPolicy + PVC). Với 10 microservices × 6 file = ~60 YAML files — quản lý thủ công rất khó (duplicate, khó update đồng loạt, dễ sai). Helm giải quyết bằng cách template hóa: một bộ `templates/` dùng chung, chỉ cần sửa `values.yaml` per service (image tag, replica count, env vars). Ngoài ra Helm quản lý release versioning và rollback: `helm upgrade --install`, `helm rollback`.
+
+</details>
+
+<details>
+<summary><strong>HPA và PDB khác nhau thế nào?</strong></summary>
+
+**A:** **HPA** (HorizontalPodAutoscaler): tự động tăng/giảm số replica dựa trên metrics (CPU, memory, custom metrics). Scale-out khi CPU > threshold, scale-in khi load giảm. Cần `resources.requests` đặt đúng để HPA tính được utilization. **PDB** (PodDisruptionBudget): đảm bảo minimum số pod sống trong khi có *voluntary disruption* (drain node, rolling update). Ví dụ `minAvailable: 2` → K8s không được terminate pod nếu chỉ còn 2 pod running. HPA liên quan đến scaling, PDB liên quan đến availability — hai thứ bổ sung cho nhau.
+
+</details>
+
+<details>
+<summary><strong>Ingress khác Service (LoadBalancer type) thế nào?</strong></summary>
+
+**A:** **Service LoadBalancer**: tạo một cloud load balancer riêng per service → tốn tiền (mỗi LB tính phí riêng), không có HTTP routing logic. **Ingress**: một Ingress Controller duy nhất (nginx, traefik) nhận tất cả HTTP/HTTPS traffic rồi route đến đúng Service theo host/path rules. Tiết kiệm hơn (1 LB cho toàn cluster), hỗ trợ TLS termination, path-based routing (`/orders → order-service`, `/payments → payment-service`), rate limiting, auth. Production luôn dùng Ingress + Service ClusterIP, không dùng Service LoadBalancer per microservice.
 
 </details>
 

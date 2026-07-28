@@ -1367,6 +1367,10 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
           {
             "name": "HPA & Rolling Update",
             "file": "hpa-rolling-update"
+          },
+          {
+            "name": "EKS & AWS Integration",
+            "file": "eks-aws-integration"
           }
         ]
       },
@@ -1399,6 +1403,28 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
           {
             "name": "Structured Logging",
             "file": "structured-logging"
+          }
+        ]
+      },
+      {
+        "name": "Terraform",
+        "file": "terraform-basics",
+        "subs": [
+          {
+            "name": "Basics & HCL Syntax",
+            "file": "terraform-basics"
+          },
+          {
+            "name": "State Management",
+            "file": "terraform-state"
+          },
+          {
+            "name": "Modules",
+            "file": "terraform-modules"
+          },
+          {
+            "name": "Workflow & Atlantis",
+            "file": "terraform-workflow-atlantis"
           }
         ]
       }
