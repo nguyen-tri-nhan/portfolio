@@ -14,6 +14,104 @@ Kubernetes orchestrate containerized workload — schedule Pod lên Node, quản
 - Self-healing: restart pod thất bại, reschedule trên node chết, kill pod không pass health check.
 - kubectl: CLI tool chính. <code>kubectl get pods</code>, <code>describe</code>, <code>logs</code>, <code>exec</code>, <code>apply -f</code>.
 
+## Toàn Bộ K8s Objects Cần Biết
+
+### Workload
+
+| Object | Dùng khi nào |
+|--------|-------------|
+| **Pod** | Unit nhỏ nhất — hiếm khi tạo thủ công |
+| **ReplicaSet** | Đảm bảo đúng số pod running — Deployment tự quản lý, không cần tạo tay |
+| **Deployment** | Stateless app, rolling update, rollback |
+| **StatefulSet** | Stateful app (database, Kafka) — pod có stable name (`pod-0`, `pod-1`), stable storage per pod |
+| **DaemonSet** | Chạy đúng 1 pod trên **mỗi node** — log collector, monitoring agent, network plugin |
+| **Job** | Chạy đến khi hoàn thành — batch processing, data migration |
+| **CronJob** | Job theo lịch (`0 2 * * *`) |
+
+> **StatefulSet vs Deployment**: StatefulSet pod có tên cố định (`mysql-0`, `mysql-1`), xóa theo thứ tự ngược, có PVC riêng per pod. Deployment pod tên random (`mysql-abc123`), interchangeable.
+
+### Networking
+
+| Object | Vai trò |
+|--------|---------|
+| **Service** | Stable endpoint cho pod. 4 loại: `ClusterIP` (internal), `NodePort` (expose port trên node), `LoadBalancer` (cloud LB), `ExternalName` (DNS alias) |
+| **Ingress** | HTTP/HTTPS routing rules (host/path → service) |
+| **IngressClass** | Chỉ định controller handle Ingress (nginx, alb, traefik) |
+| **NetworkPolicy** | Firewall rules giữa các pod — pod A chỉ được nói chuyện với pod B |
+
+### Config & Storage
+
+| Object | Vai trò |
+|--------|---------|
+| **ConfigMap** | Non-sensitive config (env vars, config files) |
+| **Secret** | Sensitive data — base64 encoded, không phải encrypted by default |
+| **PersistentVolume (PV)** | Storage thật (EBS, NFS) — cluster-level resource |
+| **PersistentVolumeClaim (PVC)** | Pod *request* storage — binding với PV |
+| **StorageClass** | Template auto-provision PV (dynamic provisioning) — ví dụ `gp3` EBS |
+
+```
+# Flow dynamic provisioning:
+Pod dùng PVC → PVC request StorageClass "gp3"
+→ K8s tự tạo EBS volume (PV) → bind PVC → mount vào Pod
+```
+
+### Scaling & Scheduling
+
+| Object | Vai trò |
+|--------|---------|
+| **HPA** | Scale số replica theo CPU/memory/custom metric |
+| **PodDisruptionBudget (PDB)** | Giới hạn số pod bị interrupt cùng lúc khi drain node / rolling update |
+| **ResourceQuota** | Giới hạn tổng resource (CPU, memory, pod count) cho 1 namespace |
+| **LimitRange** | Default và max/min `requests/limits` per pod trong namespace |
+| **PriorityClass** | Pod priority — high priority pod có thể evict pod thấp hơn khi node thiếu resource |
+
+### RBAC & Identity
+
+| Object | Vai trò |
+|--------|---------|
+| **ServiceAccount** | Identity của pod khi gọi K8s API hoặc assume IAM role (IRSA trên EKS) |
+| **Role** | Quyền trong 1 namespace |
+| **ClusterRole** | Quyền cluster-wide (nodes, PV, namespaces) |
+| **RoleBinding** | Gán Role cho User/ServiceAccount trong namespace |
+| **ClusterRoleBinding** | Gán ClusterRole cluster-wide |
+
+### Organization & Scheduling Rules
+
+| Object | Vai trò |
+|--------|---------|
+| **Namespace** | Virtual cluster — isolate resources giữa teams/environments |
+| **Label / Selector** | Service dùng selector để tìm đúng pods |
+| **Taint / Toleration** | Taint trên node ngăn pod schedule lên → pod cần Toleration để chạy trên node đó |
+| **NodeAffinity** | Pod muốn/phải chạy trên node có label nhất định |
+| **TopologySpreadConstraints** | Phân tán pods đều giữa các node/AZ |
+
+### Thứ Tự Ưu Tiên Học
+
+```
+🔴 Phải biết:
+   Pod, Deployment, ReplicaSet, StatefulSet, DaemonSet
+   Service (4 loại), Ingress
+   ConfigMap, Secret
+   PVC / PV / StorageClass
+   HPA, PDB
+   ServiceAccount, Role/RoleBinding
+   Namespace
+
+🟡 Nên biết:
+   Job, CronJob
+   NetworkPolicy
+   ResourceQuota, LimitRange
+   Taint/Toleration, NodeAffinity
+
+🟢 Advanced:
+   VPA, PriorityClass
+   IngressClass
+   ClusterRole/ClusterRoleBinding chi tiết
+   TopologySpreadConstraints
+```
+
+> **Mẹo nhớ ReplicaSet**: Deployment tạo ReplicaSet phía sau — bạn không tương tác trực tiếp. Khi `kubectl rollout undo`, Deployment scale down ReplicaSet mới và scale up ReplicaSet cũ.
+
 ## Ví Dụ Code
 
 *K8s Deployment: topologySpreadConstraints, envFrom ConfigMap+Secret, liveness vs readiness probe, Prometheus annotations, resource requests/limits*

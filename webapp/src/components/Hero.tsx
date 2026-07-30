@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ChevronDown } from 'lucide-react'
 import {
   COMMAND_DEFINITIONS,
@@ -27,6 +28,7 @@ const TERMINAL_LINES = [
 ]
 
 export default function Hero() {
+  const navigate = useNavigate()
   const [currentLine, setCurrentLine] = useState(0)
   const [currentChar, setCurrentChar] = useState(0)
   const [showCursor, setShowCursor] = useState(true)
@@ -132,6 +134,7 @@ export default function Hero() {
       scrollToContact,
       scrollToTop,
       openUrl: (url) => window.open(url, '_blank', 'noopener,noreferrer'),
+      navigate,
       resumeUrl: RESUME_URL,
       history: historySnapshot,
       now: () => new Date(),

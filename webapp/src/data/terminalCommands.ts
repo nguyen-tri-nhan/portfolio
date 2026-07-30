@@ -9,6 +9,7 @@ export type TerminalCommandContext = {
   scrollToContact: () => void
   scrollToTop: () => void
   openUrl: (url: string) => void
+  navigate: (path: string) => void
   resumeUrl: string
   history: string[]
   now: () => Date
@@ -20,6 +21,7 @@ export type TerminalCommandDefinition = {
   command: string
   aliases?: string[]
   description: string
+  hidden?: boolean
   run: (context: TerminalCommandContext) => TerminalCommandResult
 }
 
@@ -142,6 +144,33 @@ export const COMMAND_DEFINITIONS: TerminalCommandDefinition[] = [
     run: () => ({
       response: 'Nice try. Boss mode unlocks after the salary hits the account.'
     })
+  },
+  {
+    command: 'unlock_review',
+    aliases: ['access_review'],
+    description: 'unlock the review vault',
+    hidden: true,
+    run: (context) => {
+      localStorage.setItem('reviewUnlocked', 'true')
+      setTimeout(() => context.navigate('/review-v2'), 2200)
+      return {
+        response:
+          '> Authenticating...\n' +
+          '> [████████████████████] 100%\n' +
+          '> Access granted. Welcome to the review vault.\n' +
+          '> Redirecting...'
+      }
+    }
+  },
+  {
+    command: 'lock_review',
+    description: 'lock the review vault',
+    hidden: true,
+    run: (context) => {
+      localStorage.removeItem('reviewUnlocked')
+      setTimeout(() => context.navigate('/'), 1500)
+      return { response: '> Review vault locked. Redirecting home...' }
+    }
   }
 ]
 
@@ -159,13 +188,15 @@ export const buildCommandMap = (definitions: TerminalCommandDefinition[]) => {
 export const buildHelpText = (definitions: TerminalCommandDefinition[]) => {
   return [
     'Available commands:',
-    ...definitions.map((definition) => {
-      const aliasText =
-        definition.aliases && definition.aliases.length > 0
-          ? ` (${definition.aliases.join(', ')})`
-          : ''
-      return `- ${definition.command}${aliasText}: ${definition.description}`
-    })
+    ...definitions
+      .filter((definition) => !definition.hidden)
+      .map((definition) => {
+        const aliasText =
+          definition.aliases && definition.aliases.length > 0
+            ? ` (${definition.aliases.join(', ')})`
+            : ''
+        return `- ${definition.command}${aliasText}: ${definition.description}`
+      })
   ].join('\n')
 }
 

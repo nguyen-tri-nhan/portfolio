@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Navigation from './components/Navigation'
 import Hero from './components/Hero'
 import Experience from './components/Experience'
@@ -48,7 +48,14 @@ function App() {
               }
             />
             <Route path="/experience" element={<ExperienceRoadmap />} />
-            <Route path="/review-v2" element={<ReviewV2 />} />
+            <Route
+              path="/review-v2"
+              element={
+                localStorage.getItem('reviewUnlocked') === 'true'
+                  ? <ReviewV2 />
+                  : <Navigate to="/" replace />
+              }
+            />
           </Routes>
         </main>
         <ScrollToTopButton />
