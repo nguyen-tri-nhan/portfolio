@@ -171,6 +171,33 @@ export const COMMAND_DEFINITIONS: TerminalCommandDefinition[] = [
       setTimeout(() => context.navigate('/'), 1500)
       return { response: '> Review vault locked. Redirecting home...' }
     }
+  },
+  {
+    command: 'unlock_solution',
+    aliases: ['access_solution'],
+    description: 'unlock solution design section',
+    hidden: true,
+    run: (context) => {
+      localStorage.setItem('solutionUnlocked', 'true')
+      setTimeout(() => context.navigate('/review-v2'), 2200)
+      return {
+        response:
+          '> Verifying clearance level...\n' +
+          '> [████████████████████] 100%\n' +
+          '> Solution Design vault unlocked.\n' +
+          '> Redirecting to review...'
+      }
+    }
+  },
+  {
+    command: 'lock_solution',
+    description: 'lock solution design section',
+    hidden: true,
+    run: (context) => {
+      localStorage.removeItem('solutionUnlocked')
+      setTimeout(() => context.navigate('/review-v2'), 1500)
+      return { response: '> Solution Design vault locked.' }
+    }
   }
 ]
 

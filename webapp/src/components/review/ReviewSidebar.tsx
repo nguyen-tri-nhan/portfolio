@@ -17,11 +17,16 @@ export default function ReviewSidebar({ selected, onSelect, search, onSearch }: 
   const toggleCat   = (t: string) => setOpenCats(p => ({ ...p, [t]: !p[t] }))
   const toggleTopic = (n: string) => setOpenTopics(p => ({ ...p, [n]: !p[n] }))
 
+  const isSolutionUnlocked = localStorage.getItem('solutionUnlocked') === 'true'
+  const visibleTopics = isSolutionUnlocked
+    ? REVIEW_TOPICS
+    : REVIEW_TOPICS.filter(cat => !cat.title.includes('Solution Design'))
+
   // Filter by search
   const filtered = useMemo<ReviewCategory[]>(() => {
-    if (!search.trim()) return REVIEW_TOPICS
+    if (!search.trim()) return visibleTopics
     const q = search.toLowerCase()
-    return REVIEW_TOPICS
+    return visibleTopics
       .map(cat => ({
         ...cat,
         topics: cat.topics
@@ -141,7 +146,7 @@ export default function ReviewSidebar({ selected, onSelect, search, onSearch }: 
 
       {/* Footer */}
       <div className="p-2 border-t border-slate-700/60 text-center text-xs text-slate-600">
-        {REVIEW_TOPICS.reduce((n, c) => n + c.topics.length, 0)} topics
+        {visibleTopics.reduce((n, c) => n + c.topics.length, 0)} topics
       </div>
     </aside>
   )

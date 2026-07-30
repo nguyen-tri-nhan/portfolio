@@ -1755,5 +1755,21 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
         "subs": []
       }
     ]
+  },
+  {
+    "title": "23. Solution Design",
+    "icon": "🧩",
+    "topics": [
+      {
+        "name": "Scheduled Bulk Message",
+        "file": "solution-bulk-message",
+        "subs": []
+      },
+      {
+        "name": "E-commerce Platform",
+        "file": "solution-ecommerce",
+        "subs": []
+      }
+    ]
   }
 ];;
