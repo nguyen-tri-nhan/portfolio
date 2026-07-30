@@ -33,6 +33,7 @@ export default function Navigation({ darkMode, setDarkMode }: NavigationProps) {
   }, [location.pathname])
   const isHome = location.pathname === '/'
   const isReview = location.pathname === '/review-v2'
+  const isReviewUnlocked = localStorage.getItem('reviewUnlocked') === 'true'
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
@@ -98,13 +99,15 @@ export default function Navigation({ darkMode, setDarkMode }: NavigationProps) {
               <Map size={16} />
               Roadmap
             </button>
-            <button
-              onClick={() => navigate('/review-v2')}
-              className={`inline-flex items-center gap-2 hover:text-primary transition-colors ${isReview ? 'text-primary font-semibold' : ''}`}
-            >
-              <BookOpen size={16} />
-              Review
-            </button>
+            {isReviewUnlocked && (
+              <button
+                onClick={() => navigate('/review-v2')}
+                className={`inline-flex items-center gap-2 hover:text-primary transition-colors ${isReview ? 'text-primary font-semibold' : ''}`}
+              >
+                <BookOpen size={16} />
+                Review
+              </button>
+            )}
             <button
               onClick={() => setDarkMode(!darkMode)}
               aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -158,13 +161,15 @@ export default function Navigation({ darkMode, setDarkMode }: NavigationProps) {
               <button onClick={goRoadmap} className="text-left hover:text-primary transition-colors">
                 Roadmap
               </button>
-              <button
-                onClick={() => { navigate('/review-v2'); setIsOpen(false) }}
-                className={`text-left inline-flex items-center gap-2 hover:text-primary transition-colors ${isReview ? 'text-primary font-semibold' : ''}`}
-              >
-                <BookOpen size={16} />
-                Review
-              </button>
+              {isReviewUnlocked && (
+                <button
+                  onClick={() => { navigate('/review-v2'); setIsOpen(false) }}
+                  className={`text-left inline-flex items-center gap-2 hover:text-primary transition-colors ${isReview ? 'text-primary font-semibold' : ''}`}
+                >
+                  <BookOpen size={16} />
+                  Review
+                </button>
+              )}
             </div>
           </div>
         )}
