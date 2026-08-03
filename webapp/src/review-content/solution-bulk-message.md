@@ -249,15 +249,149 @@ Scheduler watch Job status → `UPDATE message SET status='COMPLETED'`.
 ```
 COUNT query:       ~100ms
 Job creation:      ~500ms
-Pod cold start:    ~5-10s   (image pre-pulled trên nodes)
+Pod cold start:    ~1-2s    (Quarkus JVM) | ~50ms (Quarkus Native) | ~5-15s (Spring Boot)
 Processing:        ~13s     (20K users, 40 API calls × 300ms)
-───────────────────────────
-Tổng:              ~25s
-
-Margin: 300s / 25s = 12x
+──────────────────────────────────────────────────────────────
+Tổng (Quarkus):    ~15s     → margin 20x
+Tổng (Spring Boot): ~28s   → margin 10x
 ```
 
-**Lưu ý:** Pod cold start phụ thuộc image pull. Cần đảm bảo image cache trên nodes (dùng DaemonSet pre-puller hoặc pin image trên node pool).
+**Lưu ý:**
+- Cold start phụ thuộc **framework**: Quarkus build-time DI = 1-2s; Spring Boot runtime scan = 5-15s.
+- Nếu cluster cần provision **node mới**: Karpenter ~30-60s, Cluster Autoscaler ~3-5 phút — node provisioning time mới là bottleneck thực sự, không phải cold start.
+- Worker Job pods được K8s schedule **độc lập**, không chạy trong node của Scheduler service.
+
+### Phương Án 3 — Extended: Node Pre-warming
+
+**Vấn đề:** Karpenter provision node mất 30-60s. Nếu ta chỉ trigger Job đúng `start_at`, node chưa có → pods pending → lãng phí 30-60s đầu tiên của SLA budget.
+
+**Giải pháp:** Scheduler không chỉ đơn thuần trigger tại `start_at` — nó có thể hoạt động như một **look-ahead scheduler**, nhìn trước vài phút và chuẩn bị sẵn nodes.
+
+#### Look-ahead Scheduler
+
+Thay vì chỉ query messages đã quá `start_at`:
+```sql
+-- Thông thường: chỉ xử lý khi đến giờ
+SELECT * FROM message
+WHERE status = 'SCHEDULED' AND start_at <= NOW()
+
+-- Look-ahead: nhìn trước 5 phút
+SELECT * FROM message
+WHERE status = 'SCHEDULED'
+  AND start_at BETWEEN NOW() AND NOW() + INTERVAL 5 MINUTE
+ORDER BY start_at ASC
+```
+
+Khi phát hiện message sắp đến trong 5 phút → bắt đầu **pre-warm phase**.
+
+#### Pre-warm Flow
+
+```mermaid
+sequenceDiagram
+    participant S  as Scheduler
+    participant K8s as K8s API
+    participant KP as Karpenter
+    participant EC2 as AWS EC2
+
+    note over S: T-5 phút
+    S->>K8s: COUNT → n_pods = 50
+    S->>K8s: Tạo warm-up Deployment\n50 pods (sleep, cpu=10m)
+    K8s->>KP: 50 pods Pending
+    KP->>EC2: Provision 50 nodes
+    EC2-->>KP: Nodes Ready (~30-60s)
+    KP-->>K8s: Nodes join cluster
+
+    note over S: T-4 phút (nodes đã warm)
+    S->>K8s: Watch nodes: count >= 50? ✅
+
+    note over S: start_at
+    S->>K8s: Tạo real Job (50 pods)
+    K8s-->>K8s: Pods schedule ngay lên warm nodes
+    S->>K8s: Delete warm-up Deployment
+
+    note over K8s: Job hoàn thành ~15s sau start_at
+```
+
+#### Warm-up Pods — Resource Strategy
+
+Warm-up pods cần **tồn tại đủ lâu để giữ nodes**, nhưng không được chiếm resource của real Job pods.
+
+```yaml
+# Warm-up pod: nhỏ nhất có thể, chỉ để trigger provisioning
+spec:
+  containers:
+  - name: warmup
+    image: busybox
+    command: ["sleep", "600"]   # sống 10 phút, đủ để real Job chạy xong
+    resources:
+      requests:
+        cpu: "10m"              # gần như 0 — không chiếm slot
+        memory: "32Mi"
+  priorityClassName: low-priority  # bị evict nếu cần nhường chỗ
+
+# Real Job pod: resource thật
+spec:
+  containers:
+  - name: worker
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+  priorityClassName: high-priority  # không bị evict
+```
+
+Karpenter sẽ **không terminate node** chỉ vì warm-up pod nhỏ — node vẫn tồn tại. Khi real Job pods land và warm-up pods bị evict, nodes tiếp tục chạy Job.
+
+#### Tại sao không terminate node ngay khi delete warm-up?
+
+Karpenter có **consolidation delay** (~30s mặc định): sau khi pod rời node, Karpenter chờ 30s rồi mới đánh giá có nên terminate node không. Trong 30s đó, real Job pods đã được schedule lên → Karpenter thấy node vẫn bận → không terminate.
+
+```
+T+0s    delete warm-up pods
+T+0s    real Job pods schedule lên cùng nodes  ← cùng lúc
+T+30s   Karpenter check: nodes có empty? → Không, Job pods đang chạy
+T+13s   Job pods complete, nodes empty
+T+43s   Karpenter consolidation → terminate nodes
+```
+
+#### Timeline với Pre-warming
+
+```
+T-5:00  Scheduler detect message sắp đến → COUNT → tạo warm-up Deployment
+T-4:00  Nodes Ready (Karpenter provision xong ~60s)
+T-0:00  start_at → tạo real Job → pods schedule ngay
+T+0:02  cold start xong (Quarkus) → bắt đầu process
+T+0:15  processing xong, 1M users đã nhận message
+T+0:45  Karpenter terminate empty nodes
+────────────────────────────────────────────────────
+SLA: 300s  |  Thực tế: 15s  |  Margin: 20x
+```
+
+#### Khi nào không cần pre-warming
+
+```
+count nhỏ (< 5,000 users):
+  n_pods = 1 → 1 warm node trong batch pool đã đủ
+  Không cần pre-warm, pod schedule ngay
+
+count vừa (5,000 - 100,000):
+  n_pods = 1-5 → Karpenter provision 30-60s, vẫn trong SLA
+  Pre-warm là optimization, không bắt buộc
+
+count lớn (> 100,000):
+  n_pods = 5+ → pre-warming đáng làm để đảm bảo margin
+```
+
+Scheduler có thể dùng threshold để quyết định:
+
+```java
+int nPods = (int) Math.ceil(count / USERS_PER_POD);
+if (nPods > PRE_WARM_THRESHOLD) {   // ví dụ: 5
+    schedulePreWarm(messageId, nPods, startAt);
+} else {
+    scheduleDirectJob(messageId, nPods, startAt);
+}
+```
 
 ---
 
@@ -267,7 +401,7 @@ Margin: 300s / 25s = 12x
 |---|---|---|---|
 | **Data mutable đến start_at** | ❌ Events stale | ✅ Đọc tại trigger | ✅ Đọc tại execute |
 | **Content mutable** | ❌ Content stale | ✅ | ✅ |
-| **Thời gian sau trigger** | ~0ms (đã sẵn) | ~50ms read + 13s | ~15s startup + 13s |
+| **Thời gian sau trigger** | ~0ms (đã sẵn) | ~50ms read + 13s | ~1-15s startup + 13s (tùy framework) |
 | **Resource khi idle** | 50 pods chạy liên tục | 50 pods chạy liên tục | 0 pods |
 | **Scale theo message size** | Fixed 50 pods | Fixed 50 pods | Tự động theo COUNT |
 | **Completion detection** | Redis counter + fallback | Redis counter + fallback | K8s Job built-in |
@@ -293,7 +427,7 @@ Margin: 300s / 25s = 12x
 - Data mutable đến sát start_at
 - Số users biến động lớn giữa các messages (vài nghìn đến vài triệu)
 - Muốn zero idle resource — chỉ tốn compute khi thực sự cần
-- Đã có K8s cluster, chấp nhận ~15s cold start
+- Đã có K8s cluster; cold start thấp với Quarkus (~1-2s JVM, ~50ms Native), cao hơn với Spring Boot (~5-15s)
 
 ---
 
@@ -362,9 +496,9 @@ stateDiagram-v2
 </details>
 
 <details>
-<summary><strong>start_at còn 2 phút mà có 1M users — K8s Job cold start 10-15 giây có đảm bảo SLA không?</strong></summary>
+<summary><strong>start_at còn 2 phút mà có 1M users — K8s Job cold start có đảm bảo SLA không?</strong></summary>
 
-**A:** Nếu message được tạo đủ sớm (vài giờ trước `start_at`), cold start không phải vấn đề — 15 giây trong budget 300 giây là nhỏ. Vấn đề khi message tạo sát giờ (< 5 phút): K8s Job vẫn kịp nếu image đã pre-pulled trên nodes. Để đảm bảo: (1) **Image pre-pull**: dùng DaemonSet hoặc node pool image caching — image đã có sẵn trên disk, pod start trong 1-2s thay vì 15s; (2) **Node warm pool**: giữ sẵn một số nodes trong cluster, không để scale-from-zero tại trigger time; (3) **Fallback**: nếu detect `start_at - now < threshold`, dùng Phương Án 2 (parallel read + existing workers) thay vì tạo Job mới.
+**A:** Cold start phụ thuộc framework: Quarkus JVM ~1-2s, Quarkus Native ~50ms, Spring Boot ~5-15s. Với Quarkus, 2 giây trong budget 300 giây gần như không đáng kể. Với Spring Boot, 15s vẫn ổn nếu nodes đã warm. Bottleneck thực sự không phải cold start mà là **node provisioning** — nếu cluster cần scale thêm node: Karpenter ~30-60s, Cluster Autoscaler ~3-5 phút. Để đảm bảo: (1) **Node warm pool**: giữ sẵn đủ nodes có capacity cho batch workload; (2) **Karpenter thay CA**: provisioning 30-60s vs 3-5 phút; (3) **Fallback**: nếu `start_at - now < threshold`, dùng Phương Án 2 (parallel read + existing workers). Lưu ý thêm: worker Job pods chạy trên nodes riêng do K8s schedule — không phụ thuộc node của Scheduler service.
 
 </details>
 
