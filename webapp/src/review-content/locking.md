@@ -1,7 +1,7 @@
 ---
 key: "Locking"
 title: "Database Locking"
-crumb: "4. Database › Transactions"
+crumb: "10. Database › Transactions"
 ---
 
 Lock ngăn transaction đồng thời làm hỏng dữ liệu chia sẻ — từ table-level đến row-level, với loại lock shared (đọc) và exclusive (ghi).

@@ -1,7 +1,7 @@
 ---
 key: "Aspect / Pointcut / Advice"
 title: "Aspect / Pointcut / Advice"
-crumb: "3. Spring Ecosystem › Spring AOP"
+crumb: "7. Spring Ecosystem › Spring AOP"
 ---
 
 Aspect chứa Advice (cần làm gì) được áp dụng tại Pointcut (áp dụng ở đâu) — cùng nhau chúng định nghĩa hành vi cross-cutting khai báo.

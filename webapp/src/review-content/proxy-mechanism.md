@@ -1,7 +1,7 @@
 ---
 key: "Proxy Mechanism"
 title: "Cơ Chế Proxy"
-crumb: "3. Spring Ecosystem › Spring AOP"
+crumb: "7. Spring Ecosystem › Spring AOP"
 ---
 
 Spring AOP tạo dynamic proxy (JDK dynamic proxy cho interface, CGLIB subclass proxy cho class) bọc bean và chặn method call để áp dụng advice.

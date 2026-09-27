@@ -1,7 +1,7 @@
 ---
 key: kotlin-delegation
 title: "Delegation trong Kotlin — Class & Property Delegates"
-crumb: "13. Kotlin > Kotlin Features"
+crumb: "3. Kotlin > Kotlin Features"
 ---
 
 Kotlin hỗ trợ delegation pattern natively qua từ khóa `by` — class delegation thay thế inheritance bằng composition, property delegation tách logic truy cập property ra ngoài class.

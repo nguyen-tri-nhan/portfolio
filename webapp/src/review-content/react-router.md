@@ -1,7 +1,7 @@
 ---
 key: react-router
 title: React Router v6
-crumb: 15. ReactJS > Patterns & Performance
+crumb: 5. ReactJS > Patterns & Performance
 ---
 
 React Router v6 dùng `Routes/Route` component thay vì Switch, hỗ trợ nested routes với `Outlet`, và Data Router API (loader/action) giúp tách data fetching khỏi component — gần với Next.js App Router pattern hơn.

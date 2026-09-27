@@ -1,7 +1,7 @@
 ---
 key: react-useeffect
 title: useEffect & useLayoutEffect
-crumb: 15. ReactJS > React Hooks
+crumb: 5. ReactJS > React Hooks
 ---
 
 `useEffect` chạy sau khi browser paint để xử lý side effects (fetch, subscription, timer); `useLayoutEffect` chạy đồng bộ sau DOM mutation nhưng trước paint — dùng khi cần đọc/ghi DOM để tránh flicker.

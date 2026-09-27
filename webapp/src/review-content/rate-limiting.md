@@ -1,7 +1,7 @@
 ---
 key: "Rate Limiting"
 title: "Rate Limiting"
-crumb: "7. System Design"
+crumb: "13. System Design"
 ---
 
 Rate limiting kiểm soát tần suất request từ client, bảo vệ service khỏi quá tải, lạm dụng và đảm bảo phân phối tài nguyên công bằng.

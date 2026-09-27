@@ -1,7 +1,7 @@
 ---
 key: "Routing Keys"
 title: "Routing Key"
-crumb: "6. Messaging › RabbitMQ"
+crumb: "12. Messaging › RabbitMQ"
 ---
 
 Routing key là chuỗi gắn vào message mà exchange dùng (cùng binding) để quyết định queue nào nhận message.

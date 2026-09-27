@@ -1,7 +1,7 @@
 ---
 key: "Horizontal vs Vertical"
 title: "Horizontal vs Vertical Scaling"
-crumb: "7. System Design › Scalability"
+crumb: "13. System Design › Scalability"
 ---
 
 Vertical scaling nâng cấp tài nguyên một máy; horizontal scaling thêm nhiều máy — kiến trúc cloud hiện đại ưu tiên horizontal cho resilience và scale không giới hạn.

@@ -1,7 +1,7 @@
 ---
 key: "Thread Lifecycle"
 title: "Vòng Đời Thread"
-crumb: "2. Concurrency"
+crumb: "6. Concurrency"
 ---
 
 Một Java thread chuyển qua các trạng thái NEW → RUNNABLE → BLOCKED/WAITING/TIMED_WAITING → TERMINATED, được quản lý bởi JVM và OS scheduler.
@@ -9,10 +9,10 @@ Một Java thread chuyển qua các trạng thái NEW → RUNNABLE → BLOCKED/W
 ## Điểm Chính
 
 - <strong>NEW</strong>: đã tạo nhưng chưa start.
-- <strong>RUNNABLE</strong>: đang chạy hoặc sẵn sàng chạy (OS quyết định CPU nào xử lý).
-- <strong>BLOCKED</strong>: chờ lấy monitor lock (<code>synchronized</code>).
-- <strong>WAITING</strong>: chờ vô thời hạn — <code>Object.wait()</code>, <code>Thread.join()</code>.
-- <strong>TIMED_WAITING</strong>: chờ có timeout — <code>Thread.sleep()</code>, <code>wait(timeout)</code>.
+- <strong>RUNNABLE</strong>: đang chạy trong JVM, nhưng theo Javadoc có thể "đang chờ tài nguyên khác từ hệ điều hành như CPU" — thread đang block đọc socket/file cũng hiện RUNNABLE.
+- <strong>BLOCKED</strong>: chờ lấy monitor lock để vào khối <code>synchronized</code>, hoặc để vào lại sau khi được đánh thức từ <code>Object.wait()</code>.
+- <strong>WAITING</strong>: chờ vô thời hạn — <code>Object.wait()</code>, <code>Thread.join()</code>, <code>LockSupport.park()</code> (nền của <code>ReentrantLock</code>, <code>BlockingQueue</code>...).
+- <strong>TIMED_WAITING</strong>: chờ có timeout — <code>Thread.sleep()</code>, <code>wait(timeout)</code>, <code>join(timeout)</code>, <code>LockSupport.parkNanos()</code>.
 - <strong>TERMINATED</strong>: run() hoàn thành hoặc ném exception.
 - Dùng <code>jstack &lt;pid&gt;</code> hoặc thread dump để kiểm tra trạng thái thread đang chạy.
 
@@ -23,6 +23,7 @@ Một Java thread chuyển qua các trạng thái NEW → RUNNABLE → BLOCKED/W
 ```java
 import java.util.concurrent.*;
 import java.util.concurrent.locks.*;
+import java.lang.management.*;
 
 // ---- Observing all 6 thread states in Order processing context ----
 public class ThreadLifecycleDemo {
@@ -90,17 +91,19 @@ public class ThreadLifecycleDemo {
 }
 
 // ---- Production: monitor thread states via JMX ----
-public static void printThreadStats() {
-    ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-    System.out.printf("Threads — total: %d  peak: %d  daemon: %d%n",
-        bean.getThreadCount(), bean.getPeakThreadCount(), bean.getDaemonThreadCount());
+class ThreadStats {
+    public static void printThreadStats() {
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        System.out.printf("Threads — total: %d  peak: %d  daemon: %d%n",
+            bean.getThreadCount(), bean.getPeakThreadCount(), bean.getDaemonThreadCount());
 
-    // Find blocked/waiting threads (potential deadlock or starvation)
-    for (ThreadInfo info : bean.getThreadInfo(bean.getAllThreadIds())) {
-        if (info.getThreadState() == Thread.State.BLOCKED ||
-            info.getThreadState() == Thread.State.WAITING) {
-            System.out.printf("  [%s] %s → waiting on: %s%n",
-                info.getThreadState(), info.getThreadName(), info.getLockName());
+        // Find blocked/waiting threads (potential deadlock or starvation)
+        for (ThreadInfo info : bean.getThreadInfo(bean.getAllThreadIds())) {
+            if (info.getThreadState() == Thread.State.BLOCKED ||
+                info.getThreadState() == Thread.State.WAITING) {
+                System.out.printf("  [%s] %s → waiting on: %s%n",
+                    info.getThreadState(), info.getThreadName(), info.getLockName());
+            }
         }
     }
 }
@@ -108,14 +111,14 @@ public static void printThreadStats() {
 
 ## Ứng Dụng Thực Tế
 
-Trong thread dump, thread BLOCKED chỉ ra lock contention. Thread WAITING chỉ ra deadlock tiềm năng. Dùng Prometheus + micrometer để theo dõi số thread đang hoạt động và độ sâu queue của executor trong production.
+Trong thread dump, nhiều thread BLOCKED trên cùng một monitor là dấu hiệu lock contention; deadlock giữa các khối <code>synchronized</code> cũng hiện dưới dạng BLOCKED (jstack in "Found one Java-level deadlock"). WAITING thường là bình thường — thread của pool đang rảnh chờ task. Thread đang chờ I/O mạng vẫn hiện RUNNABLE, nên "nhiều thread RUNNABLE" chưa chắc là đang tốn CPU. Dùng Prometheus + micrometer để theo dõi số thread đang hoạt động và độ sâu queue của executor trong production.
 
 ## Câu Hỏi Phỏng Vấn
 
 <details>
 <summary><strong>BLOCKED và WAITING khác nhau thế nào trong thread dump?</strong></summary>
 
-**A:** BLOCKED: thread đang chờ acquire Java monitor lock (synchronized block/method) đang bị thread khác giữ. Thoát BLOCKED ngay khi lock được release — không cần notify. WAITING: thread đã acquire lock, tự nguyện release và chờ notification qua `Object.wait()`, `LockSupport.park()`, hoặc `Thread.join()`. Thoát WAITING chỉ khi có `notify()`/`notifyAll()`/`unpark()`. Nhiều thread BLOCKED → lock contention (bottleneck). Nhiều thread WAITING → thường là normal (thread pool idle, async processing).
+**A:** BLOCKED: thread đang chờ acquire Java monitor lock (synchronized block/method) đang bị thread khác giữ. Thoát BLOCKED khi giành được lock — không cần notify. WAITING: thread gọi `Object.wait()` (đã nhả monitor), `Thread.join()` hoặc `LockSupport.park()` không timeout và chờ thread khác làm một việc cụ thể: `notify()`/`notifyAll()`, thread được join kết thúc, `unpark()`. Thread đánh thức từ `wait()` phải lấy lại monitor nên đi qua BLOCKED trước khi chạy tiếp. Nhiều thread BLOCKED → lock contention (bottleneck). Nhiều thread WAITING → thường là normal (thread pool idle, async processing).
 
 </details>
 
@@ -142,7 +145,8 @@ stateDiagram-v2
     RUNNABLE     --> BLOCKED   : waiting for monitor lock\n(synchronized block)
     BLOCKED      --> RUNNABLE  : lock acquired
     RUNNABLE     --> WAITING   : wait() / join() / park()
-    WAITING      --> RUNNABLE  : notify() / unpark() / join done
+    WAITING      --> BLOCKED   : notify() / notifyAll()\n(cần lấy lại monitor)
+    WAITING      --> RUNNABLE  : unpark() / join done
     RUNNABLE     --> TIMED_WAITING : sleep(ms) / wait(ms)
     TIMED_WAITING --> RUNNABLE : timeout elapsed
     RUNNABLE     --> TERMINATED : run() returns / exception

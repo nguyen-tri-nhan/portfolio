@@ -1,7 +1,7 @@
 ---
 key: "Spring AOP"
 title: "Spring AOP"
-crumb: "3. Spring Ecosystem"
+crumb: "7. Spring Ecosystem"
 ---
 
 Spring AOP cho phép cross-cutting concern (logging, transaction, security) được áp dụng khai báo qua aspect chặn method call trên Spring bean.

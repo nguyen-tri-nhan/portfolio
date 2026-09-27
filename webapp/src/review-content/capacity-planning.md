@@ -1,7 +1,7 @@
 ---
 key: "Capacity Planning"
 title: "Capacity Planning — QPS / TPS"
-crumb: "7. System Design › High Concurrency"
+crumb: "13. System Design › High Concurrency"
 ---
 
 Capacity planning dùng Little's Law và back-of-envelope estimation để xác định nhu cầu thread pool, DB connection và infrastructure trước khi load test xác nhận con số.

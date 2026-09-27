@@ -1,7 +1,7 @@
 ---
 key: "CAS (Compare-And-Swap)"
 title: "Compare-And-Swap (CAS)"
-crumb: "2. Concurrency › Atomic Classes"
+crumb: "6. Concurrency › Atomic Classes"
 ---
 
 CAS là lệnh atomic cấp CPU cập nhật vị trí bộ nhớ chỉ khi giá trị hiện tại của nó khớp giá trị expected, cho phép các thuật toán lock-free.
@@ -96,7 +96,7 @@ public class OrderStateManager {
 
 ## Ứng Dụng Thực Tế
 
-CAS là nền tảng của ConcurrentHashMap, CopyOnWriteArrayList và hầu hết cấu trúc dữ liệu non-blocking. Hiểu nó giúp giải thích tại sao chúng là "lock-free" (không phải "wait-free") và dự đoán hành vi khi contention cao.
+CAS là nền tảng của các class <code>java.util.concurrent.atomic</code>, <code>ConcurrentLinkedQueue</code> và một phần của <code>ConcurrentHashMap</code> (chèn vào bucket rỗng bằng CAS; bucket đã có node thì dùng <code>synchronized</code> trên node đầu). Không phải collection concurrent nào cũng dựa trên CAS: <code>CopyOnWriteArrayList</code> thực hiện ghi bên trong <code>synchronized (lock)</code> rồi thay mảng mới (xem source <code>CopyOnWriteArrayList.java</code> trong JDK). Hiểu nó giúp giải thích tại sao chúng là "lock-free" (không phải "wait-free") và dự đoán hành vi khi contention cao.
 
 ## Câu Hỏi Phỏng Vấn
 
@@ -110,7 +110,7 @@ CAS là nền tảng của ConcurrentHashMap, CopyOnWriteArrayList và hầu h�
 <details>
 <summary><strong>Khi nào CAS tốt hơn synchronized?</strong></summary>
 
-**A:** CAS tốt hơn khi: (1) Contention thấp — CAS spin loop nhanh, không cần OS context switch. (2) Operation ngắn — read-modify-write đơn giản như increment counter. Synchronized tốt hơn khi: (1) Contention cao — nhiều thread tranh chấp, CAS spin loop lãng phí CPU. (2) Critical section dài — spin lâu kém hơn OS sleep+wake. `AtomicInteger`, `AtomicReference` dùng CAS internaly. Biased locking trong JVM cũng tối ưu synchronized cho no-contention case.
+**A:** CAS tốt hơn khi: (1) Contention thấp — CAS spin loop nhanh, không cần OS context switch. (2) Operation ngắn — read-modify-write đơn giản như increment counter. Synchronized tốt hơn khi: (1) Contention cao — nhiều thread tranh chấp, CAS spin loop lãng phí CPU. (2) Critical section dài — spin lâu kém hơn OS sleep+wake. `AtomicInteger`, `AtomicReference` dùng CAS internaly. Khi không tranh chấp, <code>synchronized</code> hiện đại cũng chỉ tốn khoảng một CAS (lightweight locking); biased locking — tối ưu cũ cho trường hợp này — đã bị tắt từ JDK 15 (JEP 374).
 
 </details>
 

@@ -1,7 +1,7 @@
 ---
 key: "TestContainers"
 title: "TestContainers"
-crumb: "9. Testing › Integration Test"
+crumb: "14. Testing › Integration Test"
 ---
 
 TestContainers khởi động real Docker container (Postgres, Redis, Kafka) trong khi chạy JUnit test, cung cấp môi trường giống production mà không có H2 compatibility issue.

@@ -1,7 +1,7 @@
 ---
 key: react-suspense
 title: Suspense & Error Boundary
-crumb: 15. ReactJS > Patterns & Performance
+crumb: 5. ReactJS > Patterns & Performance
 ---
 
 `Suspense` cho phép component "đợi" khi chưa sẵn sàng (lazy loading, data fetching) và hiển thị fallback trong thời gian đó; `ErrorBoundary` bắt lỗi render để tránh crash toàn bộ ứng dụng.

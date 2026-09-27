@@ -1,7 +1,7 @@
 ---
 key: "Service Deployment"
 title: "Deploy Service & systemd"
-crumb: "11. Linux & Deployment"
+crumb: "16. Linux & Deployment"
 ---
 
 systemd là service manager tiêu chuẩn trên Linux hiện đại. Dùng systemd service unit cho ứng dụng Java: tự động restart khi fail, start khi boot, quản lý log qua journald, và điều khiển lifecycle gọn gàng.
@@ -23,14 +23,18 @@ systemd là service manager tiêu chuẩn trên Linux hiện đại. Dùng syste
 # /etc/systemd/system/myapp.service
 [Unit]
 Description=My Spring Boot Application
+# After= chỉ sắp thứ tự khởi động; Wants= mới kéo mysql lên cùng (DB chạy cùng máy).
+# Lưu ý: unit file chỉ chấp nhận comment trên dòng riêng, không đặt # sau giá trị.
 After=network.target mysql.service
+Wants=mysql.service
 
 [Service]
 User=appuser
 Group=appgroup
 WorkingDirectory=/opt/myapp
 ExecStart=/usr/bin/java   -Xms1g -Xmx1g   -XX:+UseG1GC   -XX:+HeapDumpOnOutOfMemoryError   -XX:HeapDumpPath=/var/log/myapp   -XX:+ExitOnOutOfMemoryError   -Dspring.profiles.active=prod   -jar /opt/myapp/app.jar
-SuccessExitStatus=143         # Spring Boot thoát 143 khi SIGTERM (graceful shutdown)
+# Spring Boot thoát 143 khi SIGTERM (graceful shutdown)
+SuccessExitStatus=143
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal
@@ -63,7 +67,7 @@ ssh appuser@server 'sudo journalctl -u myapp -f -n 50'
 
 ## Ứng Dụng Thực Tế
 
-Luôn dùng systemd thay vì raw <code>nohup</code>: systemd tự restart khi fail, quản lý log qua journald (có rotation), start lại khi reboot. Đặt <code>SuccessExitStatus=143</code> — không có nó, systemd coi graceful shutdown của Spring Boot là crash và cố restart không cần thiết. Dùng <code>After=mysql.service</code> để đảm bảo DB khởi động xong trước khi app start.
+Luôn dùng systemd thay vì raw <code>nohup</code>: systemd tự restart khi fail, quản lý log qua journald (có rotation), start lại khi reboot. Đặt <code>SuccessExitStatus=143</code> — không có nó, systemd coi graceful shutdown của Spring Boot là crash và cố restart không cần thiết. <code>After=mysql.service</code> chỉ là ràng buộc <em>thứ tự</em>: nếu cả hai cùng được start thì app start sau khi systemd coi mysql.service đã khởi động xong (lệnh start đã chạy và báo kết quả) — không có nghĩa DB đã sẵn sàng nhận kết nối, và không tự kéo mysql lên (man systemd.unit: độc lập với <code>Requires=</code>/<code>Wants=</code>). App vẫn phải tự retry kết nối DB lúc khởi động.
 
 ## Câu Hỏi Phỏng Vấn
 

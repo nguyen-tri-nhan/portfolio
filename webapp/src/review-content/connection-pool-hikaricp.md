@@ -1,7 +1,7 @@
 ---
 key: "Connection Pool (HikariCP)"
 title: "Connection Pool — HikariCP"
-crumb: "4. Database › MySQL Deep Dive"
+crumb: "10. Database › MySQL Deep Dive"
 ---
 
 HikariCP là JDBC connection pool mặc định của Spring Boot. Duy trì pool các kết nối DB sẵn sàng dùng, loại bỏ overhead tạo kết nối mỗi request. Sizing đúng là yếu tố quan trọng cho service throughput cao.

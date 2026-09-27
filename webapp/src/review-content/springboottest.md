@@ -1,7 +1,7 @@
 ---
 key: "@SpringBootTest"
 title: "@SpringBootTest"
-crumb: "9. Testing › Integration Test"
+crumb: "14. Testing › Integration Test"
 ---
 
 @SpringBootTest load full application context, cho phép end-to-end integration test với real wiring, trong khi @DynamicPropertySource và @MockBean cho phép override có kiểm soát.

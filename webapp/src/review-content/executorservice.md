@@ -1,7 +1,7 @@
 ---
 key: "ExecutorService"
 title: "ExecutorService"
-crumb: "2. Concurrency › Thread Pool"
+crumb: "6. Concurrency › Thread Pool"
 ---
 
 <code>ExecutorService</code> là API cấp cao để submit task vào thread pool, trả về đối tượng <code>Future</code> để lấy kết quả và hủy.
@@ -10,8 +10,8 @@ crumb: "2. Concurrency › Thread Pool"
 
 - <code>submit(Callable)</code>: trả về <code>Future&lt;T&gt;</code>. <code>submit(Runnable)</code>: trả về <code>Future&lt;?&gt;</code>.
 - <code>invokeAll(tasks)</code>: submit tất cả, chờ tất cả. <code>invokeAny(tasks)</code>: trả về cái thành công đầu tiên.
-- <code>shutdown()</code>: ngừng nhận task mới, chờ in-flight. <code>shutdownNow()</code>: gửi interrupt.
-- Luôn shutdown trong <code>finally</code> hoặc đăng ký shutdown hook.
+- <code>shutdown()</code>: ngừng nhận task mới, các task đã submit vẫn chạy hết. <code>shutdownNow()</code>: Javadoc chỉ hứa "best-effort" — thường gửi interrupt, task không phản hồi interrupt có thể không bao giờ dừng.
+- Luôn shutdown trong <code>finally</code> hoặc đăng ký shutdown hook. Từ Java 19, <code>ExecutorService</code> có <code>close()</code> (AutoCloseable): shutdown rồi chờ mọi task xong — dùng được với try-with-resources.
 - <code>Future.get()</code> block; <code>get(timeout, unit)</code> block với timeout; <code>cancel(true)</code> interrupt.
 
 ## Ví Dụ Code
@@ -103,7 +103,7 @@ Trong Spring app hiện đại, ưu tiên <code>CompletableFuture</code> thay v�
 <details>
 <summary><strong>Sự khác biệt giữa execute() và submit() trong ExecutorService là gì?</strong></summary>
 
-**A:** **`execute(Runnable)`**: không trả về gì, exception trong task bị silent (logged bởi thread's uncaught exception handler). **`submit(Callable/Runnable)`**: trả về `Future` — có thể `get()` kết quả, `cancel()`, track completion. Exception trong task được wrap và re-thrown khi gọi `future.get()` dưới dạng `ExecutionException`. Prefer `submit()` trong production để handle exception và có thể timeout với `get(timeout, unit)`.
+**A:** **`execute(Runnable)`**: không trả về gì, exception trong task bị silent (logged bởi thread's uncaught exception handler). **`submit(Callable/Runnable)`**: trả về `Future` — có thể `get()` kết quả, `cancel()`, track completion. Exception trong task được wrap và re-thrown khi gọi `future.get()` dưới dạng `ExecutionException`. Cẩn thận: với `submit()`, exception bị `FutureTask` giữ lại (Javadoc `ThreadPoolExecutor.afterExecute`) — nếu không ai gọi `get()` thì lỗi biến mất hoàn toàn, không có log. Vì vậy: dùng `submit()` khi thực sự đọc kết quả qua `get(timeout, unit)`; task fire-and-forget thì dùng `execute()` hoặc tự try/catch + log bên trong task.
 
 </details>
 

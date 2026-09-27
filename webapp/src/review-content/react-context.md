@@ -1,7 +1,7 @@
 ---
 key: react-context
 title: React Context API
-crumb: 15. ReactJS > State Management
+crumb: 5. ReactJS > State Management
 ---
 
 React Context giải quyết prop drilling bằng cách tạo "đường ống" truyền data qua component tree — nhưng mọi consumer re-render khi context value thay đổi, nên cần tách context hoặc kết hợp với memo khi performance là vấn đề.

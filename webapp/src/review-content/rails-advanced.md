@@ -1,7 +1,7 @@
 ---
 key: rails-advanced
 title: "Rails Advanced — Concerns, Service Objects & Patterns"
-crumb: "21. Ruby > Rails Nâng Cao"
+crumb: "22. Ruby > Rails Nâng Cao"
 ---
 
 Rails nâng cao: tổ chức code vượt qua MVC cơ bản. Concern = module extraction, Service Object = business logic tách khỏi model, Query Object = complex query tách khỏi scope, Form Object = validation cho non-model form. Các pattern này giải quyết "Fat Model, Fat Controller" — vấn đề phổ biến khi Rails app grow.

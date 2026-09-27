@@ -1,7 +1,7 @@
 ---
 key: csharp-vs-java
 title: "C# vs Java — Syntax & Concept Mapping"
-crumb: "16. .NET > C# Cơ Bản"
+crumb: "21. .NET > C# Cơ Bản"
 ---
 
 C# và Java sinh ra cùng thời kỳ và chia sẻ nhiều concept nền tảng — OOP, GC, JIT, generics. Java dev có thể adopt C# trong vài tuần vì mental model gần như giống nhau, chỉ khác syntax và một số tính năng C# có mà Java không có.

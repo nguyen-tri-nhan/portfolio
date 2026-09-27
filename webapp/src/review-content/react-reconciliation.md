@@ -1,7 +1,7 @@
 ---
 key: react-reconciliation
 title: Reconciliation & React Fiber
-crumb: 15. ReactJS > React Internals
+crumb: 5. ReactJS > React Internals
 ---
 
 React Fiber (React 16+) là kiến trúc reconciliation mới cho phép chia nhỏ rendering thành các unit of work có thể interrupt — nền tảng cho Concurrent Mode và các features như Suspense, Transition.

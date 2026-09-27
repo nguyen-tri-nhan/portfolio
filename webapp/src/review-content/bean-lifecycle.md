@@ -1,7 +1,7 @@
 ---
 key: "Bean Lifecycle"
 title: "Vòng Đời Bean"
-crumb: "3. Spring Ecosystem › Spring Core"
+crumb: "7. Spring Ecosystem › Spring Core"
 ---
 
 Spring bean trải qua: khởi tạo → dependency injection → initialization callback → sẵn sàng → destruction callback, với nhiều điểm hook cho logic tùy chỉnh.

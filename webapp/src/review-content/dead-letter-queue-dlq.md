@@ -1,7 +1,7 @@
 ---
 key: "Dead Letter Queue (DLQ)"
 title: "Dead Letter Queue (DLQ)"
-crumb: "6. Messaging › Common Concepts"
+crumb: "12. Messaging › Common Concepts"
 ---
 
 DLQ bắt message không thể xử lý thành công (lỗi lặp lại, TTL hết hạn, bị reject), cho phép kiểm tra, debug và replay mà không mất dữ liệu.

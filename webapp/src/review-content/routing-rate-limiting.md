@@ -1,7 +1,7 @@
 ---
 key: "Routing & Rate Limiting"
 title: "Routing & Rate Limiting"
-crumb: "5. Microservices › API Gateway"
+crumb: "11. Microservices › API Gateway"
 ---
 
 Routing hướng request đến backend service đúng; rate limiting bảo vệ service khỏi quá tải bằng cách giới hạn tần suất request mỗi client hoặc toàn cầu.

@@ -1,7 +1,7 @@
 ---
 key: "Ordering Guarantees"
 title: "Đảm Bảo Thứ Tự Kafka"
-crumb: "6. Messaging › Kafka"
+crumb: "12. Messaging › Kafka"
 ---
 
 Kafka đảm bảo thứ tự message chỉ trong một partition — đạt total order cần dùng single partition, trong khi partial order (mỗi entity) dùng keyed partitioning.

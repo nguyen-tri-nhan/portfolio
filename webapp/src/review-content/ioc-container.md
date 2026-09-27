@@ -1,7 +1,7 @@
 ---
 key: "IoC Container"
 title: "IoC Container"
-crumb: "3. Spring Ecosystem › Spring Core"
+crumb: "7. Spring Ecosystem › Spring Core"
 ---
 
 IoC container đọc configuration metadata, khởi tạo bean, wiring dependency và quản lý vòng đời — tách rời việc tạo object khỏi business logic.

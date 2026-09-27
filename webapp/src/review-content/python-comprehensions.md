@@ -1,7 +1,7 @@
 ---
 key: python-comprehensions
 title: Python Comprehensions & Generator Expressions
-crumb: 14. Python > Python Cơ Bản
+crumb: 4. Python > Python Cơ Bản
 ---
 
 Comprehension là cú pháp ngắn gọn để tạo list/dict/set từ iterable — thay thế vòng lặp for truyền thống bằng một biểu thức duy nhất, dễ đọc và thường nhanh hơn.

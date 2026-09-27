@@ -1,7 +1,7 @@
 ---
 key: "Blue-Green & Canary Deploy"
 title: "Blue-Green & Canary Deployment"
-crumb: "8. Cloud & DevOps › CI/CD"
+crumb: "15. Cloud & DevOps › CI/CD"
 ---
 
 Blue-Green chạy hai môi trường giống nhau và chuyển traffic ngay lập tức; Canary dần dần chuyển tỷ lệ phần trăm traffic sang phiên bản mới — cả hai cho zero-downtime deployment với rollback dễ dàng.
@@ -11,7 +11,7 @@ Blue-Green chạy hai môi trường giống nhau và chuyển traffic ngay lậ
 - <strong>Blue-Green</strong>: hai môi trường (blue=live, green=mới). Sau khi test, chuyển LB sang green. Instant rollback: chuyển lại blue. Cần 2× tài nguyên.
 - <strong>Canary</strong>: route X% traffic sang phiên bản mới. Tăng tỷ lệ khi độ tin tưởng tăng. Rollback bằng cách route 0% sang canary. Hiệu quả tài nguyên.
 - Canary vs feature flag: canary là infrastructure-level (tất cả user trong tỷ lệ đó). Feature flag là code-level (user cụ thể).
-- Kubernetes: Argo Rollouts hoặc Flux Flagger cho automated canary với metrics-based promotion.
+- Kubernetes: Argo Rollouts hoặc Flux Flagger cho automated canary với metrics-based promotion. Argo Rollouts cũng có sẵn strategy <code>blueGreen</code> (<code>activeService</code>, <code>previewService</code>, <code>autoPromotionEnabled</code>) — không cần tự patch selector của Service như ví dụ thủ công bên dưới.
 
 ## Ví Dụ Code
 
@@ -46,14 +46,18 @@ spec:
   replicas: 10
   selector: { matchLabels: { app: order-service } }
   template:
+    metadata:
+      labels: { app: order-service }    # bắt buộc khớp selector — thiếu thì Rollout không hợp lệ
     spec:
       containers:
         - name: app
           image: registry/order-service:v2.0   # new version
   strategy:
     canary:
-      canaryService: order-service-canary   # 10% traffic
-      stableService: order-service-stable   # 90% traffic
+      canaryService: order-service-canary
+      stableService: order-service-stable
+      # Không cấu hình trafficRouting (Istio/NGINX/ALB...) thì setWeight được xấp xỉ
+      # bằng tỉ lệ số replica canary/stable — 10 replica → 10% ≈ 1 pod canary.
       steps:
         - setWeight: 10
         - pause: { duration: 5m }           # observe metrics

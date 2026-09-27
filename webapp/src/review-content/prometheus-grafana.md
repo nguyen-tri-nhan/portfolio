@@ -1,7 +1,7 @@
 ---
 key: "Prometheus & Grafana"
 title: "Prometheus & Grafana"
-crumb: "8. Cloud & DevOps › Monitoring"
+crumb: "15. Cloud & DevOps › Monitoring"
 ---
 
 Prometheus scrape metric từ service theo pull model, lưu trong time-series DB và đánh giá alert rule; Grafana visualize metric trong dashboard.

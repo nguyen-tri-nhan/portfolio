@@ -1,7 +1,7 @@
 ---
 key: "NoSQL"
 title: "Cơ Sở Dữ Liệu NoSQL"
-crumb: "4. Database"
+crumb: "10. Database"
 ---
 
 DB NoSQL đánh đổi relational consistency/SQL để lấy schema linh hoạt, horizontal scalability và data model chuyên biệt (document, key-value, wide-column, graph).

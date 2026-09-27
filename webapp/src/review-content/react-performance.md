@@ -1,7 +1,7 @@
 ---
 key: react-performance
 title: React Performance Optimization
-crumb: 15. ReactJS > Patterns & Performance
+crumb: 5. ReactJS > Patterns & Performance
 ---
 
 Tối ưu React performance dựa trên đo lường — dùng Profiler để tìm bottleneck thật sự, sau đó áp dụng đúng kỹ thuật: code splitting cho initial load, virtualization cho list lớn, memoization có chọn lọc.

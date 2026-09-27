@@ -1,7 +1,7 @@
 ---
 key: "Synchronization"
 title: "Đồng Bộ Hóa (Synchronization)"
-crumb: "2. Concurrency"
+crumb: "6. Concurrency"
 ---
 
 Synchronization đảm bảo chỉ một thread tại một thời điểm thực thi critical section, sử dụng monitor (intrinsic lock) qua từ khóa <code>synchronized</code> hoặc đối tượng <code>Lock</code> tường minh.

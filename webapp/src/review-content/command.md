@@ -1,7 +1,7 @@
 ---
 key: "Command"
 title: "Command Pattern"
-crumb: "10. Design Patterns › Behavioral"
+crumb: "9. Design Patterns › Behavioral"
 ---
 
 Command encapsulate request như object với method execute() — cho phép parameterization, queuing, logging và undo/redo của operation.

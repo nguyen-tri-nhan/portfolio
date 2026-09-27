@@ -1,7 +1,7 @@
 ---
 key: "Template Method"
 title: "Template Method Pattern"
-crumb: "10. Design Patterns › Behavioral"
+crumb: "9. Design Patterns › Behavioral"
 ---
 
 Template Method định nghĩa skeleton thuật toán trong base class như final method, để subclass quyết định step biến đổi — giữ cấu trúc cố định trong khi thay đổi hành vi cụ thể.

@@ -1,7 +1,7 @@
 ---
 key: "Redis"
 title: "Redis"
-crumb: "4. Database › NoSQL"
+crumb: "10. Database › NoSQL"
 ---
 
 Redis là in-memory data structure store dùng cho caching, session, pub/sub messaging, rate limiting và distributed lock — với latency dưới mili-giây.

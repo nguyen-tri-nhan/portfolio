@@ -1,7 +1,7 @@
 ---
 key: kotlin-flow
 title: "Kotlin Flow — Reactive Streams với Coroutines"
-crumb: "13. Kotlin > Coroutines"
+crumb: "3. Kotlin > Coroutines"
 ---
 
 Flow là cold async stream trong Kotlin — phát nhiều giá trị theo thời gian, tích hợp tự nhiên với coroutines và thay thế RxJava trong nhiều use case.

@@ -1,7 +1,7 @@
 ---
 key: ruby-basics
 title: "Ruby — Syntax & Core Concepts"
-crumb: "21. Ruby > Ruby Cơ Bản"
+crumb: "22. Ruby > Ruby Cơ Bản"
 ---
 
 Ruby là dynamic, interpreted language với triết lý "developer happiness" — mọi thứ đều là object, syntax đọc gần tiếng Anh, và ngôn ngữ có nhiều cách làm cùng một việc (TIMTOWTDI). Java dev sẽ thấy Ruby ít ceremony hơn rất nhiều — không cần khai báo type, không cần getter/setter, không cần `public static void main`.

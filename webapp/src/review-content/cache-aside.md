@@ -1,7 +1,7 @@
 ---
 key: "Cache-Aside"
 title: "Cache-Aside Pattern"
-crumb: "7. System Design › Caching"
+crumb: "13. System Design › Caching"
 ---
 
 Cache-Aside (Lazy Loading) là caching pattern phổ biến nhất — ứng dụng kiểm tra cache trước, fallback về DB khi miss, sau đó populate cache cho request tương lai.

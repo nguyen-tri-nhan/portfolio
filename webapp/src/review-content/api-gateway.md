@@ -1,7 +1,7 @@
 ---
 key: "API Gateway"
 title: "API Gateway"
-crumb: "5. Microservices"
+crumb: "11. Microservices"
 ---
 
 API Gateway là điểm vào duy nhất cho tất cả client request, xử lý routing, auth, rate limiting, SSL termination và request transformation trước khi chuyển tiếp đến backend service.

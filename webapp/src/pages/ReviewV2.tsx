@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import ReviewSidebar from '../components/review/ReviewSidebar'
 import ReviewDetail from '../components/review/ReviewDetail'
+import RoadmapView from '../components/review/RoadmapView'
+import { ROADMAP_KEY } from '../review-content/roadmap'
 
 export default function ReviewV2() {
-  const [selectedFile, setSelectedFile] = useState('')
-  const [selectedName, setSelectedName] = useState('')
+  const [selectedFile, setSelectedFile] = useState(ROADMAP_KEY)
+  const [selectedName, setSelectedName] = useState('Lộ trình Backend')
   const [search, setSearch] = useState('')
 
   const handleSelect = (file: string, name: string) => {
@@ -12,8 +14,10 @@ export default function ReviewV2() {
     setSelectedName(name)
   }
 
+  const showingRoadmap = selectedFile === ROADMAP_KEY
+
   return (
-    <div className="flex h-screen pt-16 bg-slate-950 text-slate-100 overflow-hidden review-v2">
+    <div className="relative z-10 flex h-screen pt-16 bg-slate-950 text-slate-100 overflow-hidden review-v2">
       {/* Left sidebar */}
       <ReviewSidebar
         selected={selectedFile}
@@ -27,9 +31,16 @@ export default function ReviewV2() {
         {/* Top bar */}
         <header className="shrink-0 h-10 flex items-center justify-between px-6
                            border-b border-slate-700/60 bg-slate-900/80 backdrop-blur-sm">
-          <span className="text-xs text-slate-500 font-mono">
-            {selectedFile ? `review-content/${selectedFile}.md` : 'Bản Đồ Kiến Thức Java'}
-          </span>
+          {showingRoadmap ? (
+            <span className="text-xs text-slate-500 font-mono">roadmap</span>
+          ) : (
+            <button
+              onClick={() => handleSelect(ROADMAP_KEY, 'Lộ trình Backend')}
+              className="text-xs text-slate-500 hover:text-slate-300 font-mono transition-colors"
+            >
+              ← roadmap · review-content/{selectedFile}.md
+            </button>
+          )}
           <a
             href="/review"
             className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
@@ -39,7 +50,11 @@ export default function ReviewV2() {
         </header>
 
         {/* Content */}
-        <ReviewDetail file={selectedFile} name={selectedName} />
+        {showingRoadmap ? (
+          <RoadmapView onSelect={handleSelect} />
+        ) : (
+          <ReviewDetail file={selectedFile} name={selectedName} />
+        )}
       </main>
     </div>
   )

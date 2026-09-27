@@ -1,7 +1,7 @@
 ---
 key: "Structural"
 title: "Structural Patterns"
-crumb: "10. Design Patterns"
+crumb: "9. Design Patterns"
 ---
 
 Structural pattern kết hợp object thành cấu trúc lớn hơn — Adapter (chuyển đổi interface), Decorator (thêm hành vi), Facade (đơn giản hóa), Proxy (kiểm soát truy cập).

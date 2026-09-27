@@ -1,7 +1,7 @@
 ---
 key: react-usememo-usecallback
 title: useMemo & useCallback
-crumb: 15. ReactJS > React Hooks
+crumb: 5. ReactJS > React Hooks
 ---
 
 `useMemo` lưu kết quả của phép tính tốn kém; `useCallback` lưu reference của function — cả hai chỉ nên dùng khi đã đo được bottleneck, không nên dùng mặc định vì bản thân chúng cũng có overhead.

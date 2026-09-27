@@ -1,7 +1,7 @@
 ---
 key: ef-core
 title: "Entity Framework Core — ORM"
-crumb: "16. .NET > Entity Framework Core"
+crumb: "21. .NET > Entity Framework Core"
 ---
 
 Entity Framework Core là ORM chính thức của .NET — tương đương Hibernate/JPA trong Java. Code-first approach phổ biến hơn database-first: define C# class → EF Core tạo migration → apply lên DB. Java dev sẽ thấy nhiều concept quen: entity mapping, lazy loading, transaction, N+1 problem.

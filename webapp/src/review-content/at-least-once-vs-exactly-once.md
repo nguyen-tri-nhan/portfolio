@@ -1,7 +1,7 @@
 ---
 key: "At-Least-Once vs Exactly-Once"
 title: "At-Least-Once vs Exactly-Once"
-crumb: "6. Messaging › Common Concepts"
+crumb: "12. Messaging › Common Concepts"
 ---
 
 Delivery semantic xác định bao nhiêu lần message có thể được giao — at-most-once (có thể mất), at-least-once (có thể trùng), exactly-once (không cái nào) — mỗi loại có trade-off khác nhau.

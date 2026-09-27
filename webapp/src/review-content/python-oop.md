@@ -1,7 +1,7 @@
 ---
 key: python-oop
 title: Python OOP — Classes, Dunder Methods & Dataclasses
-crumb: 14. Python > Python Cơ Bản
+crumb: 4. Python > Python Cơ Bản
 ---
 
 Python OOP dùng `class`, `self`, và dunder methods để định nghĩa hành vi — hỗ trợ multiple inheritance với MRO (C3 linearization), property descriptor, và dataclasses để giảm boilerplate.

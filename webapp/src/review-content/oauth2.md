@@ -1,7 +1,7 @@
 ---
 key: "OAuth2"
 title: "OAuth2"
-crumb: "3. Spring Ecosystem › Spring Security"
+crumb: "7. Spring Ecosystem › Spring Security"
 ---
 
 OAuth2 là framework ủy quyền cho phép app bên thứ ba truy cập tài nguyên user mà không chia sẻ credential, sử dụng access token được cấp bởi Authorization Server.

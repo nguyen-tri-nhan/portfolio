@@ -1,7 +1,7 @@
 ---
 key: "Deadlock"
 title: "Deadlock"
-crumb: "2. Concurrency"
+crumb: "6. Concurrency"
 ---
 
 Deadlock xảy ra khi hai hoặc nhiều thread mỗi cái giữ tài nguyên mà cái kia cần và không ai có thể tiến triển — yêu cầu đồng thời cả bốn điều kiện Coffman.

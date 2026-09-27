@@ -1,7 +1,7 @@
 ---
 key: "Behavioral"
 title: "Behavioral Patterns"
-crumb: "10. Design Patterns"
+crumb: "9. Design Patterns"
 ---
 
 Behavioral pattern định nghĩa giao tiếp và phân phối trách nhiệm giữa object — Strategy, Observer, Template Method, Command, Chain of Responsibility.

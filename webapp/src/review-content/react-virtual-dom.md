@@ -1,7 +1,7 @@
 ---
 key: react-virtual-dom
 title: Virtual DOM & Concurrent Rendering
-crumb: 15. ReactJS > React Internals
+crumb: 5. ReactJS > React Internals
 ---
 
 Virtual DOM là in-memory representation của UI thật — React diff VDOM cũ và mới rồi chỉ apply thay đổi tối thiểu lên real DOM, giúp tránh layout thrashing và tối ưu performance rendering.

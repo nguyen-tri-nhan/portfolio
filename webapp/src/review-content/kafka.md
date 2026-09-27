@@ -1,7 +1,7 @@
 ---
 key: "Kafka"
 title: "Apache Kafka"
-crumb: "6. Messaging"
+crumb: "12. Messaging"
 ---
 
 Kafka là nền tảng event streaming phân tán cung cấp message delivery throughput cao, fault-tolerant, có thứ tự với durable log storage và consumer group semantics.

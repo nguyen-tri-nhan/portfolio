@@ -1,7 +1,7 @@
 ---
 key: kotlin-object-companion
 title: "Object Declaration & Companion Object"
-crumb: "13. Kotlin > Kotlin Cơ Bản"
+crumb: "3. Kotlin > Kotlin Cơ Bản"
 ---
 
 Kotlin dùng từ khóa `object` cho ba mục đích khác nhau: singleton declaration, anonymous object expression, và companion object thay thế cho `static` members của Java.

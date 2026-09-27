@@ -1,7 +1,7 @@
 ---
 key: "Redis SETNX / Redlock"
 title: "Redis SETNX / Redlock"
-crumb: "7. System Design › Distributed Lock"
+crumb: "13. System Design › Distributed Lock"
 ---
 
 SETNX (SET if Not eXists) là primitive atomic của Redis cho distributed locking đơn giản; Redlock mở rộng nó lên N Redis node độc lập cho fault-tolerant distributed consensus.
@@ -73,14 +73,15 @@ public void processPayment(String orderId, BigDecimal amount) {
 
 // Redlock (multi-node): acquire lock on majority (N/2+1) of N independent Redis nodes
 // Protects against single Redis node failure
-// In practice: use Redisson RLock which implements Redlock correctly
+// In practice: Redisson's RedLock object is DEPRECATED — Redisson recommends RLock
+// (single master) or RFencedLock (returns a fencing token) instead
 // Martin Kleppmann's critique: Redlock unsafe with clock skew / GC pause
 // → for financial ops, add fencing token (monotonically increasing ID) to all writes
 ```
 
 ## Ứng Dụng Thực Tế
 
-Dùng Redisson (<code>RLock</code>) trong production thay vì Lua script thô — nó xử lý TTL renewal (watchdog), release đúng và Redlock ngay trong hộp. Với yêu cầu an toàn cực cao (giao dịch tài chính), thêm fencing token ở phía resource.
+Dùng Redisson (<code>RLock</code>) trong production thay vì Lua script thô — nó xử lý TTL renewal (watchdog), reentrancy và release đúng owner. <code>RLock</code> lock trên một Redis master — <strong>không</strong> phải thuật toán Redlock; object <code>RedLock</code> của Redisson đã deprecated. Với yêu cầu an toàn cực cao (giao dịch tài chính), dùng <code>RFencedLock</code> (<code>lockAndGetToken()</code>) và để resource từ chối write có token cũ hơn token đã thấy.
 
 ## Câu Hỏi Phỏng Vấn
 
@@ -94,7 +95,7 @@ Dùng Redisson (<code>RLock</code>) trong production thay vì Lua script thô �
 <details>
 <summary><strong>Redlock algorithm hoạt động thế nào?</strong></summary>
 
-**A:** Redlock (Redis Distributed Lock) của Antirez — dùng **N independent Redis nodes** (khuyến nghị 5): (1) Client ghi timestamp `T1`. (2) Thử acquire lock trên **tất cả N nodes** tuần tự với timeout nhỏ. (3) Lock acquired nếu ≥ `⌊N/2⌋ + 1` nodes thành công (quorum). (4) Validity time = TTL - (T_now - T1) - clock drift. (5) Nếu không đủ quorum: release lock trên tất cả nodes. Đảm bảo: ngay cả khi minority nodes fail, lock vẫn đúng. Vẫn có tranh cãi (Martin Kleppmann): clock drift và GC pause có thể vi phạm safety. Dùng cho: non-critical distributed coordination.
+**A:** Redlock (Redis Distributed Lock) của Antirez — dùng **N independent Redis nodes** (khuyến nghị 5): (1) Client ghi timestamp `T1`. (2) Thử acquire lock trên **tất cả N nodes** tuần tự với timeout nhỏ. (3) Lock acquired nếu ≥ `⌊N/2⌋ + 1` nodes thành công (quorum). (4) Validity time = TTL - (T_now - T1) - clock drift. (5) Nếu không đủ quorum: release lock trên tất cả nodes. Đảm bảo: ngay cả khi minority nodes fail, lock vẫn đúng. Vẫn có tranh cãi (Martin Kleppmann): clock drift và GC pause có thể vi phạm safety. Redisson cũng đã deprecate implementation `RedLock` của mình vì lý do này. Dùng cho: non-critical distributed coordination; việc cần đúng tuyệt đối thì dùng fencing token.
 
 </details>
 

@@ -1,7 +1,7 @@
 ---
 key: "Caching"
 title: "Caching"
-crumb: "7. System Design"
+crumb: "13. System Design"
 ---
 
 Caching lưu dữ liệu thường xuyên truy cập trong memory nhanh để giảm latency và tải DB, dùng chiến lược như Cache-Aside, Write-Through và eviction policy phù hợp.

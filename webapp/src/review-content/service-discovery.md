@@ -1,7 +1,7 @@
 ---
 key: "Service Discovery"
 title: "Service Discovery"
-crumb: "5. Microservices"
+crumb: "11. Microservices"
 ---
 
 Service discovery cho phép microservice tìm nhau một cách động bằng tên thay vì IP cứng, thiết yếu trong môi trường container nơi instance thường xuyên xuất hiện và biến mất.

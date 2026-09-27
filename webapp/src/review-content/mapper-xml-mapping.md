@@ -1,7 +1,7 @@
 ---
 key: "Mapper & XML Mapping"
 title: "Mapper Interface & XML Mapping"
-crumb: "4. Database › MyBatis"
+crumb: "10. Database › MyBatis"
 ---
 
 MyBatis ánh xạ Java interface method sang SQL qua XML file hoặc annotation inline. XML namespace phải khớp đúng tên đầy đủ của interface; id của statement phải khớp tên method.

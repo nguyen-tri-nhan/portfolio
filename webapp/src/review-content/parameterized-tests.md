@@ -1,7 +1,7 @@
 ---
 key: "Parameterized Tests"
 title: "Parameterized Tests"
-crumb: "9. Testing › Unit Test"
+crumb: "14. Testing › Unit Test"
 ---
 
 Parameterized test chạy cùng logic test với nhiều input, giảm trùng lặp trong khi tăng coverage cho boundary condition và edge case.

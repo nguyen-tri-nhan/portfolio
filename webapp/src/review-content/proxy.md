@@ -1,7 +1,7 @@
 ---
 key: "Proxy"
 title: "Proxy Pattern"
-crumb: "10. Design Patterns › Structural"
+crumb: "9. Design Patterns › Structural"
 ---
 
 Proxy cung cấp surrogate hoặc placeholder cho object khác để kiểm soát truy cập — dùng cho lazy initialization, access control, remote invocation và logging.

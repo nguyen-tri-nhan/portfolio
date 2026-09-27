@@ -1,7 +1,7 @@
 ---
 key: "HPA & Rolling Update"
 title: "HPA & Rolling Update"
-crumb: "8. Cloud & DevOps › Kubernetes"
+crumb: "15. Cloud & DevOps › Kubernetes"
 ---
 
 HPA (Horizontal Pod Autoscaler) tự động scale Deployment replica dựa trên metric; Rolling Update thay thế pod dần dần để đạt zero-downtime deployment.

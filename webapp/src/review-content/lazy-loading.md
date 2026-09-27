@@ -1,7 +1,7 @@
 ---
 key: "Lazy Loading"
 title: "Lazy Loading"
-crumb: "4. Database › JPA / Hibernate"
+crumb: "10. Database › JPA / Hibernate"
 ---
 
 Lazy loading hoãn fetch entity liên kết cho đến khi thực sự được truy cập, giảm overhead query ban đầu nhưng có nguy cơ LazyInitializationException bên ngoài transaction.

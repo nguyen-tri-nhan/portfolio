@@ -1,7 +1,7 @@
 ---
 key: "Eventual Consistency"
 title: "Eventual Consistency"
-crumb: "7. System Design › Consistency Patterns"
+crumb: "13. System Design › Consistency Patterns"
 ---
 
 Eventual consistency đảm bảo tất cả replica sẽ hội tụ về cùng giá trị theo thời gian mà không có write mới — chấp nhận staleness tạm thời để đổi lấy availability và latency thấp hơn.

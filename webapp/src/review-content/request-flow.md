@@ -1,7 +1,7 @@
 ---
 key: "Request Flow"
 title: "Luồng Request Spring MVC"
-crumb: "3. Spring Ecosystem › Spring MVC"
+crumb: "7. Spring Ecosystem › Spring MVC"
 ---
 
 Mỗi HTTP request vào DispatcherServlet, đi qua filter → handler mapping → handler adapter → controller → view resolution, với interceptor bọc handler execution.
@@ -130,7 +130,7 @@ Dùng filter cho cross-cutting concern phải áp dụng bất kể Spring MVC (
 <details>
 <summary><strong>Filter và Interceptor khác nhau thế nào?</strong></summary>
 
-**A:** Filter (javax.servlet): Servlet API, nằm ngoài Spring context, intercept trước khi request đến DispatcherServlet — dùng cho CORS, authentication (Spring Security), compression, request logging. Interceptor (HandlerInterceptor): Spring-aware, chạy trong DispatcherServlet sau HandlerMapping resolve handler, có access đến handler method thông tin. preHandle/postHandle/afterCompletion. Dùng Interceptor cho: authorization check có biết endpoint, audit logging với method info. Dùng Filter cho: low-level concerns (encoding, security headers).
+**A:** Filter (`jakarta.servlet` từ Spring Boot 3; trước đó là `javax.servlet`): Servlet API, nằm ngoài Spring context, intercept trước khi request đến DispatcherServlet — dùng cho CORS, authentication (Spring Security), compression, request logging. Interceptor (HandlerInterceptor): Spring-aware, chạy trong DispatcherServlet sau HandlerMapping resolve handler, có access đến handler method thông tin. preHandle/postHandle/afterCompletion. Dùng Interceptor cho: authorization check có biết endpoint, audit logging với method info. Dùng Filter cho: low-level concerns (encoding, security headers).
 
 </details>
 

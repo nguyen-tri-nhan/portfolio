@@ -1,7 +1,7 @@
 ---
 key: react-usestate-usereducer
 title: useState vs useReducer
-crumb: 15. ReactJS > React Hooks
+crumb: 5. ReactJS > React Hooks
 ---
 
 `useState` phù hợp cho state đơn giản độc lập; `useReducer` phù hợp cho state phức tạp có nhiều sub-value hoặc logic transition rõ ràng — giúp code predictable và dễ test hơn.

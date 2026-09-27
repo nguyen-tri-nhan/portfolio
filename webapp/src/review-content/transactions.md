@@ -1,7 +1,7 @@
 ---
 key: "Transactions"
 title: "Database Transaction"
-crumb: "4. Database"
+crumb: "10. Database"
 ---
 
 Transaction nhóm nhiều thao tác thành đơn vị atomic — tất cả thành công (COMMIT) hoặc tất cả thất bại (ROLLBACK) — đảm bảo thuộc tính ACID cho tính toàn vẹn dữ liệu.

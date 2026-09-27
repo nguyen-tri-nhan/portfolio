@@ -1,7 +1,7 @@
 ---
 key: kotlin-vs-java
 title: "Kotlin vs Java — Những Khác Biệt Chính"
-crumb: "13. Kotlin > Kotlin Cơ Bản"
+crumb: "3. Kotlin > Kotlin Cơ Bản"
 ---
 
 Kotlin được thiết kế để chạy trên JVM và 100% tương thích với Java, nhưng loại bỏ nhiều boilerplate và bổ sung các tính năng hiện đại như null safety, coroutines, và extension functions.

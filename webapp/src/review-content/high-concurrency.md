@@ -1,7 +1,7 @@
 ---
 key: "High Concurrency"
 title: "Pattern High Concurrency trong Java"
-crumb: "7. System Design"
+crumb: "13. System Design"
 ---
 
 Kỹ thuật High Concurrency (HC) đảm bảo ứng dụng Java xử lý hàng nghìn request đồng thời. Đòn bẩy chính: sizing thread pool đúng, tuning connection pool DB, service stateless, cache hot data, và async processing cho công việc không quan trọng.

@@ -1,7 +1,7 @@
 ---
 key: python-metaclass
 title: Python Metaclass, ABC & Protocol
-crumb: 14. Python > Python Internals
+crumb: 4. Python > Python Internals
 ---
 
 Metaclass là "class của class" — kiểm soát cách class được tạo ra, cho phép modify class definition tại định nghĩa time; Abstract Base Class (ABC) và Protocol cung cấp interface contract tương tự Java interface/abstract class.

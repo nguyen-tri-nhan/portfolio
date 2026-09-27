@@ -1,7 +1,7 @@
 ---
 key: "Factory Method"
 title: "Factory Method Pattern"
-crumb: "10. Design Patterns › Creational"
+crumb: "9. Design Patterns › Creational"
 ---
 
 Factory Method định nghĩa interface để tạo object nhưng để subclass quyết định class nào sẽ được khởi tạo — hỗ trợ Open/Closed Principle.

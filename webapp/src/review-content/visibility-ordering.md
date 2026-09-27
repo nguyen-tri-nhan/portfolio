@@ -1,7 +1,7 @@
 ---
 key: "visibility / ordering"
 title: "Visibility & Ordering"
-crumb: "2. Concurrency › Java Memory Model"
+crumb: "6. Concurrency › Java Memory Model"
 ---
 
 Visibility có nghĩa thread thấy giá trị mới nhất của biến chia sẻ; ordering có nghĩa thứ tự thao tác không bị sắp xếp lại bởi compiler/CPU theo cách phá vỡ logic concurrent.
@@ -10,7 +10,8 @@ Visibility có nghĩa thread thấy giá trị mới nhất của biến chia s�
 
 - <strong>Vấn đề visibility</strong>: thread B đọc biến thread A đã ghi, nhưng thấy giá trị cũ từ cache.
 - <strong>Vấn đề ordering</strong>: CPU/compiler sắp xếp lại lệnh để tối ưu; thread khác thấy chúng theo thứ tự sai.
-- <code>volatile</code> sửa visibility (bắt buộc main memory) và ngăn reordering xung quanh nó.
+- <code>volatile</code> sửa visibility và hạn chế reordering xung quanh nó (chi tiết ở câu hỏi cuối bài).
+- Lưu ý: "ghi thì flush ra main memory, đọc thì đọc từ main memory" là mô hình <em>đơn giản hóa</em> (JSR-133 FAQ cũng giải thích theo cách này). Spec (JLS chương 17) định nghĩa bằng happens-before. Trên phần cứng thật, cache CPU vốn được giữ đồng bộ (cache coherence); giá trị cũ thường đến từ JIT giữ biến trong register / đưa lệnh đọc ra ngoài vòng lặp, và từ store buffer + reordering của CPU.
 - <code>synchronized</code> sửa cả hai: lock acquire/release tạo memory fence.
 - Memory barrier: lệnh phần cứng ngăn reordering qua barrier.
 
@@ -26,7 +27,7 @@ import java.util.concurrent.*;
 // ============================================================
 
 // Bug: JIT compiler may hoist 'active' check OUTSIDE the loop → infinite loop!
-// On x86 this sometimes "works" (strong memory model), but fails on ARM/Power.
+// Đây là tối ưu của JIT, không phụ thuộc CPU — xảy ra được cả trên x86.
 public class OrderWorkerBroken {
     private boolean active = true;   // NOT volatile
 
@@ -83,13 +84,15 @@ public class OrderEventPublisher {
 // ---- Ordering hazard without volatile (BROKEN) ----
 // Thread 1:  x = 1; r1 = y;   (may execute as: r1=y; x=1)
 // Thread 2:  y = 1; r2 = x;   (may execute as: r2=x; y=1)
-// Result: r1=0 and r2=0 both possible (x86: rare; ARM: common)
+// Result: r1=0 and r2=0 both possible — kể cả trên x86: đây là reorder StoreLoad (load vượt lên
+// trước store tới địa chỉ khác nhờ store buffer), loại reorder duy nhất x86 cho phép và cần
+// barrier mfence / lệnh có tiền tố lock để chặn (JSR-133 Cookbook).
 // Fix: volatile on x and y, or synchronized blocks on both reads and writes
 ```
 
 ## Ứng Dụng Thực Tế
 
-Những vấn đề này tinh tế và phụ thuộc platform — code có thể chạy trên x86 (memory model mạnh) nhưng thất bại trên ARM. Luôn dùng synchronization đúng thay vì dựa vào hành vi phần cứng.
+Những vấn đề này tinh tế và phụ thuộc platform — x86 có memory model mạnh hơn ARM/POWER nên một số lỗi chỉ lộ ra trên ARM (ví dụ server Graviton, Apple Silicon), nhưng reorder StoreLoad và tối ưu của JIT xảy ra cả trên x86. Luôn dùng synchronization đúng thay vì dựa vào hành vi phần cứng.
 
 ## Câu Hỏi Phỏng Vấn
 
@@ -123,6 +126,6 @@ static Singleton getInstance() {
 <details>
 <summary><strong>Instruction reordering gây vấn đề gì trong concurrent code?</strong></summary>
 
-**A:** CPU và JIT compiler reorder instructions để optimize — safe trong single-thread (không thay đổi observable behavior), nhưng gây issue trong multi-thread. Ví dụ: Thread A: `data = 42; ready = true;` → compiler reorder → `ready = true; data = 42;`. Thread B: `if (ready) print(data);` → thấy `ready=true` nhưng `data` chưa được write → print uninitialized value. Fix: `volatile boolean ready` → establish happens-before, prohibit reorder. Hoặc `synchronized`. `volatile` ngăn reorder với volatile field nhưng không ngăn reorder các write khác xung quanh nó (chỉ HB rule).
+**A:** CPU và JIT compiler reorder instructions để optimize — safe trong single-thread (không thay đổi observable behavior), nhưng gây issue trong multi-thread. Ví dụ: Thread A: `data = 42; ready = true;` → compiler reorder → `ready = true; data = 42;`. Thread B: `if (ready) print(data);` → thấy `ready=true` nhưng `data` chưa được write → print uninitialized value. Fix: `volatile boolean ready` → establish happens-before, prohibit reorder. Hoặc `synchronized`. Chính xác hơn (JSR-133 Cookbook): lệnh ghi thường đứng **trước** một volatile write không được dời xuống sau nó; lệnh đọc/ghi thường đứng **sau** một volatile read không được dời lên trước nó. Chiều ngược lại vẫn được phép — một lệnh ghi thường đứng sau volatile write có thể bị dời lên trước. Vì vậy chỉ những gì ghi **trước** volatile write mới được đảm bảo hiển thị với thread đọc được giá trị volatile đó.
 
 </details>

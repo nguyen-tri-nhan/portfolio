@@ -1,7 +1,7 @@
 ---
 key: "MyBatis vs JPA"
 title: "MyBatis vs JPA/Hibernate"
-crumb: "4. Database › MyBatis"
+crumb: "10. Database › MyBatis"
 ---
 
 MyBatis và JPA đại diện cho hai triết lý ORM đối lập: MyBatis SQL-first (tường minh, kiểm soát được); JPA object-first (tiện lợi CRUD, SQL tự generate). Chọn dựa trên độ phức tạp query và kỹ năng team.

@@ -1,7 +1,7 @@
 ---
 key: "Decorator"
 title: "Decorator Pattern"
-crumb: "10. Design Patterns › Structural"
+crumb: "9. Design Patterns › Structural"
 ---
 
 Decorator thêm trách nhiệm vào object một cách động bằng cách bọc nó bằng decorator object cùng interface — cho phép stack hành vi linh hoạt không cần subclass.

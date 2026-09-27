@@ -1,7 +1,7 @@
 ---
 key: python-context-managers
 title: Python Context Managers
-crumb: 14. Python > Advanced Python
+crumb: 4. Python > Advanced Python
 ---
 
 Context manager đảm bảo resource được cleanup đúng cách qua `with` statement — tương tự try-with-resources trong Java 7+, nhưng có thể tùy chỉnh qua `__enter__`/`__exit__` hoặc `contextlib.contextmanager`.

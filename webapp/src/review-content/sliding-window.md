@@ -1,7 +1,7 @@
 ---
 key: "Sliding Window"
 title: "Sliding Window Rate Limiting"
-crumb: "7. System Design › Rate Limiting"
+crumb: "13. System Design › Rate Limiting"
 ---
 
 Sliding Window đếm request trong rolling time window từ timestamp hiện tại của mỗi request, cung cấp rate limiting mượt mà mà không có spike edge-case của fixed window.

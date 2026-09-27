@@ -1,7 +1,7 @@
 ---
 key: "Network & Logs"
 title: "Lệnh Network & Log"
-crumb: "11. Linux & Deployment"
+crumb: "16. Linux & Deployment"
 ---
 
 Lệnh chẩn đoán network để kiểm tra port và kết nối; công cụ phân tích log để monitoring thời gian thực và tìm pattern trong production — kỹ năng core để tự troubleshoot deployment.

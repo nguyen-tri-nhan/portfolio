@@ -1,7 +1,7 @@
 ---
 key: "File & Process"
 title: "Lệnh File & Process"
-crumb: "11. Linux & Deployment"
+crumb: "16. Linux & Deployment"
 ---
 
 Các lệnh Linux thiết yếu cho điều hướng filesystem, quản lý file và giám sát process — nền tảng để tự mình deploy và troubleshoot ứng dụng Java trên Linux server.
@@ -75,6 +75,6 @@ Dùng <code>kill -15</code> (SIGTERM) trước — graceful shutdown của Sprin
 <details>
 <summary><strong>Tìm thư mục nào đang chiếm nhiều disk nhất thế nào?</strong></summary>
 
-**A:** `du -sh /* 2>/dev/null | sort -rh | head -20` — hiện top thư mục lớn nhất. Drill down: `du -sh /var/* | sort -rh | head -10`. `ncdu` là TUI tool đẹp hơn: `ncdu /` — interactive browse theo tree. Để tìm file lớn nhất: `find / -type f -size +100M -exec ls -lh {} ; 2>/dev/null | sort -k5 -rh`. Với Java apps: check `/tmp` (temp file), log directory, GC log, heap dump.
+**A:** `du -sh /* 2>/dev/null | sort -rh | head -20` — hiện top thư mục lớn nhất. Drill down: `du -sh /var/* | sort -rh | head -10`. `ncdu` là TUI tool đẹp hơn: `ncdu /` — interactive browse theo tree. Để tìm file lớn nhất: `find / -type f -size +100M -exec ls -lh {} \; 2>/dev/null | sort -k5 -rh`. Với Java apps: check `/tmp` (temp file), log directory, GC log, heap dump.
 
 </details>

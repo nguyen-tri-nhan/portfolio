@@ -1,7 +1,7 @@
 ---
 key: "Spring MVC"
 title: "Spring MVC"
-crumb: "3. Spring Ecosystem"
+crumb: "7. Spring Ecosystem"
 ---
 
 Spring MVC là web framework implement pattern Model-View-Controller, nơi DispatcherServlet định tuyến HTTP request qua handler mapping đến controller và render response.

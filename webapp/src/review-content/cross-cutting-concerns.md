@@ -1,7 +1,7 @@
 ---
 key: "Cross-Cutting Concerns"
 title: "Cross-Cutting Concern"
-crumb: "3. Spring Ecosystem › Spring AOP"
+crumb: "7. Spring Ecosystem › Spring AOP"
 ---
 
 Cross-cutting concern là hành vi ảnh hưởng nhiều layer/class (logging, security, transaction, caching) — AOP trích xuất chúng vào aspect để tránh rải rác và rối rắm.

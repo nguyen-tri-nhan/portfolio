@@ -1,7 +1,7 @@
 ---
 key: "Exception Handling (@ControllerAdvice)"
 title: "Xử Lý Exception với @ControllerAdvice"
-crumb: "3. Spring Ecosystem › Spring MVC"
+crumb: "7. Spring Ecosystem › Spring MVC"
 ---
 
 <code>@ControllerAdvice</code> cung cấp cơ chế tập trung để xử lý exception trên tất cả controller, map domain exception sang HTTP response một cách nhất quán.

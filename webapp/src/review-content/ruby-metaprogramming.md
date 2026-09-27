@@ -1,7 +1,7 @@
 ---
 key: ruby-metaprogramming
 title: "Ruby Metaprogramming — Code that writes Code"
-crumb: "21. Ruby > Metaprogramming"
+crumb: "22. Ruby > Metaprogramming"
 ---
 
 Ruby metaprogramming là khả năng viết code thao tác với code khác tại runtime — define method động, intercept missing method call, eval code trong context của object. Đây là nền tảng của Rails magic: `has_many`, `validates`, `attr_accessor`, `scope` đều là metaprogramming. Java không có equivalent native — annotation processor gần nhất nhưng ở compile time.

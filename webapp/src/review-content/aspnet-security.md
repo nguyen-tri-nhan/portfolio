@@ -1,7 +1,7 @@
 ---
 key: aspnet-security
 title: "ASP.NET Core Security — JWT, Auth & Authorization"
-crumb: "16. .NET > Security"
+crumb: "21. .NET > Security"
 ---
 
 ASP.NET Core Security: Authentication (ai bạn là) và Authorization (bạn được làm gì) tách biệt rõ ràng. JWT + Bearer token là pattern phổ biến nhất cho API. Policy-based authorization linh hoạt hơn role-based đơn thuần. Tương tự Spring Security: `UseAuthentication` ↔ Spring Security filter chain, `[Authorize]` ↔ `@PreAuthorize`.

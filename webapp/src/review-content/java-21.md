@@ -4,7 +4,7 @@ title: Java 21 LTS (Virtual Threads & Modern Java)
 crumb: Java Versions > Java 21
 ---
 
-Java 21 (Sep 2023) là LTS lớn nhất kể từ Java 8. **Virtual Threads** (Project Loom) là revolution cho concurrent programming. Đây là target hiện tại cho greenfield project.
+Java 21 (Sep 2023) là LTS lớn nhất kể từ Java 8. **Virtual Threads** (Project Loom) là revolution cho concurrent programming. Từ 09/2025 đã có Java 25 LTS — hoàn thiện những gì Java 21 bắt đầu (hết pinning với `synchronized`, Scoped Values final); project mới nên cân nhắc Java 25.
 
 ## Điểm Chính
 
@@ -115,6 +115,8 @@ int eval(Expr expr) {
 }
 
 // ── Structured Concurrency (preview) ─────────────────────────
+// API của Java 21–24 preview. Java 25 (JEP 505) đổi sang StructuredTaskScope.open() — code dưới
+// KHÔNG compile trên Java 25. Xem bài Java 22–25.
 
 // Thay vì launch tasks và manage futures manually:
 try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
@@ -191,7 +193,7 @@ switch (result) {
 <details>
 <summary><strong>Khi nào KHÔNG nên dùng Virtual Threads?</strong></summary>
 
-**A:** (1) **CPU-bound tasks**: Virtual Threads không giúp gì — bottleneck là CPU, không phải thread. Dùng ForkJoinPool với platform threads. (2) **synchronized pinning**: nếu code trong synchronized block gọi blocking I/O — virtual thread bị "pinned" (không unmount được), carrier thread bị block → mất benefit. Migrate sang `ReentrantLock`. (3) **ThreadLocal-heavy code**: ThreadLocal được inherit và chứa state lớn → memory leak khi có hàng triệu virtual threads. Dùng Scoped Values thay thế. (4) **Short-lived compute**: overhead của virtual thread scheduling không worth it cho tasks < 1ms.
+**A:** (1) **CPU-bound tasks**: Virtual Threads không giúp gì — bottleneck là CPU, không phải thread. Dùng ForkJoinPool với platform threads. (2) **synchronized pinning (chỉ Java 21–23)**: nếu code trong synchronized block gọi blocking I/O — virtual thread bị "pinned" (không unmount được), carrier thread bị block → mất benefit. Trên Java 21–23: migrate sang `ReentrantLock`. Từ **Java 24 (JEP 491)**, `synchronized` không còn pin — virtual thread unmount được khi block trong monitor; chỉ còn pin ở vài trường hợp hiếm (class loading/initializer, native frame). Nâng lên Java 25 LTS là cách xử lý gọn nhất. (3) **ThreadLocal-heavy code**: ThreadLocal được inherit và chứa state lớn → memory leak khi có hàng triệu virtual threads. Dùng Scoped Values thay thế. (4) **Short-lived compute**: overhead của virtual thread scheduling không worth it cho tasks < 1ms.
 
 </details>
 

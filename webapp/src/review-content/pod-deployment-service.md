@@ -1,7 +1,7 @@
 ---
 key: "Pod / Deployment / Service"
 title: "Pod, Deployment & Service"
-crumb: "8. Cloud & DevOps › Kubernetes"
+crumb: "15. Cloud & DevOps › Kubernetes"
 ---
 
 Pod là đơn vị deployable nhỏ nhất; Deployment quản lý Pod replica theo declarative; Service cung cấp truy cập network ổn định đến Pod bất kể IP động của chúng.
@@ -32,14 +32,15 @@ spec:
     targetPort: 8080
   type: ClusterIP       # internal only
 
+---
 # External access via Ingress
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: order-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+  # Không thêm rewrite-target: / — nó biến /orders/42 thành / trước khi tới app.
 spec:
+  ingressClassName: nginx
   rules:
   - host: api.example.com
     http:
@@ -52,7 +53,7 @@ spec:
 
 ## Ứng Dụng Thực Tế
 
-Luôn dùng Deployment, đừng bao giờ tạo Pod trực tiếp — Deployment xử lý self-healing, rolling update và desired-state reconciliation. Dùng ClusterIP cho internal service; chỉ expose bên ngoài qua Ingress với TLS.
+Luôn dùng Deployment, đừng bao giờ tạo Pod trực tiếp — Deployment xử lý self-healing, rolling update và desired-state reconciliation. Dùng ClusterIP cho internal service; chỉ expose bên ngoài qua Ingress hoặc Gateway API với TLS (ingress-nginx đã ngừng bảo trì từ 03/2026 — xem bài Kubernetes).
 
 ## Câu Hỏi Phỏng Vấn
 

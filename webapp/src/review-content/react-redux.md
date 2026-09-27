@@ -1,7 +1,7 @@
 ---
 key: react-redux
 title: Redux & Redux Toolkit
-crumb: 15. ReactJS > State Management
+crumb: 5. ReactJS > State Management
 ---
 
 Redux Toolkit (RTK) là cách hiện đại để dùng Redux — loại bỏ boilerplate với `createSlice`, `createAsyncThunk`; RTK Query tích hợp data fetching/caching trực tiếp vào store.

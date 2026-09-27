@@ -1,7 +1,7 @@
 ---
 key: python-functional
 title: Python Functional Programming — functools & itertools
-crumb: 14. Python > Advanced Python
+crumb: 4. Python > Advanced Python
 ---
 
 Python hỗ trợ functional programming qua built-in functions (map, filter, zip, sorted), `functools` (reduce, partial, lru_cache), và `itertools` (chain, product, groupby) — tương tự Stream API trong Java 8+.

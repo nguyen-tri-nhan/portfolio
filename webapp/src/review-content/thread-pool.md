@@ -1,7 +1,7 @@
 ---
 key: "Thread Pool"
 title: "Thread Pool"
-crumb: "2. Concurrency"
+crumb: "6. Concurrency"
 ---
 
 Thread pool tái sử dụng một tập thread worker cố định để thực thi task, tránh overhead tạo/hủy thread và giới hạn sử dụng tài nguyên.
@@ -11,6 +11,7 @@ Thread pool tái sử dụng một tập thread worker cố định để thực
 - Tham số core của <code>ThreadPoolExecutor</code>: <code>corePoolSize</code>, <code>maximumPoolSize</code>, <code>keepAliveTime</code>, <code>workQueue</code>.
 - Factory method: <code>Executors.newFixedThreadPool(n)</code>, <code>newCachedThreadPool()</code>, <code>newSingleThreadExecutor()</code>.
 - Tránh <code>newCachedThreadPool()</code> trong production — tạo thread không giới hạn khi tải cao.
+- Thứ tự theo Javadoc: dưới <code>corePoolSize</code> thì tạo thread mới; đủ core thì đưa vào queue; <strong>chỉ khi queue đầy</strong> mới tạo thêm thread tới <code>maximumPoolSize</code>, vượt nữa thì reject. Với queue lớn (hoặc unbounded), pool gần như không bao giờ vượt quá core.
 - Ưu tiên <code>ThreadPoolExecutor</code> trực tiếp để kiểm soát loại queue và rejection policy.
 - Rejection policy: <code>AbortPolicy</code> (ném exception), <code>CallerRunsPolicy</code> (chạy trong caller), <code>DiscardPolicy</code>, <code>DiscardOldestPolicy</code>.
 - Luôn đặt tên thread qua <code>ThreadFactory</code> để thread dump có ý nghĩa.
@@ -39,7 +40,8 @@ public class OrderProcessingPool {
                                             // NEVER use unbounded queue in production — OOM risk
             r -> {                          // ThreadFactory: named threads for thread dumps
                 Thread t = new Thread(r, "order-worker-" + threadNumber.getAndIncrement());
-                t.setDaemon(true);          // daemon: JVM can exit without waiting for these
+                t.setDaemon(false);         // non-daemon: JVM không thoát giữa chừng khi còn đơn đang xử lý;
+                                            // dừng pool có kiểm soát bằng shutdown() bên dưới
                 t.setUncaughtExceptionHandler((thread, ex) ->
                     log.error("Unhandled exception in {}", thread.getName(), ex));
                 return t;
@@ -120,11 +122,11 @@ Trong Spring Boot, cấu hình bean <code>TaskExecutor</code> thay vì tạo poo
 
 ```mermaid
 flowchart TB
-    Task["Submitted Task"] --> Check1{"active threads\n< corePoolSize?"}
+    Task["Submitted Task"] --> Check1{"số thread hiện có\n(pool size) < corePoolSize?"}
     Check1 -->|"yes"| NewCore["Create new core thread\nrun task immediately"]
     Check1 -->|"no"| Check2{"queue\nfull?"}
     Check2 -->|"no"| Queue["Add to BlockingQueue\n(waiting for idle thread)"]
-    Check2 -->|"yes"| Check3{"active threads\n< maxPoolSize?"}
+    Check2 -->|"yes"| Check3{"pool size\n< maxPoolSize?"}
     Check3 -->|"yes"| NewMax["Create new non-core thread\n(idle timeout → removed)"]
     Check3 -->|"no"| RH["RejectedExecutionHandler"]
 

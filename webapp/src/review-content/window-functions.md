@@ -1,7 +1,7 @@
 ---
 key: "Window Functions"
 title: "Window Functions"
-crumb: "4. Database › SQL"
+crumb: "10. Database › SQL"
 ---
 
 Window function tính toán giá trị trên tập hàng liên quan đến hàng hiện tại (một "window") mà không gộp chúng — khác GROUP BY làm giảm số hàng.

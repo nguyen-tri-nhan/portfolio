@@ -1,7 +1,7 @@
 ---
 key: "Pipeline Stages"
 title: "Các Giai Đoạn CI/CD Pipeline"
-crumb: "8. Cloud & DevOps › CI/CD"
+crumb: "15. Cloud & DevOps › CI/CD"
 ---
 
 CI/CD pipeline chuyển code từ commit đến production qua các giai đoạn: source, build, test (unit/integration/security), package, deploy staging, deploy production.
@@ -20,76 +20,103 @@ CI/CD pipeline chuyển code từ commit đến production qua các giai đoạn
 
 *Full GitHub Actions CI/CD: test → security scan → push → blue-green deploy*
 
-```bash
-# .github/workflows/ci-cd.yml — full pipeline: test → build → scan → push → deploy
+```yaml
+# .github/workflows/ci-cd.yml — test → build → scan → push → staging → prod (blue-green)
 name: CI/CD Pipeline
 on:
   push:
-    branches: [main, release/**]
-  pull_request:
     branches: [main]
+  pull_request:
+    branches: [main]      # PR chỉ chạy job test — các job deploy có điều kiện push lên main
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ${{ vars.REGISTRY }}/order-service:${{ github.sha }}
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }                  # Sonar cần lịch sử git cho blame/new code
       - uses: actions/setup-java@v4
-        with: { java-version: '21', distribution: 'temurin' }
+        with: { java-version: '21', distribution: 'temurin', cache: maven }
       - name: Unit & Integration Tests + Coverage
-        run: mvn verify -Pcoverage
-      - name: SonarQube Analysis
-        run: mvn sonar:sonar -Dsonar.projectKey=order-service
+        run: mvn -B verify -Pcoverage
+      - name: SonarQube analysis + Quality Gate
+        # sonar.qualitygate.wait=true: scanner chờ kết quả Quality Gate, gate đỏ → step fail
+        run: mvn -B sonar:sonar -Dsonar.projectKey=order-service -Dsonar.qualitygate.wait=true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      - name: Quality Gate check
-        run: |
-          STATUS=$(curl -s "$SONAR_URL/api/qualitygates/project_status?projectKey=order-service" | jq -r '.projectStatus.status')
-          [ "$STATUS" = "OK" ] || (echo "Quality Gate FAILED: $STATUS" && exit 1)
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
 
-  security-scan:
+  build-scan-push:
     needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - name: Build Docker image
-        run: docker build -t order-service:${{ github.sha }} .
-      - name: Trivy vulnerability scan
-        run: trivy image --exit-code 1 --severity HIGH,CRITICAL order-service:${{ github.sha }}
-      - name: Push to registry
+      - uses: actions/checkout@v4                 # cần source + Dockerfile để build image
+      - name: Build image (multi-stage Dockerfile tự chạy mvn package)
+        run: docker build -t "$IMAGE" .
+      - name: Trivy vulnerability scan (fail on HIGH/CRITICAL)
         run: |
-          docker tag order-service:${{ github.sha }} ${{ secrets.REGISTRY }}/order-service:${{ github.sha }}
-          docker push ${{ secrets.REGISTRY }}/order-service:${{ github.sha }}
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:0.74.0 image --exit-code 1 --severity HIGH,CRITICAL "$IMAGE"
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ vars.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Push to registry
+        run: docker push "$IMAGE"
 
   deploy-staging:
-    needs: security-scan
+    needs: build-scan-push
     runs-on: ubuntu-latest
     environment: staging
     steps:
+      - name: Configure kubeconfig
+        run: mkdir -p ~/.kube && echo "${{ secrets.KUBECONFIG_STAGING }}" > ~/.kube/config
       - name: Deploy to staging
         run: |
-          kubectl set image deployment/order-service app=${{ secrets.REGISTRY }}/order-service:${{ github.sha }}
+          kubectl set image deployment/order-service app="$IMAGE"
           kubectl rollout status deployment/order-service --timeout=120s
       - name: Smoke test
-        run: curl -f https://staging-api.example.com/actuator/health
+        run: curl -fsS https://staging-api.example.com/actuator/health
 
   deploy-prod:
     needs: deploy-staging
     runs-on: ubuntu-latest
-    environment: production    # requires manual approval
+    environment: production                       # bật "required reviewers" → cổng duyệt thủ công
     steps:
-      - name: Deploy to production (blue-green)
+      - name: Configure kubeconfig
+        run: mkdir -p ~/.kube && echo "${{ secrets.KUBECONFIG_PROD }}" > ~/.kube/config
+      - name: Deploy to idle color (blue-green)
         run: |
-          kubectl set image deployment/order-service-green app=${{ secrets.REGISTRY }}/order-service:${{ github.sha }}
-          kubectl rollout status deployment/order-service-green --timeout=180s
-      - name: Switch traffic
-        run: kubectl patch service order-service -p '{"spec":{"selector":{"slot":"green"}}}'
-      - name: Monitor error rate (5 min)
+          LIVE=$(kubectl get svc order-service -o jsonpath='{.spec.selector.slot}')
+          IDLE=$([ "$LIVE" = "blue" ] && echo green || echo blue)
+          echo "LIVE=$LIVE" >> "$GITHUB_ENV"; echo "IDLE=$IDLE" >> "$GITHUB_ENV"
+          kubectl set image deployment/order-service-$IDLE app="$IMAGE"
+          kubectl rollout status deployment/order-service-$IDLE --timeout=180s
+      - name: Switch traffic to idle color
+        run: |
+          kubectl patch svc order-service -p "{\"spec\":{\"selector\":{\"app\":\"order-service\",\"slot\":\"$IDLE\"}}}"
+      - name: Watch 5xx ratio for 5 minutes, switch back on regression
         run: |
           sleep 300
-          ERROR_RATE=$(curl -s "$PROMETHEUS_URL/api/v1/query?query=rate(http_errors[5m])" | jq '.data.result[0].value[1]')
-          echo "Error rate: $ERROR_RATE"
-          # Auto-rollback if error rate > 1%
-          awk "BEGIN { if ($ERROR_RATE > 0.01) exit 1 }" || kubectl rollout undo deployment/order-service-green
+          # Tỉ lệ response 5xx trên tổng request (metric HTTP server của Spring Boot/Micrometer).
+          # Label lọc service (ở đây job="order-service") tùy cấu hình scrape của bạn.
+          Q='sum(rate(http_server_requests_seconds_count{job="order-service",status=~"5.."}[5m])) / sum(rate(http_server_requests_seconds_count{job="order-service"}[5m]))'
+          RATIO=$(curl -sG "${{ vars.PROMETHEUS_URL }}/api/v1/query" --data-urlencode "query=$Q" \
+                  | jq -r '.data.result[0].value[1] // "0"')
+          echo "5xx ratio: $RATIO"
+          if awk -v r="$RATIO" 'BEGIN { exit !(r > 0.01) }'; then
+            # Rollback blue-green = trả Service về màu cũ (màu cũ vẫn đang chạy version trước)
+            kubectl patch svc order-service -p "{\"spec\":{\"selector\":{\"app\":\"order-service\",\"slot\":\"$LIVE\"}}}"
+            echo "Error ratio > 1% — traffic switched back to $LIVE"; exit 1
+          fi
 ```
 
 ## Ứng Dụng Thực Tế

@@ -1,7 +1,7 @@
 ---
 key: "SQL"
 title: "SQL"
-crumb: "4. Database"
+crumb: "10. Database"
 ---
 
 SQL là ngôn ngữ chuẩn cho cơ sở dữ liệu quan hệ — thành thạo JOIN, window function, indexing và transaction là thiết yếu cho phỏng vấn backend.

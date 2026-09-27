@@ -1,7 +1,7 @@
 ---
 key: dotnet-memory-gc
 title: ".NET Memory & Garbage Collection"
-crumb: "16. .NET > Memory & GC"
+crumb: "21. .NET > Memory & GC"
 ---
 
 CLR GC (Common Language Runtime Garbage Collector) dùng generational collection tương tự JVM — Gen 0, Gen 1, Gen 2. IDisposable pattern là .NET equivalent của Java try-with-resources nhưng explicit hơn: implement `Dispose()` để release unmanaged resources. Java dev cần chú ý: `using` statement auto-call `Dispose()` — tương tự try-with-resources.

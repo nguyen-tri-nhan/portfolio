@@ -1,7 +1,7 @@
 ---
 key: kotlin-coroutines-basics
 title: "Coroutines Cơ Bản trong Kotlin"
-crumb: "13. Kotlin > Coroutines"
+crumb: "3. Kotlin > Coroutines"
 ---
 
 Coroutine là đơn vị thực thi nhẹ (lightweight) có thể suspend và resume mà không block thread, cho phép viết code async theo phong cách tuần tự dễ đọc.

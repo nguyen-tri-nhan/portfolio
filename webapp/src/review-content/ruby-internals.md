@@ -1,7 +1,7 @@
 ---
 key: ruby-internals
 title: "Ruby Internals — Object Model, Method Lookup & GC"
-crumb: "21. Ruby > Ruby Internals"
+crumb: "22. Ruby > Ruby Internals"
 ---
 
 Ruby object model là nền tảng để hiểu mọi thứ trong Ruby: tại sao `include` thêm method, tại sao `extend` khác nhau, cách method lookup đi qua ancestor chain. MRI Ruby GC là mark-and-sweep với generational collection từ Ruby 2.1. Hiểu internals giúp debug performance, memory, và metaprogramming behavior.

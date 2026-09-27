@@ -1,7 +1,7 @@
 ---
 key: "Dockerfile Best Practices"
 title: "Dockerfile Best Practices"
-crumb: "8. Cloud & DevOps › Docker"
+crumb: "15. Cloud & DevOps › Docker"
 ---
 
 Dockerfile tốt tạo ra image nhỏ, bảo mật, build nhanh bằng cách dùng base image tối giản, layer caching, non-root user và tránh secret trong layer.
@@ -13,7 +13,7 @@ Dockerfile tốt tạo ra image nhỏ, bảo mật, build nhanh bằng cách dù
 - Kết hợp lệnh RUN với <code>&&</code> để giảm số lượng layer và tránh cache package list trung gian.
 - Đừng bao giờ hardcode secret trong Dockerfile — dùng build arg hoặc biến môi trường runtime.
 - Dùng <code>.dockerignore</code> để loại trừ <code>target/</code>, <code>*.md</code>, <code>.git</code> khỏi build context.
-- Instruction <code>HEALTHCHECK</code>: Docker giám sát container health.
+- Instruction <code>HEALTHCHECK</code>: Docker đánh dấu container healthy/unhealthy (không tự restart). Kubernetes không dựa vào nó — khai báo probe trong Pod spec.
 
 ## Ví Dụ Code
 
@@ -21,27 +21,39 @@ Dockerfile tốt tạo ra image nhỏ, bảo mật, build nhanh bằng cách dù
 
 ```bash
 # ── .dockerignore — keep build context lean ──
-target/          # compiled output — already in jar, never re-copy
-.git/            # version history — irrelevant, can be hundreds of MB
-*.md             # documentation
-*.log            # runtime logs
-.env             # local secrets — NEVER include in image
-.idea/           # IDE project files
+# (comment phải nằm trên dòng riêng: `#` giữa dòng bị coi là một phần của pattern)
+# compiled output — already in jar, never re-copy
+target/
+# version history — irrelevant, can be hundreds of MB
+.git/
+# documentation
+*.md
+# runtime logs
+*.log
+# local secrets — NEVER include in image
+.env
+# IDE project files
+.idea/
 
 # ── Dockerfile best practices: order-service ──
-FROM eclipse-temurin:21.0.3_9-jre-alpine    # pin exact tag — never :latest
+# pin exact tag — never :latest
+FROM eclipse-temurin:21.0.3_9-jre-alpine
 
 # Combine RUN commands: apk cache dropped in same layer (--no-cache) → smaller image
 # Combining addgroup + adduser in one RUN avoids an extra intermediate layer
 RUN apk add --no-cache curl  && addgroup -S appgroup  && adduser  -S appuser -G appgroup
 
-USER appuser        # drop root privileges before any COPY
+# process chạy với user không phải root; lưu ý COPY vẫn tạo file owned bởi root (UID/GID 0)
+# trừ khi dùng --chown như bên dưới
+USER appuser
 WORKDIR /app
 
 # --chown at COPY time — file owned by appuser, not root
 COPY --from=build --chown=appuser:appgroup /app/target/order-service-*.jar app.jar
 
-# HEALTHCHECK: Docker daemon restarts unhealthy container (complements K8s probes)
+# HEALTHCHECK chỉ đặt health status (starting/healthy/unhealthy) và phát event health_status.
+# Docker KHÔNG tự restart container unhealthy — restart policy (on-failure...) chỉ chạy khi container THOÁT.
+# Trên Kubernetes, sức khỏe container do liveness/readiness/startup probe trong Pod spec quyết định.
 # --start-period: grace period before first check (JVM warmup ~30-60 s)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3   CMD curl -sf http://localhost:8080/actuator/health/readiness || exit 1
 

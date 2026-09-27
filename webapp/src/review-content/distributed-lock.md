@@ -1,7 +1,7 @@
 ---
 key: "Distributed Lock"
 title: "Distributed Lock"
-crumb: "7. System Design"
+crumb: "13. System Design"
 ---
 
 Distributed lock đảm bảo chỉ một instance trong cluster thực thi critical section tại một thời điểm — ngăn race condition trong service được scale horizontally.
@@ -22,7 +22,7 @@ Distributed lock đảm bảo chỉ một instance trong cluster thực thi crit
 // Distributed Lock: prevent race conditions when multiple instances run concurrently
 // Use case: inventory decrement, scheduled job dedup, double-booking prevention
 
-// Redisson RLock: implements Redlock algorithm with lease renewal (watchdog)
+// Redisson RLock: reentrant lock held on ONE Redis master (not the multi-node Redlock algorithm)
 @Service @RequiredArgsConstructor
 public class InventoryService {
     private final RedissonClient redisson;
@@ -35,7 +35,9 @@ public class InventoryService {
         // tryLock(waitTime=5s, leaseTime=10s)
         // waitTime: how long to wait if lock is held by another instance
         // leaseTime: auto-release after 10s (prevents deadlock if holder crashes)
-        // Redisson watchdog: auto-renews lease every 10s/3 while lock is held
+        // NOTE: passing an explicit leaseTime DISABLES the watchdog — the lock expires after 10s
+        // even if work is still running. Omit leaseTime (tryLock(5, SECONDS)) to let the watchdog
+        // renew it (default lockWatchdogTimeout = 30s, renewed every 30s/3 = 10s).
         try {
             if (!lock.tryLock(5, 10, TimeUnit.SECONDS)) {
                 log.warn("Could not acquire inventory lock: productId={}", productId);
@@ -81,7 +83,7 @@ public void processExpiredOrders() {
 
 ## Ứng Dụng Thực Tế
 
-Dùng Redisson cho distributed lock trong Spring Boot — nó implement Redlock đúng cách bao gồm lease renewal. Đừng bao giờ dùng <code>SETNX</code> thô từ code app — bạn sẽ làm sai TTL và renewal logic. Luôn unlock trong <code>finally</code>.
+Dùng Redisson <code>RLock</code> cho distributed lock trong Spring Boot — nó xử lý reentrancy và gia hạn lease tự động qua watchdog (khi không truyền <code>leaseTime</code>). Lưu ý <code>RLock</code> lock trên <strong>một</strong> Redis master, không phải thuật toán Redlock; object <code>RedLock</code> của Redisson đã <strong>deprecated</strong>. Khi sai lệch dữ liệu là không chấp nhận được, dùng <code>RFencedLock</code> để lấy fencing token. Đừng bao giờ dùng <code>SETNX</code> thô từ code app — bạn sẽ làm sai TTL và renewal logic. Luôn unlock trong <code>finally</code>.
 
 ## Câu Hỏi Phỏng Vấn
 
@@ -95,7 +97,7 @@ Dùng Redisson cho distributed lock trong Spring Boot — nó implement Redlock 
 <details>
 <summary><strong>Thuật toán Redlock là gì?</strong></summary>
 
-**A:** Redlock (Antirez): acquire lock trên **N/2+1 independent Redis nodes** (thường 5) trong tổng thời gian nhỏ hơn TTL. Nếu không acquire đủ quorum trong thời gian → release tất cả và retry. Mục đích: tránh single point of failure. Tranh cãi: Martin Kleppmann chỉ ra Redlock không an toàn khi có GC pause hoặc clock skew — process nghĩ mình đang hold lock nhưng TTL đã expire. **Recommendation**: dùng Redlock + **fencing token** cho critical sections.
+**A:** Redlock (Antirez): acquire lock trên **N/2+1 independent Redis nodes** (thường 5) trong tổng thời gian nhỏ hơn TTL. Nếu không acquire đủ quorum trong thời gian → release tất cả và retry. Mục đích: tránh single point of failure. Tranh cãi: Martin Kleppmann chỉ ra Redlock không an toàn khi có GC pause hoặc clock skew — process nghĩ mình đang hold lock nhưng TTL đã expire. **Thực tế hiện nay**: chính Redisson đã deprecate object `RedLock` vì safety còn tranh cãi và chi phí vận hành cao (cần quorum các Redis master độc lập); thay bằng `RLock` (một master + replica) và `RFencedLock` khi cần fencing token. Với critical section, điều quan trọng là **fencing token** được kiểm tra ở phía storage, không phải số node Redis.
 
 </details>
 

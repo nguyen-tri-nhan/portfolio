@@ -1,7 +1,7 @@
 ---
 key: "Spring Core"
 title: "Spring Core"
-crumb: "3. Spring Ecosystem"
+crumb: "7. Spring Ecosystem"
 ---
 
 Spring Core cung cấp IoC container quản lý vòng đời bean và dependency injection, tách rời các component và cho phép testability trên toàn bộ framework.

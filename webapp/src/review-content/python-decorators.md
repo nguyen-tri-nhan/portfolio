@@ -1,7 +1,7 @@
 ---
 key: python-decorators
 title: Python Decorators
-crumb: 14. Python > Advanced Python
+crumb: 4. Python > Advanced Python
 ---
 
 Decorator là higher-order function wraps function/class khác để thêm behavior — tương tự Decorator pattern trong GoF, hoặc AOP (Aspect-Oriented Programming) trong Spring (@Transactional, @Cacheable).

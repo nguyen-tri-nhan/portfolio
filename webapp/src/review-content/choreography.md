@@ -1,7 +1,7 @@
 ---
 key: "Choreography"
 title: "Choreography Saga"
-crumb: "5. Microservices › Saga Pattern"
+crumb: "11. Microservices › Saga Pattern"
 ---
 
 Trong choreography, mỗi service lắng nghe event và quyết định hành động của mình độc lập — không có coordinator trung tâm, cho phép loose coupling nhưng khó visualize flow.

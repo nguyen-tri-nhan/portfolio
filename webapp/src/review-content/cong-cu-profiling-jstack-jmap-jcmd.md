@@ -9,7 +9,7 @@ JDK đi kèm các công cụ chẩn đoán tích hợp — jstack (thread dump),
 ## Điểm Chính
 
 - <code>jstack &lt;pid&gt;</code>: thread dump — trạng thái tất cả thread (RUNNABLE/BLOCKED/WAITING) và stack trace. Phát hiện deadlock.
-- <code>jmap -heap &lt;pid&gt;</code>: heap summary. <code>jmap -dump:live,format=b,file=h.hprof &lt;pid&gt;</code>: snapshot heap đầy đủ.
+- Heap summary: <code>jcmd &lt;pid&gt; GC.heap_info</code> hoặc <code>jhsdb jmap --heap --pid &lt;pid&gt;</code> (<code>jmap -heap</code> không còn từ JDK 9). Heap dump: <code>jcmd &lt;pid&gt; GC.heap_dump h.hprof</code> (Oracle khuyến nghị jcmd) hoặc <code>jmap -dump:live,format=b,file=h.hprof &lt;pid&gt;</code> — option <code>live</code> kích hoạt full GC trước khi dump.
 - <code>jcmd &lt;pid&gt; help</code>: liệt kê lệnh có sẵn. <code>jcmd &lt;pid&gt; GC.heap_info</code>, <code>VM.flags</code>, <code>Thread.print</code>.
 - <code>jstat -gcutil &lt;pid&gt; 1000</code>: GC stats mỗi 1 giây (% dùng S0/S1/Eden/Old, số lần GC và thời gian).
 - <strong>async-profiler</strong>: CPU flame graph, allocation profiling, lock profiling. Dùng perf_events — an toàn production, không có safepoint bias.
@@ -37,7 +37,7 @@ jmap -dump:live,format=b,file=/tmp/heap.hprof 12345
 # Hoặc tự động khi OOM: -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/logs/
 
 # 5. async-profiler — CPU flame graph 30 giây
-./profiler.sh -d 30 -f /tmp/flame.html 12345
+asprof -d 30 -f /tmp/flame.html 12345      # async-profiler 3.x (bản cũ: ./profiler.sh)
 
 # 6. Arthas — trace method chậm (>100ms)
 java -jar arthas-boot.jar 12345
@@ -54,7 +54,7 @@ Trong production: bật <code>-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/
 <details>
 <summary><strong>Tìm thread nào đang ngốn 100% CPU bằng jstack thế nào?</strong></summary>
 
-**A:** (1) `top -H -p <pid>` → tìm TID (thread ID) dùng CPU nhiều nhất. (2) Convert TID decimal → hex: `printf "%x" <TID>`. (3) `jstack <pid> | grep -A 30 "<hex_tid>"` → tìm stack trace của thread đó. Thường thấy: infinite loop, lock contention, GC thread busy. Với async-profiler: `./profiler.sh -e cpu -d 30 -f cpu.html <pid>` → flame graph trực quan hơn.
+**A:** (1) `top -H -p <pid>` → tìm TID (thread ID) dùng CPU nhiều nhất. (2) Convert TID decimal → hex: `printf "%x" <TID>`. (3) `jstack <pid> | grep -A 30 "<hex_tid>"` → tìm stack trace của thread đó. Thường thấy: infinite loop, lock contention, GC thread busy. Với async-profiler: `asprof -e cpu -d 30 -f cpu.html <pid>` → flame graph trực quan hơn.
 
 </details>
 
@@ -68,6 +68,6 @@ Trong production: bật <code>-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/
 <details>
 <summary><strong>Khi nào dùng async-profiler thay vì jmap?</strong></summary>
 
-**A:** **jmap -heap/-histo**: snapshot allocation hiện tại — dùng khi nghi ngờ memory leak (xem object nào chiếm nhiều heap). SafePoint-based → có thể bỏ sót allocation giữa safepoint. **async-profiler**: continuous CPU/allocation sampling với PERF events, không cần safepoint — phát hiện hot method/allocation path trong production. Dùng async-profiler cho CPU profiling và allocation profiling real-time; jmap/jcmd heapdump cho phân tích memory snapshot sau sự cố.
+**A:** Hai công cụ trả lời hai câu hỏi khác nhau. **Histogram / heap dump** (`jcmd <pid> GC.class_histogram`, `jcmd <pid> GC.heap_dump`, hoặc `jmap -histo`/`-dump`): ảnh chụp các object **đang sống** tại một thời điểm — trả lời "cái gì đang chiếm bộ nhớ", dùng khi nghi memory leak. **async-profiler**: lấy mẫu liên tục theo thời gian (CPU, allocation, lock) và vẽ flame graph — trả lời "code nào đang tốn CPU / cấp phát nhiều"; không bị safepoint bias nên hợp chạy trong production. Leak → heap dump + MAT; CPU cao hoặc GC pressure do cấp phát nhiều → async-profiler.
 
 </details>

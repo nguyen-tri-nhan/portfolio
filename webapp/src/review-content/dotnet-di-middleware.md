@@ -1,7 +1,7 @@
 ---
 key: dotnet-di-middleware
 title: "DI, Middleware & Configuration — .NET Patterns"
-crumb: "16. .NET > DI & Patterns"
+crumb: "21. .NET > DI & Patterns"
 ---
 
 .NET có DI container built-in, middleware pipeline, và configuration system chuẩn — không cần third-party như Spring cần Spring Framework. Các pattern này mapping 1-1 với Java/Spring: service registration = @Bean, middleware = Filter, IOptions = @ConfigurationProperties.

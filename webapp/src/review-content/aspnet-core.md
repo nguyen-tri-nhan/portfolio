@@ -1,7 +1,7 @@
 ---
 key: aspnet-core
 title: "ASP.NET Core — Web Framework"
-crumb: "16. .NET > ASP.NET Core"
+crumb: "21. .NET > ASP.NET Core"
 ---
 
 ASP.NET Core là web framework cross-platform của Microsoft — tương đương Spring Boot trong Java ecosystem. Cùng pattern: DI container, middleware pipeline, controller-based routing, configuration system. Java dev adopt nhanh vì mental model gần như giống nhau, chỉ khác naming convention và tooling.

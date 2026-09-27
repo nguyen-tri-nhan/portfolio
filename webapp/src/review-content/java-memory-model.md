@@ -1,7 +1,7 @@
 ---
 key: "Java Memory Model"
 title: "Java Memory Model (JMM)"
-crumb: "2. Concurrency"
+crumb: "6. Concurrency"
 ---
 
 JMM định nghĩa cách thread tương tác qua memory — cụ thể giá trị nào một lần đọc được phép thấy — qua quan hệ happens-before và synchronization action.
@@ -9,6 +9,7 @@ JMM định nghĩa cách thread tương tác qua memory — cụ thể giá tr�
 ## Điểm Chính
 
 - JMM cho phép CPU/compiler sắp xếp lại lệnh để tối ưu, trừ khi bị ràng buộc bởi happens-before.
+- Lưu ý về các comment "flush / main memory" và sơ đồ bên dưới: "ghi thì flush ra main memory, đọc thì đọc từ main memory" là mô hình <em>đơn giản hóa</em> (JSR-133 FAQ cũng giải thích theo cách này). Spec (JLS chương 17) định nghĩa bằng happens-before. Trên phần cứng thật, cache CPU vốn được giữ đồng bộ (cache coherence); giá trị cũ thường đến từ JIT giữ biến trong register / đưa lệnh đọc ra ngoài vòng lặp, và từ store buffer + reordering của CPU.
 - <strong>happens-before</strong>: nếu A happens-before B, thì ghi của A hiển thị với B.
 - Nguồn của happens-before: release/acquire <code>synchronized</code>, ghi/đọc <code>volatile</code>, <code>Thread.start()</code>/<code>join()</code>.
 - Không có synchronization, thread có thể thấy object cũ hoặc chưa được khởi tạo đầy đủ.

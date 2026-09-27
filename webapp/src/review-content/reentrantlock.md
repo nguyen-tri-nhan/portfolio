@@ -1,7 +1,7 @@
 ---
 key: "ReentrantLock"
 title: "ReentrantLock"
-crumb: "2. Concurrency › Synchronization"
+crumb: "6. Concurrency › Synchronization"
 ---
 
 <code>ReentrantLock</code> là lock tường minh có ngữ nghĩa giống <code>synchronized</code> nhưng thêm <code>tryLock()</code>, timeout, interruptibility và fairness.
@@ -11,7 +11,8 @@ crumb: "2. Concurrency › Synchronization"
 - <code>tryLock()</code>: lấy lock mà không block — trả về false nếu không có.
 - <code>tryLock(time, unit)</code>: lấy với timeout — tránh block vô thời hạn.
 - <code>lockInterruptibly()</code>: lấy nhưng phản hồi thread interruption.
-- Fairness: <code>new ReentrantLock(true)</code> — thread chờ lâu nhất được lock trước (throughput thấp hơn, ngăn starvation).
+- Fairness: <code>new ReentrantLock(true)</code> — thread chờ lâu nhất được lock trước (throughput thấp hơn, giảm starvation). Javadoc lưu ý: fairness của lock không đảm bảo fairness của việc lập lịch thread, và <code>tryLock()</code> <em>không timeout</em> bỏ qua fairness — nó lấy lock ngay nếu đang rảnh dù có thread đang chờ.
+- Giữ critical section ngắn: không gọi I/O (DB, HTTP, payment gateway) khi đang giữ lock.
 - Phải giải phóng trong block <code>finally</code> — không tự giải phóng khi exception như synchronized.
 - Đối tượng <code>Condition</code> (<code>lock.newCondition()</code>) thay thế wait/notify với nhiều condition mỗi lock.
 
@@ -39,33 +40,48 @@ public class OrderCheckoutService {
     private final Condition paymentReady = lock.newCondition();
     private final Condition inventoryOk  = lock.newCondition();
 
-    private final Queue<Order> paymentQueue   = new LinkedList<>();
-    private final Queue<Order> inventoryQueue = new LinkedList<>();
+    // State trong bộ nhớ được lock bảo vệ
+    private final Map<String, Integer> stockBySku = new HashMap<>();
+    private final Set<Long> paidOrderIds          = new HashSet<>();
 
-    // ---- tryLock with timeout: avoid deadlock on payment gateway ----
-    public PaymentResult processPayment(Order order, long timeoutMs)
-            throws InterruptedException {
-        // Try to acquire lock within timeout — back off instead of deadlocking
+    // ---- tryLock with timeout: back off instead of waiting forever ----
+    // Lock chỉ bảo vệ state trong bộ nhớ. KHÔNG gọi I/O (payment gateway, DB, HTTP)
+    // khi đang giữ lock — mọi thread khác sẽ phải chờ theo độ trễ của mạng.
+    public boolean markPaid(Order order, long timeoutMs) throws InterruptedException {
         if (!lock.tryLock(timeoutMs, TimeUnit.MILLISECONDS)) {
-            return PaymentResult.timeout("Payment processing timed out");
+            return false;                  // caller retries or returns 503
         }
         try {
-            return paymentGateway.charge(order);
+            paidOrderIds.add(order.getId());
+            paymentReady.signalAll();      // wake threads waiting for payment only
+            return true;
         } finally {
             lock.unlock();   // MUST be in finally — otherwise lock is held forever
         }
     }
+    // Luồng đúng: gọi gateway NGOÀI lock, xong mới cập nhật state
+    //   PaymentResult result = paymentGateway.charge(order);   // I/O, không giữ lock
+    //   if (result.isSuccess()) markPaid(order, 200);
 
     // ---- lockInterruptibly: allow cancellation while waiting ----
     public void reserveInventory(Order order) throws InterruptedException {
         lock.lockInterruptibly();  // can be cancelled by Thread.interrupt()
         try {
-            while (!inventoryService.hasStock(order)) {
-                // Await on specific condition — only signal this when inventory changes
+            while (stockBySku.getOrDefault(order.getSku(), 0) < order.getQty()) {
+                // await() releases the lock while waiting; woken by restock()
                 inventoryOk.await(5, TimeUnit.SECONDS);
             }
-            inventoryService.reserve(order);
-            paymentReady.signal();  // notify payment thread that inventory is secured
+            stockBySku.merge(order.getSku(), -order.getQty(), Integer::sum);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void restock(String sku, int qty) {
+        lock.lock();
+        try {
+            stockBySku.merge(sku, qty, Integer::sum);
+            inventoryOk.signalAll();   // only threads waiting for stock are woken
         } finally {
             lock.unlock();
         }
@@ -74,7 +90,7 @@ public class OrderCheckoutService {
     public void waitForPayment(Order order) throws InterruptedException {
         lock.lock();
         try {
-            while (!paymentService.isPaid(order)) {
+            while (!paidOrderIds.contains(order.getId())) {
                 paymentReady.await();  // waits on paymentReady condition only
                 // Other threads waiting on inventoryOk are NOT disturbed
             }
@@ -97,7 +113,7 @@ public class OrderCheckoutService {
 
 ## Ứng Dụng Thực Tế
 
-Dùng ReentrantLock khi cần: timed lock để tránh deadlock, interruptible lock wait, nhiều condition queue mỗi lock, hoặc fairness. Nếu không, <code>synchronized</code> đơn giản hơn và JVM tối ưu tốt hơn.
+Dùng ReentrantLock khi cần: timed lock để không chờ vô hạn, interruptible lock wait, nhiều condition queue mỗi lock, hoặc fairness. Nếu không, <code>synchronized</code> đơn giản hơn và JVM tối ưu tốt hơn.
 
 ## Câu Hỏi Phỏng Vấn
 

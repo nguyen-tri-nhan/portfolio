@@ -1,7 +1,7 @@
 ---
 key: "Volatile"
 title: "Từ Khóa volatile"
-crumb: "2. Concurrency"
+crumb: "6. Concurrency"
 ---
 
 <code>volatile</code> đảm bảo visibility (ghi lập tức hiển thị với tất cả thread) và ngăn instruction reordering, nhưng KHÔNG đảm bảo atomicity cho thao tác compound.
@@ -10,6 +10,7 @@ crumb: "2. Concurrency"
 
 - Không có volatile: thread có thể đọc giá trị cũ từ CPU cache (L1/L2) thay vì main memory.
 - Ghi <code>volatile</code>: flush ra main memory. Đọc <code>volatile</code>: đọc từ main memory.
+- Lưu ý: "ghi thì flush ra main memory, đọc thì đọc từ main memory" là mô hình <em>đơn giản hóa</em> (JSR-133 FAQ cũng giải thích theo cách này). Spec (JLS chương 17) định nghĩa bằng happens-before. Trên phần cứng thật, cache CPU vốn được giữ đồng bộ (cache coherence); giá trị cũ thường đến từ JIT giữ biến trong register / đưa lệnh đọc ra ngoài vòng lặp, và từ store buffer + reordering của CPU.
 - Thiết lập happens-before: ghi vào volatile field happens-before bất kỳ đọc nào tiếp theo của field đó.
 - KHÔNG atomic cho compound op: <code>count++</code> là read-modify-write; volatile không làm nó an toàn — dùng <code>AtomicInteger</code>.
 - Trường hợp dùng: status flag, stop signal, lazy initialization singleton (với DCL pattern).
@@ -103,7 +104,7 @@ Dùng <code>volatile</code> cho flag single-writer, multi-reader. Với counter 
 <details>
 <summary><strong>volatile có phải alternative cho synchronized không?</strong></summary>
 
-**A:** Không hoàn toàn. volatile và synchronized đều đảm bảo visibility. Nhưng synchronized còn đảm bảo atomicity (mutual exclusion) — chỉ một thread execute critical section tại một thời điểm. volatile chỉ phù hợp khi: (1) chỉ một thread write, nhiều thread read, (2) operation là atomic by nature (assignment của reference, long/double trên 64-bit JVM). Nếu cần compound operation (check-then-act, read-modify-write) → phải dùng synchronized hoặc Atomic class.
+**A:** Không hoàn toàn. volatile và synchronized đều đảm bảo visibility. Nhưng synchronized còn đảm bảo atomicity (mutual exclusion) — chỉ một thread execute critical section tại một thời điểm. volatile chỉ phù hợp khi: (1) chỉ một thread write, nhiều thread read, (2) thao tác chỉ là một lần đọc hoặc một lần ghi. Đọc/ghi reference luôn atomic; với `long`/`double`, JLS 17.7 cho phép một lần ghi **không** volatile bị tách thành hai lần ghi 32-bit — chỉ khi khai báo `volatile` thì đọc/ghi mới chắc chắn atomic. Nếu cần compound operation (check-then-act, read-modify-write) → phải dùng synchronized hoặc Atomic class.
 
 </details>
 

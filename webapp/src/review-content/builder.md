@@ -1,7 +1,7 @@
 ---
 key: "Builder"
 title: "Builder Pattern"
-crumb: "10. Design Patterns › Creational"
+crumb: "9. Design Patterns › Creational"
 ---
 
 Builder xây dựng object phức tạp từng bước với fluent API, giải quyết vấn đề telescoping constructor và cho phép object bất biến với nhiều optional field.

@@ -1,7 +1,7 @@
 ---
 key: "Producer & Consumer"
 title: "Kafka Producer & Consumer"
-crumb: "6. Messaging › Kafka"
+crumb: "12. Messaging › Kafka"
 ---
 
 Producer publish message lên Kafka topic; Consumer đọc message và commit offset để theo dõi tiến trình — với delivery guarantee có thể cấu hình ở cả hai phía.

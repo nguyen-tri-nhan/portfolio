@@ -1,7 +1,7 @@
 ---
 key: "Singleton"
 title: "Singleton Pattern"
-crumb: "10. Design Patterns › Creational"
+crumb: "9. Design Patterns › Creational"
 ---
 
 Singleton đảm bảo chỉ tồn tại một instance mỗi JVM — trong Spring, tất cả bean là singleton theo mặc định; hiếm khi cần implement Singleton thủ công.

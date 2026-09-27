@@ -1,7 +1,7 @@
 ---
 key: "GROUP BY / HAVING"
 title: "GROUP BY / HAVING"
-crumb: "4. Database › SQL"
+crumb: "10. Database › SQL"
 ---
 
 GROUP BY gộp hàng thành nhóm để aggregate; HAVING lọc nhóm sau aggregate — tương tự WHERE nhưng cho kết quả aggregated.

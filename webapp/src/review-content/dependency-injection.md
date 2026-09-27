@@ -1,7 +1,7 @@
 ---
 key: "Dependency Injection"
 title: "Dependency Injection"
-crumb: "3. Spring Ecosystem › Spring Core"
+crumb: "7. Spring Ecosystem › Spring Core"
 ---
 
 DI là hình thức cụ thể của IoC, nơi dependency được container cung cấp thay vì class tự tạo — cho phép loose coupling và testability.
@@ -102,7 +102,7 @@ public class DefaultPaymentGateway implements PaymentGateway { /* used when no @
 
 ## Ứng Dụng Thực Tế
 
-Trong test, inject mock implementation qua constructor — không cần Spring test context. Điều này làm unit test nhanh (< 1ms startup). Dùng <code>@MockBean</code> trong integration test khi cần Spring context nhưng muốn thay một bean.
+Trong test, inject mock implementation qua constructor — không cần Spring test context. Điều này làm unit test nhanh (< 1ms startup). Dùng <code>@MockitoBean</code> (thay cho <code>@MockBean</code> đã bị loại bỏ ở Spring Boot 4) trong integration test khi cần Spring context nhưng muốn thay một bean.
 
 ## Câu Hỏi Phỏng Vấn
 

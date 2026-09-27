@@ -1,7 +1,7 @@
 ---
 key: "Auto Configuration"
 title: "Auto Configuration"
-crumb: "3. Spring Ecosystem › Spring Boot"
+crumb: "7. Spring Ecosystem › Spring Boot"
 ---
 
 Auto-configuration kiểm tra classpath, bean hiện có và properties để tự động đăng ký bean default hợp lý — giảm đáng kể cấu hình thủ công.

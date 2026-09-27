@@ -1,7 +1,7 @@
 ---
 key: "Stateless Services"
 title: "Stateless Service"
-crumb: "7. System Design › Scalability"
+crumb: "13. System Design › Scalability"
 ---
 
 Stateless service không lưu trữ dữ liệu session trong process; mỗi request mang tất cả context cần thiết, cho phép bất kỳ instance nào xử lý bất kỳ request nào và horizontal scaling dễ dàng.

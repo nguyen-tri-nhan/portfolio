@@ -1,7 +1,7 @@
 ---
 key: "CAP Theorem"
 title: "CAP Theorem"
-crumb: "7. System Design"
+crumb: "13. System Design"
 ---
 
 CAP Theorem phát biểu rằng hệ thống phân tán có thể đảm bảo tối đa hai trong ba: Consistency (tất cả node thấy cùng dữ liệu), Availability (mọi request nhận response) và Partition Tolerance (tồn tại khi network chia cắt).

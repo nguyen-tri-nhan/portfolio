@@ -1,7 +1,7 @@
 ---
 key: kotlin-higher-order-functions
 title: "Higher-Order Functions & Inline Functions"
-crumb: "13. Kotlin > Kotlin Features"
+crumb: "3. Kotlin > Kotlin Features"
 ---
 
 Higher-order function nhận function làm tham số hoặc trả về function — nền tảng của functional programming trong Kotlin. `inline` function loại bỏ overhead của lambda allocation.

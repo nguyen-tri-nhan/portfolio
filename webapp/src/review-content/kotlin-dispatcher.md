@@ -1,7 +1,7 @@
 ---
 key: kotlin-dispatcher
 title: "Coroutine Dispatchers trong Kotlin"
-crumb: "13. Kotlin > Coroutines"
+crumb: "3. Kotlin > Coroutines"
 ---
 
 Dispatcher quyết định coroutine chạy trên thread nào — Kotlin cung cấp các Dispatcher tối ưu cho từng loại tác vụ: IO-bound, CPU-bound, và UI thread.

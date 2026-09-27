@@ -1,7 +1,7 @@
 ---
 key: "Observer"
 title: "Observer Pattern"
-crumb: "10. Design Patterns › Behavioral"
+crumb: "9. Design Patterns › Behavioral"
 ---
 
 Observer định nghĩa quan hệ one-to-many trong đó subject thông báo tất cả observer đã đăng ký khi state thay đổi — nền tảng của event-driven system.

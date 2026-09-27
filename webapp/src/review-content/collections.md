@@ -89,7 +89,7 @@ Dùng <code>List.of()</code> và <code>Map.of()</code> cho immutable collection.
 <details>
 <summary><strong>HashMap xử lý hash collision như thế nào?</strong></summary>
 
-**A:** Java HashMap dùng **chaining**: mỗi bucket là một linked list (Java 7-) hoặc TreeMap khi chain dài ≥ 8 (Java 8+ — `TREEIFY_THRESHOLD`). Khi put: tính `hashCode()`, find bucket, traverse chain tìm key equal; nếu không có → add node. Load factor (default 0.75): khi 75% capacity → resize gấp đôi và rehash. TreeMap trong bucket: O(log n) thay vì O(n) khi nhiều collision — tránh worst case hash DoS.
+**A:** Java HashMap dùng **chaining**: mỗi bucket là một linked list; từ Java 8, khi một bucket có **hơn 8 node** (`TREEIFY_THRESHOLD = 8`) **và** table capacity ≥ 64 (`MIN_TREEIFY_CAPACITY`), bucket được chuyển thành cây đỏ-đen gồm các `TreeNode` (không phải `java.util.TreeMap`). Nếu capacity < 64, HashMap resize thay vì treeify. Khi put: tính `hashCode()`, find bucket, traverse chain tìm key equal; nếu không có → add node. Load factor (default 0.75): khi 75% capacity → resize gấp đôi và rehash. Tree bin: O(log n) thay vì O(n) khi nhiều collision — tránh worst case hash DoS.
 
 </details>
 

@@ -1,7 +1,7 @@
 ---
 key: python-internals
 title: Python Internals — CPython, Bytecode & Import System
-crumb: 14. Python > Python Internals
+crumb: 4. Python > Python Internals
 ---
 
 Hiểu CPython internals — bytecode, LEGB scope rule, và import system — giúp debug hiệu quả, optimize performance, và tránh các pitfall phổ biến về namespace và module loading.

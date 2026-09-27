@@ -24,7 +24,7 @@ Trong phỏng vấn, mô tả quy trình hệ thống: 1) Quan sát triệu ch�
 <details>
 <summary><strong>Mô tả cách chẩn đoán CPU cao trong ứng dụng Java.</strong></summary>
 
-**A:** (1) `top -H -p <pid>` — tìm thread dùng CPU nhiều nhất (TID). (2) Convert TID decimal → hex. (3) `jstack <pid> | grep -A 30 "nid=0x<hex>"` — xem stack trace của thread đó. Thường thấy: infinite loop, busy wait, CAS spin. (4) Async-profiler (`./profiler.sh -e cpu -d 30 -f cpu.html <pid>`) — flame graph trực quan. (5) Check GC: nếu GC thread ngốn CPU → heap full, memory leak. (6) JIT compilation: warm-up phase có thể có CPU spike.
+**A:** (1) `top -H -p <pid>` — tìm thread dùng CPU nhiều nhất (TID). (2) Convert TID decimal → hex. (3) `jstack <pid> | grep -A 30 "nid=0x<hex>"` — xem stack trace của thread đó. Thường thấy: infinite loop, busy wait, CAS spin. (4) Async-profiler (`asprof -e cpu -d 30 -f cpu.html <pid>`) — flame graph trực quan. (5) Check GC: nếu GC thread ngốn CPU → heap full, memory leak. (6) JIT compilation: warm-up phase có thể có CPU spike.
 
 </details>
 
@@ -38,6 +38,6 @@ Trong phỏng vấn, mô tả quy trình hệ thống: 1) Quan sát triệu ch�
 <details>
 <summary><strong>Làm sao xác định method nào đang ngốn CPU nhất?</strong></summary>
 
-**A:** **Async-profiler** là tool tốt nhất: `./profiler.sh -e cpu -d 30 -f cpu.html <pid>` → generate **flame graph** — chiều rộng của block tương ứng % CPU time. Nhìn vào block rộng nhất ở top → method hotspot. Không cần restart app. Alternative: **JFR (Java Flight Recorder)** + JMC: `jcmd <pid> JFR.start duration=60s filename=recording.jfr` → open trong JMC → Method Profiling tab. Dùng sampling-based profiler (không instrumentation) để minimize overhead.
+**A:** **Async-profiler** là tool tốt nhất: `asprof -e cpu -d 30 -f cpu.html <pid>` (bản trước 3.0: `./profiler.sh`) → generate **flame graph** — chiều rộng của block tương ứng % CPU time. Nhìn vào block rộng nhất ở top → method hotspot. Không cần restart app. Alternative: **JFR (Java Flight Recorder)** + JMC: `jcmd <pid> JFR.start duration=60s filename=recording.jfr` → open trong JMC → Method Profiling tab. Dùng sampling-based profiler (không instrumentation) để minimize overhead.
 
 </details>

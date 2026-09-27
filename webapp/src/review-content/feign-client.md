@@ -1,7 +1,7 @@
 ---
 key: "Feign Client"
 title: "Feign Client"
-crumb: "5. Microservices › Service Communication"
+crumb: "11. Microservices › Service Communication"
 ---
 
 Feign là HTTP client declarative tạo implementation từ interface có annotation, đơn giản hóa REST inter-service call với annotation kiểu Spring MVC.

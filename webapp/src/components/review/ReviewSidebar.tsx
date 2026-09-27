@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { REVIEW_TOPICS, ReviewCategory, ReviewTopic } from '../../review-content/topics'
 import { ChevronRight } from 'lucide-react'
+import { ROADMAP_KEY } from '../../review-content/roadmap'
 
 interface Props {
   selected: string
@@ -115,6 +116,18 @@ export default function ReviewSidebar({ selected, onSelect, search, onSearch }: 
                      focus:border-blue-500 transition-colors"
         />
       </div>
+
+      <button
+        onClick={() => onSelect(ROADMAP_KEY, 'Lộ trình Backend')}
+        className={`mx-3 mt-3 mb-1 flex items-center gap-2 rounded px-3 py-2 text-sm font-medium
+          border transition-colors
+          ${selected === ROADMAP_KEY
+            ? 'border-blue-500/60 bg-blue-950/40 text-blue-300'
+            : 'border-slate-700 text-slate-300 hover:bg-white/5'}`}
+      >
+        <span>🧭</span>
+        <span>Lộ trình học — bắt đầu ở đây</span>
+      </button>
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-1 scrollbar-thin scrollbar-thumb-slate-700">

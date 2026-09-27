@@ -9,8 +9,9 @@ GC tự động thu hồi bộ nhớ heap của các object không còn được
 ## Điểm Chính
 
 - <strong>G1GC</strong> (mặc định Java 9+): region-based, mục tiêu pause dự đoán được, lựa chọn tốt cho mục đích chung.
-- <strong>ZGC</strong> (Java 15+ production): pause dưới mili-giây, scale đến heap hàng TB.
+- <strong>ZGC</strong> (Java 15+ production): pause dưới mili-giây, scale đến heap hàng TB. Generational ZGC có từ JDK 21 (JEP 439), là chế độ mặc định từ JDK 23 (JEP 474); JDK 24 xóa chế độ non-generational (JEP 490).
 - <strong>Shenandoah</strong>: pause cực thấp, dự án open-source của Red Hat.
+- <strong>CMS</strong> đã bị xóa ở JDK 14 (JEP 363) — tài liệu/tuning cũ nhắc CMS không còn áp dụng.
 - Serial/Parallel GC: đơn giản, tập trung throughput, tốt cho batch job.
 - GC roots: thread stack, static field, JNI reference — object có thể reach từ root là còn sống.
 - Tránh finalizer; dùng <code>Cleaner</code> hoặc <code>try-with-resources</code> để dọn tài nguyên.
@@ -85,7 +86,7 @@ Với microservice có SLA latency nghiêm ngặt, dùng ZGC hoặc Shenandoah. 
 <details>
 <summary><strong>Minor GC và Full GC khác nhau thế nào?</strong></summary>
 
-**A:** Minor GC (Young GC) chỉ thu gom Young Generation (Eden + Survivor), thường dưới 50ms và xảy ra thường xuyên. Full GC thu gom toàn bộ Heap (Young + Old + Metaspace), là Stop-The-World và có thể mất vài giây — gây latency spike nghiêm trọng trong production. G1GC giảm thiểu Full GC bằng Mixed GC — thu gom Young + một phần Old region theo incremental, giữ pause time dự đoán được. Mục tiêu: giữ Full GC dưới 1 lần/ngày trong production.
+**A:** Minor GC (Young GC) chỉ thu gom Young Generation (Eden + Survivor), thường ngắn và xảy ra thường xuyên. Full GC thu gom toàn bộ Heap (Young + Old, có thể kèm unload class khỏi Metaspace), là Stop-The-World và có thể mất vài giây — gây latency spike nghiêm trọng trong production. G1GC giảm thiểu Full GC bằng Mixed GC — thu gom Young + một phần Old region theo incremental, giữ pause time dự đoán được. Full GC lặp lại thường xuyên là dấu hiệu heap quá nhỏ so với live set hoặc có memory leak — xem GC log.
 
 </details>
 

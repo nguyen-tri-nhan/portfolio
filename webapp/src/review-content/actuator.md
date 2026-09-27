@@ -1,7 +1,7 @@
 ---
 key: "Actuator"
 title: "Spring Boot Actuator"
-crumb: "3. Spring Ecosystem › Spring Boot"
+crumb: "7. Spring Ecosystem › Spring Boot"
 ---
 
 Actuator expose các operational endpoint cho health check, metrics, thông tin môi trường, thread dump và nhiều hơn — thiết yếu cho production monitoring và readiness/liveness probe.

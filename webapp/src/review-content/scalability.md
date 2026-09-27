@@ -1,7 +1,7 @@
 ---
 key: "Scalability"
 title: "Scalability"
-crumb: "7. System Design"
+crumb: "13. System Design"
 ---
 
 Scalability là khả năng xử lý tải tăng trưởng bằng cách thêm tài nguyên — theo chiều ngang (nhiều node hơn) hoặc chiều dọc (node lớn hơn) — với thiết kế stateless là yếu tố then chốt.

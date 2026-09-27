@@ -1,7 +1,7 @@
 ---
 key: "Optimistic / Pessimistic Locking"
 title: "Optimistic vs Pessimistic Locking"
-crumb: "4. Database › JPA / Hibernate"
+crumb: "10. Database › JPA / Hibernate"
 ---
 
 Optimistic locking kiểm tra xung đột tại thời điểm ghi (dùng version field); pessimistic locking ngăn xung đột bằng cách giữ DB lock trong khi đọc.

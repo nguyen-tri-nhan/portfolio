@@ -1,7 +1,7 @@
 ---
 key: "Atomic Classes"
 title: "Atomic Classes"
-crumb: "2. Concurrency"
+crumb: "6. Concurrency"
 ---
 
 Package <code>java.util.concurrent.atomic</code> của Java cung cấp các kiểu nguyên thủy thread-safe lock-free sử dụng lệnh phần cứng Compare-And-Swap (CAS).

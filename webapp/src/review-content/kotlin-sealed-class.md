@@ -1,7 +1,7 @@
 ---
 key: kotlin-sealed-class
 title: "Sealed Class trong Kotlin"
-crumb: "13. Kotlin > Kotlin Cơ Bản"
+crumb: "3. Kotlin > Kotlin Cơ Bản"
 ---
 
 Sealed class là một class phân cấp đóng (closed hierarchy) — tập hợp các subclass được biết tại compile time, cho phép `when` expression kiểm tra toàn diện (exhaustive) mà không cần `else`.

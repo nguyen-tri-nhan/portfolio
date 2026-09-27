@@ -1,7 +1,7 @@
 ---
 key: "Write-Through / Write-Behind"
 title: "Write-Through & Write-Behind"
-crumb: "7. System Design › Caching"
+crumb: "13. System Design › Caching"
 ---
 
 Write-Through cập nhật cache và DB đồng bộ trên mỗi lần ghi (strong consistency); Write-Behind (Write-Back) cập nhật cache ngay lập tức, DB bất đồng bộ (throughput cao hơn, nguy cơ mất dữ liệu).

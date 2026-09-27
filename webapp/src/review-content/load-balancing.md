@@ -1,7 +1,7 @@
 ---
 key: "Load Balancing"
 title: "Load Balancing"
-crumb: "7. System Design"
+crumb: "13. System Design"
 ---
 
 Load balancer phân phối request đến đến nhiều instance service để tối đa hóa throughput, giảm thiểu latency và đảm bảo high availability.

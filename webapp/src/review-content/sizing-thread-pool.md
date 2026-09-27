@@ -1,7 +1,7 @@
 ---
 key: "Sizing Thread Pool"
 title: "Sizing Thread Pool"
-crumb: "7. System Design › High Concurrency"
+crumb: "13. System Design › High Concurrency"
 ---
 
 Kích thước thread pool ảnh hưởng trực tiếp đến throughput và latency. Quá ít thread lãng phí CPU core; quá nhiều gây context-switch overhead và OOM. Kích thước tối ưu phụ thuộc vào loại workload.
@@ -67,7 +67,7 @@ Pool thread riêng cho từng downstream dependency là Bulkhead pattern — pay
 <details>
 <summary><strong>Công thức tính thread pool size là gì?</strong></summary>
 
-**A:** **CPU-bound tasks**: `N_threads = N_cpus + 1` (một thread thêm để tận dụng khi thread khác tạm dừng). **I/O-bound tasks**: `N_threads = N_cpus × (1 + wait_time / service_time)`. Wait time/service time ratio: nếu task block 90% (9ms wait, 1ms compute) → ratio = 9 → `N_threads = N_cpus × 10`. **Thực tế**: đo bằng load testing, tìm throughput plateau — thêm thread không tăng throughput → đã đủ. Little's Law: `N = λ × W` (N = concurrent users, λ = request rate, W = response time). Virtual threads (Java 21): không cần size — JVM manage.
+**A:** **CPU-bound tasks**: `N_threads = N_cpus + 1` (một thread thêm để tận dụng khi thread khác tạm dừng). **I/O-bound tasks**: `N_threads = N_cpus × (1 + wait_time / service_time)`. Wait time/service time ratio: nếu task block 90% (9ms wait, 1ms compute) → ratio = 9 → `N_threads = N_cpus × 10`. **Thực tế**: đo bằng load testing, tìm throughput plateau — thêm thread không tăng throughput → đã đủ. Little's Law: `N = λ × W` (N = concurrent users, λ = request rate, W = response time). Virtual threads (Java 21): không cần pool cho thread nữa (và không nên pool virtual thread), nhưng vẫn phải giới hạn số tác vụ đồng thời tới tài nguyên có hạn — connection pool DB, rate limit của API bên ngoài — ví dụ bằng `Semaphore`. Ngoài ra số thread cũng nên khớp với kích thước connection pool: 40 thread dùng chung pool 10 connection thì 30 thread sẽ chỉ đứng chờ connection.
 
 </details>
 

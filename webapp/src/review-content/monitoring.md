@@ -1,7 +1,7 @@
 ---
 key: "Monitoring"
 title: "Monitoring & Observability"
-crumb: "8. Cloud & DevOps"
+crumb: "15. Cloud & DevOps"
 ---
 
 Observability cung cấp insight vào distributed system qua ba trụ cột: Metric (cái gì), Log (tại sao) và Trace (ở đâu) — cho phép phát hiện incident nhanh và phân tích nguyên nhân gốc.

@@ -1,7 +1,7 @@
 ---
 key: "Resilience4j"
 title: "Resilience4j"
-crumb: "5. Microservices › Circuit Breaker"
+crumb: "11. Microservices › Circuit Breaker"
 ---
 
 Resilience4j là thư viện fault tolerance nhẹ cho Java cung cấp Circuit Breaker, Retry, Rate Limiter, Bulkhead và TimeLimiter dưới dạng decorator có thể kết hợp.

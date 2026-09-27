@@ -1,7 +1,7 @@
 ---
 key: dotnet-testing
 title: ".NET Testing — xUnit, Moq & Integration Testing"
-crumb: "16. .NET > Testing"
+crumb: "21. .NET > Testing"
 ---
 
 .NET testing ecosystem: xUnit (preferred, mặc định trong ASP.NET Core templates), NUnit, MSTest. Mocking: Moq (phổ biến nhất) hoặc NSubstitute. Assertion: FluentAssertions cho readable test. Integration testing: `WebApplicationFactory<T>` built-in — tương tự Spring `@SpringBootTest` + MockMvc.

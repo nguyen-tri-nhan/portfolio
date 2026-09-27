@@ -1,7 +1,7 @@
 ---
 key: "Prototype"
 title: "Prototype Pattern"
-crumb: "10. Design Patterns › Creational"
+crumb: "9. Design Patterns › Creational"
 ---
 
 Prototype tạo object bằng cách clone instance có sẵn, tránh khởi tạo tốn kém khi tạo nhiều object tương tự.

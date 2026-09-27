@@ -1,7 +1,7 @@
 ---
 key: python-async-await
 title: Python async/await & asyncio
-crumb: 14. Python > Async & Web
+crumb: 4. Python > Async & Web
 ---
 
 asyncio cung cấp event loop-based concurrency cho IO-bound tasks — một thread xử lý hàng nghìn concurrent connection bằng cách cooperative multitasking, tương tự reactive programming (WebFlux) trong Java nhưng với syntax trực quan hơn.

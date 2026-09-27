@@ -22,7 +22,18 @@ Các JVM flag quan trọng cho heap sizing, chọn GC, logging và diagnostics. 
 
 ```bash
 # Startup production — Spring Boot JAR
-java   -server   -Xms2g -Xmx2g   -XX:+UseG1GC   -XX:MaxGCPauseMillis=200   -XX:G1HeapRegionSize=16m   -XX:+HeapDumpOnOutOfMemoryError   -XX:HeapDumpPath=/var/log/app/   -XX:+ExitOnOutOfMemoryError   -Xlog:gc*:file=/var/log/app/gc.log:time,uptime:filecount=5,filesize=20m   -Dfile.encoding=UTF-8   -Dspring.profiles.active=prod   -jar app.jar
+java \
+  -Xms2g -Xmx2g \
+  -XX:+UseG1GC \
+  -XX:MaxGCPauseMillis=200 \
+  -XX:G1HeapRegionSize=16m \
+  -XX:+HeapDumpOnOutOfMemoryError \
+  -XX:HeapDumpPath=/var/log/app/ \
+  -XX:+ExitOnOutOfMemoryError \
+  -Xlog:gc*:file=/var/log/app/gc.log:time,uptime:filecount=5,filesize=20m \
+  -Dfile.encoding=UTF-8 \
+  -Dspring.profiles.active=prod \
+  -jar app.jar
 
 # Quy tắc trong container:
 # -Xmx = ~75% memory limit của container

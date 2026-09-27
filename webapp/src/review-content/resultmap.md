@@ -1,7 +1,7 @@
 ---
 key: "ResultMap"
 title: "ResultMap — Ánh Xạ Kết Quả Phức Tạp"
-crumb: "4. Database › MyBatis"
+crumb: "10. Database › MyBatis"
 ---
 
 ResultMap định nghĩa mapping tường minh từ cột sang field cho JOIN query, nested object (association = has-one), và nested collection (collection = has-many). Đây là cách MyBatis xử lý dữ liệu quan hệ mà không gây N+1.

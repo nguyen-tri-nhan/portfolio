@@ -1,7 +1,7 @@
 ---
 key: "Đọc EXPLAIN Plan"
 title: "Đọc EXPLAIN Plan"
-crumb: "4. Database › MySQL Deep Dive"
+crumb: "10. Database › MySQL Deep Dive"
 ---
 
 EXPLAIN hiển thị cách MySQL thực thi query: join type, index dùng, số row ước tính, và các thao tác phụ. Đây là công cụ đầu tiên cần dùng khi optimize slow query.

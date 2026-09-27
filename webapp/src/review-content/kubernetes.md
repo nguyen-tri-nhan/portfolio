@@ -1,7 +1,7 @@
 ---
 key: "Kubernetes"
 title: "Kubernetes"
-crumb: "8. Cloud & DevOps"
+crumb: "15. Cloud & DevOps"
 ---
 
 Kubernetes orchestrate containerized workload — schedule Pod lên Node, quản lý scaling và self-healing, cung cấp service discovery, config management và rolling deployment.
@@ -60,7 +60,7 @@ Pod dùng PVC → PVC request StorageClass "gp3"
 | Object | Vai trò |
 |--------|---------|
 | **HPA** | Scale số replica theo CPU/memory/custom metric |
-| **PodDisruptionBudget (PDB)** | Giới hạn số pod bị interrupt cùng lúc khi drain node / rolling update |
+| **PodDisruptionBudget (PDB)** | Giới hạn số pod bị gián đoạn *tự nguyện* qua Eviction API (`kubectl drain`, nâng cấp node). **Không** giới hạn rolling update của Deployment — cái đó do `maxSurge`/`maxUnavailable` quyết định |
 | **ResourceQuota** | Giới hạn tổng resource (CPU, memory, pod count) cho 1 namespace |
 | **LimitRange** | Default và max/min `requests/limits` per pod trong namespace |
 | **PriorityClass** | Pod priority — high priority pod có thể evict pod thấp hơn khi node thiếu resource |
@@ -164,7 +164,9 @@ spec:
           failureThreshold: 3
 
         # readinessProbe: remove pod from Service endpoints if not ready
-        # (e.g., DB connection pool exhausted, downstream dependency down)
+        # (e.g., still warming up, shutting down). Cân nhắc kỹ trước khi đưa DB / dịch vụ DÙNG CHUNG
+        # vào readiness: dịch vụ đó chết → MỌI pod cùng bị gỡ khỏi Service → toàn bộ app ngừng phục vụ.
+        # Spring Boot mặc định không thêm check hệ thống bên ngoài vào probe (Actuator docs).
         readinessProbe:
           httpGet: {path: /actuator/health/readiness, port: 8080}
           initialDelaySeconds: 30
@@ -194,7 +196,7 @@ hpa.yaml           ← HorizontalPodAutoscaler (auto-scaling)
 
 **Full Production (8-10 file)**:
 ```
-+ pdb.yaml           ← PodDisruptionBudget (min pods khi rolling update)
++ pdb.yaml           ← PodDisruptionBudget (giới hạn pod bị evict khi drain node)
 + serviceaccount.yaml ← RBAC identity
 + networkpolicy.yaml  ← restrict pod-to-pod traffic
 + pvc.yaml            ← PersistentVolumeClaim (nếu cần persistent storage)
@@ -225,13 +227,15 @@ spec:
 ```
 
 ```yaml
-# pdb.yaml — đảm bảo luôn có ít nhất 2 pod trong khi drain node / rolling update
+# pdb.yaml — khi drain node (Eviction API), mỗi lần chỉ cho evict tối đa 1 pod.
+# Không dùng minAvailable: 2 ở đây: HPA có thể scale xuống còn 2 replica → mọi eviction
+# bị từ chối → kubectl drain treo. PDB KHÔNG áp dụng cho rolling update của Deployment.
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: order-pdb
 spec:
-  minAvailable: 2
+  maxUnavailable: 1
   selector:
     matchLabels:
       app: order-service
@@ -243,9 +247,12 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: order-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+  # Không dùng nginx.ingress.kubernetes.io/rewrite-target: / ở đây — annotation đó viết lại MỌI
+  # đường dẫn khớp /orders thành "/" (/orders/42 → /). Chỉ cần rewrite khi app không phục vụ dưới /orders,
+  # và khi đó phải dùng regex với capture group (path: /orders(/|$)(.*), pathType: ImplementationSpecific,
+  # rewrite-target: /$2) — xem docs ingress-nginx "Rewrite".
 spec:
+  ingressClassName: nginx
   rules:
     - host: api.example.com
       http:
@@ -260,6 +267,28 @@ spec:
   tls:
     - hosts: [api.example.com]
       secretName: tls-secret
+```
+
+```yaml
+# httproute.yaml — cùng routing bằng Gateway API (thay thế được khuyến nghị cho Ingress).
+# Gateway (điểm vào, listener, TLS) do team platform tạo; team service chỉ khai báo HTTPRoute.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: order-route
+spec:
+  parentRefs:
+    - name: public-gateway          # Gateway dùng chung của cluster
+  hostnames:
+    - "api.example.com"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /orders
+      backendRefs:
+        - name: order-service
+          port: 80
 ```
 
 ```yaml
@@ -381,8 +410,16 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-{{ .Chart.Name }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}   # bật HPA thì để HPA quản lý số replica
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
   template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}           # phải khớp selector
     spec:
       containers:
         - name: {{ .Chart.Name }}
@@ -401,9 +438,6 @@ spec:
               path: {{ .Values.probes.liveness.path }}
               port: {{ .Values.service.targetPort }}
             initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
-          {{- if .Values.autoscaling.enabled }}
-          # HPA sẽ handle replicas — không hardcode
-          {{- end }}
 ```
 
 **Override values.yaml theo môi trường:**
@@ -417,10 +451,11 @@ helm upgrade --install order-service ./my-service \
   --set config.APP_ENV=staging \
   --namespace staging
 
-# Deploy lên production
+# Deploy lên production — values.production.yaml là file override riêng cho prod
+# (không đặt comment sau dấu \ nối dòng: shell sẽ hiểu sai lệnh)
 helm upgrade --install order-service ./my-service \
   --values values.yaml \
-  --values values.production.yaml \   # override file riêng cho prod
+  --values values.production.yaml \
   --namespace production
 ```
 
@@ -435,7 +470,7 @@ autoscaling:
 
 ## Ứng Dụng Thực Tế
 
-Luôn đặt resource <code>requests</code> và <code>limits</code> — nếu không, HPA không thể tính utilization và pod có thể được schedule trên node quá tải. Map Spring Boot Actuator health endpoint với liveness/readiness probe. Dùng PDB để tránh downtime khi drain node — <code>minAvailable: 2</code> đảm bảo rolling update không làm drop traffic.
+Luôn đặt resource <code>requests</code> và <code>limits</code> — nếu không, HPA không thể tính utilization và pod có thể được schedule trên node quá tải. Map Spring Boot Actuator health endpoint với liveness/readiness probe. Dùng PDB để drain node không evict quá nhiều pod cùng lúc; còn rolling update không bị PDB giới hạn — cấu hình bằng <code>maxSurge</code>/<code>maxUnavailable</code> và readiness probe.
 
 ## Câu Hỏi Phỏng Vấn
 
@@ -449,14 +484,14 @@ Luôn đặt resource <code>requests</code> và <code>limits</code> — nếu kh
 <details>
 <summary><strong>Liveness probe và Readiness probe khác nhau như thế nào?</strong></summary>
 
-**A:** **Liveness**: kiểm tra app có đang running không. Fail → K8s restart container. Dùng cho: deadlock detection, hung process. Endpoint: `/actuator/health/liveness`. **Readiness**: kiểm tra app có sẵn sàng nhận traffic không. Fail → K8s remove pod khỏi Service endpoints (không route traffic). Dùng khi: app đang warmup, cache loading, DB connection không sẵn sàng. Endpoint: `/actuator/health/readiness`. Startup probe (K8s 1.16+): cho slow-starting app — disable liveness check trong startup period để tránh restart loop.
+**A:** **Liveness**: kiểm tra app có đang running không. Fail → K8s restart container. Dùng cho: deadlock detection, hung process. Endpoint: `/actuator/health/liveness`. **Readiness**: kiểm tra app có sẵn sàng nhận traffic không. Fail → K8s remove pod khỏi Service endpoints (không route traffic). Dùng khi: app đang warmup, cache loading, đang shutdown. Cẩn thận khi đưa hệ thống bên ngoài dùng chung (DB, API khác) vào readiness — nó chết thì mọi pod cùng bị gỡ; và **không bao giờ** đưa chúng vào liveness, vì Kubernetes sẽ restart tất cả instance và gây lỗi dây chuyền (Spring Boot Actuator docs). Endpoint: `/actuator/health/readiness`. Startup probe (K8s 1.16+): cho slow-starting app — disable liveness check trong startup period để tránh restart loop.
 
 </details>
 
 <details>
 <summary><strong>ConfigMap và Secret khác nhau thế nào?</strong></summary>
 
-**A:** ConfigMap: non-sensitive configuration (app.properties, feature flags) — stored plaintext trong etcd. Secret: sensitive data (passwords, API keys, certificates) — base64 encoded (không encrypted by default). Để thực sự secure Secrets: bật etcd encryption at rest, dùng Sealed Secrets hoặc External Secrets Operator (pull từ AWS Secrets Manager / HashiCorp Vault). Secret inject vào Pod: environment variable (`secretKeyRef`) hoặc volume mount (file — prefer vì không expose trong `kubectl describe pod`).
+**A:** ConfigMap: non-sensitive configuration (app.properties, feature flags) — stored plaintext trong etcd. Secret: sensitive data (passwords, API keys, certificates) — base64 encoded (không encrypted by default). Để thực sự secure Secrets: bật etcd encryption at rest, dùng Sealed Secrets hoặc External Secrets Operator (pull từ AWS Secrets Manager / HashiCorp Vault). Secret inject vào Pod: environment variable (`secretKeyRef`) hoặc volume mount (file — thường được ưu tiên: file được cập nhật khi Secret đổi (trừ khi mount bằng `subPath`), còn biến môi trường chỉ đọc lúc container khởi động và bị process con kế thừa). Secret mặc định lưu **không mã hóa** trong etcd.
 
 </details>
 
@@ -470,14 +505,14 @@ Luôn đặt resource <code>requests</code> và <code>limits</code> — nếu kh
 <details>
 <summary><strong>HPA và PDB khác nhau thế nào?</strong></summary>
 
-**A:** **HPA** (HorizontalPodAutoscaler): tự động tăng/giảm số replica dựa trên metrics (CPU, memory, custom metrics). Scale-out khi CPU > threshold, scale-in khi load giảm. Cần `resources.requests` đặt đúng để HPA tính được utilization. **PDB** (PodDisruptionBudget): đảm bảo minimum số pod sống trong khi có *voluntary disruption* (drain node, rolling update). Ví dụ `minAvailable: 2` → K8s không được terminate pod nếu chỉ còn 2 pod running. HPA liên quan đến scaling, PDB liên quan đến availability — hai thứ bổ sung cho nhau.
+**A:** **HPA** (HorizontalPodAutoscaler): tự động tăng/giảm số replica dựa trên metrics (CPU, memory, custom metrics). Scale-out khi CPU > threshold, scale-in khi load giảm. Cần `resources.requests` đặt đúng để HPA tính được utilization. **PDB** (PodDisruptionBudget): giới hạn *voluntary disruption* đi qua Eviction API (drain node, nâng cấp node). Ví dụ `minAvailable: 2` → Eviction API từ chối evict nếu việc đó làm số pod sẵn sàng xuống dưới 2. Theo docs Kubernetes, PDB **không** giới hạn rolling update của Deployment/StatefulSet, không chặn việc xóa pod trực tiếp, và không ngăn được gián đoạn không tự nguyện (node chết). HPA liên quan đến scaling, PDB liên quan đến availability — hai thứ bổ sung cho nhau.
 
 </details>
 
 <details>
 <summary><strong>Ingress khác Service (LoadBalancer type) thế nào?</strong></summary>
 
-**A:** **Service LoadBalancer**: tạo một cloud load balancer riêng per service → tốn tiền (mỗi LB tính phí riêng), không có HTTP routing logic. **Ingress**: một Ingress Controller duy nhất (nginx, traefik) nhận tất cả HTTP/HTTPS traffic rồi route đến đúng Service theo host/path rules. Tiết kiệm hơn (1 LB cho toàn cluster), hỗ trợ TLS termination, path-based routing (`/orders → order-service`, `/payments → payment-service`), rate limiting, auth. Production luôn dùng Ingress + Service ClusterIP, không dùng Service LoadBalancer per microservice.
+**A:** **Service LoadBalancer**: tạo một cloud load balancer riêng per service → tốn tiền (mỗi LB tính phí riêng), không có HTTP routing logic. **Ingress**: một Ingress Controller duy nhất (nginx, traefik) nhận tất cả HTTP/HTTPS traffic rồi route đến đúng Service theo host/path rules. Tiết kiệm hơn (1 LB cho toàn cluster), hỗ trợ TLS termination, path-based routing (`/orders → order-service`, `/payments → payment-service`), rate limiting, auth. Mô hình phổ biến: một điểm vào L7 dùng chung + Service ClusterIP, thay vì một LoadBalancer cho mỗi microservice. Lưu ý 2026: dự án **ingress-nginx đã ngừng bảo trì từ 03/2026** (không còn bản vá bảo mật — thông báo của Kubernetes SIG Network); Kubernetes khuyến nghị chuyển sang **Gateway API** (`Gateway` + `HTTPRoute`) hoặc một Ingress controller khác còn được bảo trì.
 
 </details>
 

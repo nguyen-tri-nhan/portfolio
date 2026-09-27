@@ -1,15 +1,15 @@
 ---
 key: "ConfigMap & Secret"
 title: "ConfigMap & Secret"
-crumb: "8. Cloud & DevOps › Kubernetes"
+crumb: "15. Cloud & DevOps › Kubernetes"
 ---
 
-ConfigMap lưu cấu hình không nhạy cảm dưới dạng key-value; Secret lưu dữ liệu nhạy cảm (base64-encoded, mã hóa khi lưu) — cả hai có thể mount như env var hoặc volume file.
+ConfigMap lưu cấu hình không nhạy cảm dưới dạng key-value; Secret lưu dữ liệu nhạy cảm (chỉ base64-encode — theo docs Kubernetes, Secret mặc định được lưu <strong>không mã hóa</strong> trong etcd; phải bật encryption at rest) — cả hai có thể mount như env var hoặc volume file.
 
 ## Điểm Chính
 
 - <strong>ConfigMap</strong>: config không nhạy cảm (URL, feature flag, log level). Plaintext trong etcd.
-- <strong>Secret</strong>: dữ liệu nhạy cảm (password, API key, TLS cert). Base64 trong etcd; bật encryption-at-rest.
+- <strong>Secret</strong>: dữ liệu nhạy cảm (password, API key, TLS cert). Base64 (không phải mã hóa) trong etcd — bật encryption-at-rest và giới hạn quyền đọc Secret bằng RBAC.
 - Tùy chọn mount: biến môi trường, volume file hoặc đọc qua K8s API.
 - External Secrets Operator: sync secret từ AWS Secrets Manager, Vault, GCP Secret Manager vào K8s Secret.
 - Không bao giờ commit Secrets YAML với giá trị thật — dùng sealed secret hoặc external secrets operator.
@@ -28,6 +28,7 @@ data:
   LOG_LEVEL: "INFO"
   APP_FEATURE_FLAG: "true"
 
+---
 # Secret (values must be base64 encoded)
 apiVersion: v1
 kind: Secret
@@ -37,7 +38,8 @@ data:
   DB_PASSWORD: cGFzc3dvcmQxMjM=  # base64("password123")
   JWT_SECRET: c2VjcmV0a2V5      # base64("secretkey")
 
-# Mount in Deployment
+---
+# Mount in Deployment (trích đoạn spec của Pod template)
 spec:
   containers:
   - envFrom:
@@ -68,6 +70,6 @@ Dùng External Secrets Operator để sync từ AWS Secrets Manager hoặc Hashi
 <details>
 <summary><strong>Điều gì xảy ra với pod khi bạn cập nhật ConfigMap mà chúng mount?</strong></summary>
 
-**A:** Khi ConfigMap được mount dạng **volume**: K8s tự động cập nhật file trong pod sau một khoảng thời gian (mặc định 60s sync period) — pod không cần restart, nhưng app cần tự detect và reload config (inotify/watch). Khi ConfigMap inject dạng **env variable**: pod **không** tự cập nhật — phải restart pod để env mới có hiệu lực. Dùng volume mount để hot-reload config, env variable cho config ít thay đổi.
+**A:** Khi ConfigMap được mount dạng **volume**: K8s tự động cập nhật file trong pod sau một độ trễ — docs Kubernetes: tối đa bằng kubelet sync period + độ trễ lan truyền của cache — pod không cần restart, nhưng app cần tự detect và reload config (inotify/watch). Khi ConfigMap inject dạng **env variable**: pod **không** tự cập nhật — phải restart pod để env mới có hiệu lực. Ngoại lệ dễ quên: file mount bằng `subPath` cũng **không** nhận cập nhật. Dùng volume mount để hot-reload config, env variable cho config ít thay đổi.
 
 </details>

@@ -1,7 +1,7 @@
 ---
 key: "Dynamic SQL"
 title: "Dynamic SQL"
-crumb: "4. Database › MyBatis"
+crumb: "10. Database › MyBatis"
 ---
 
 MyBatis dynamic SQL dùng XML tag để build SQL có điều kiện — loại bỏ nối chuỗi thủ công trong khi giữ query dễ đọc và an toàn injection. Tag chính: &lt;if&gt;, &lt;where&gt;, &lt;set&gt;, &lt;foreach&gt;, &lt;choose&gt;.

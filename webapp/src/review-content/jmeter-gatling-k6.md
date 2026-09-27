@@ -1,7 +1,7 @@
 ---
 key: "JMeter / Gatling / k6"
 title: "JMeter, Gatling & k6"
-crumb: "9. Testing › Performance Testing"
+crumb: "14. Testing › Performance Testing"
 ---
 
 Ba tool performance testing phổ biến: JMeter (GUI/XML, chuẩn enterprise), Gatling (Scala DSL, report tốt), k6 (JavaScript DSL, hiện đại CI-first).

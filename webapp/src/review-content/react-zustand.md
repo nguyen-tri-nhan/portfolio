@@ -1,7 +1,7 @@
 ---
 key: react-zustand
 title: Zustand State Management
-crumb: 15. ReactJS > State Management
+crumb: 5. ReactJS > State Management
 ---
 
 Zustand là thư viện state management nhỏ gọn (~1KB) với API đơn giản — store là hook, không cần Provider, không cần boilerplate; selector mặc định tối ưu re-render.

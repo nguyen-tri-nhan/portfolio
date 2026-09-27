@@ -1,7 +1,7 @@
 ---
 key: "Starvation"
 title: "Starvation"
-crumb: "2. Concurrency"
+crumb: "6. Concurrency"
 ---
 
 Starvation xảy ra khi thread bị từ chối truy cập tài nguyên chia sẻ vĩnh viễn vì các thread khác (thường ưu tiên cao hơn) liên tục lấy trước.
@@ -9,8 +9,8 @@ Starvation xảy ra khi thread bị từ chối truy cập tài nguyên chia s�
 ## Điểm Chính
 
 - Gây ra bởi unfair lock (non-fair <code>ReentrantLock</code>), lạm dụng thread priority hoặc độc chiếm CPU.
-- Thread ưu tiên cao liên tục chiếm chỗ thread ưu tiên thấp trong scheduler của Java.
-- Sửa: dùng fair lock: <code>new ReentrantLock(true)</code> — thứ tự FIFO.
+- Thread priority của Java chỉ là gợi ý cho OS, không phải cơ chế điều phối đáng tin: trên Linux, HotSpot với <code>ThreadPriorityPolicy=0</code> (mặc định) bỏ qua priority hoàn toàn; virtual thread luôn có <code>NORM_PRIORITY</code>. Đừng dùng priority để ưu tiên công việc — dùng pool/queue riêng.
+- Sửa: dùng fair lock: <code>new ReentrantLock(true)</code> — thứ tự FIFO. Javadoc lưu ý fair lock không đảm bảo fairness của việc lập lịch thread, và <code>tryLock()</code> không timeout vẫn chen ngang.
 - Fair lock có throughput thấp hơn — overhead context switch cho ordering.
 - Liên quan đến livelock: thread đang hoạt động nhưng không tiến triển (ví dụ: mỗi thread nhường khi cái kia sẵn sàng).
 - <code>Thread.yield()</code> gợi ý scheduler nhưng không đảm bảo fairness.
@@ -105,14 +105,14 @@ Trong thực tế, starvation hiếm trong hệ thống thiết kế tốt. Nó 
 <details>
 <summary><strong>Thread starvation là gì và khác deadlock thế nào?</strong></summary>
 
-**A:** **Starvation**: thread không thể tiến triển vì **liên tục không được cấp resource** (CPU, lock) — các thread khác với priority cao hơn liên tục chiếm. Thread vẫn alive, không bị block mãi, nhưng không được chạy đủ. **Deadlock**: hai hoặc nhiều thread **block nhau** — cả hai chờ resource của nhau → không ai tiến được. Cả hai đều gây progress failure, nhưng nguyên nhân khác: deadlock = circular wait; starvation = unfair scheduling. Phát hiện starvation: thread dump thấy thread ở WAITING/BLOCKED trong thời gian rất dài.
+**A:** **Starvation**: thread không thể tiến triển vì **liên tục không được cấp resource** (CPU, lock) — các thread khác liên tục chiếm (unfair lock cho phép chen ngang, một thread giữ lock quá lâu, pool bị chiếm hết bởi task chậm). Thread vẫn alive, không bị block mãi, nhưng không được chạy đủ. **Deadlock**: hai hoặc nhiều thread **block nhau** — cả hai chờ resource của nhau → không ai tiến được. Cả hai đều gây progress failure, nhưng nguyên nhân khác: deadlock = circular wait; starvation = phân phối tài nguyên không công bằng. Phát hiện starvation: thread dump thấy thread ở WAITING/BLOCKED trong thời gian rất dài.
 
 </details>
 
 <details>
 <summary><strong>Fair lock giải quyết starvation thế nào?</strong></summary>
 
-**A:** `ReentrantLock(true)` — **fair lock**: acquire theo thứ tự FIFO — thread chờ lâu nhất được ưu tiên. Không có starvation. Unfair lock (default): không đảm bảo thứ tự — mỗi thread đến có thể "barge in" (chiếm lock ngay cả khi thread khác đang chờ) → starvation có thể xảy ra. Trade-off: fair lock slower throughput (không exploit thread locality, không barge-in) nhưng đảm bảo fairness. `synchronized` không fair. `Semaphore(permits, fair=true)` tương tự. Dùng fair lock khi: starvation là concern thực sự; unfair khi throughput quan trọng hơn fairness.
+**A:** `ReentrantLock(true)` — **fair lock**: acquire theo thứ tự FIFO — thread chờ lâu nhất được ưu tiên — giảm mạnh nguy cơ starvation, nhưng Javadoc lưu ý fairness của lock không đảm bảo fairness khi lập lịch thread, và `tryLock()` không timeout vẫn lấy lock ngay nếu đang rảnh. Unfair lock (default): không đảm bảo thứ tự — mỗi thread đến có thể "barge in" (chiếm lock ngay cả khi thread khác đang chờ) → starvation có thể xảy ra. Trade-off: fair lock slower throughput (không exploit thread locality, không barge-in) nhưng đảm bảo fairness. `synchronized` không fair. `Semaphore(permits, fair=true)` tương tự. Dùng fair lock khi: starvation là concern thực sự; unfair khi throughput quan trọng hơn fairness.
 
 </details>
 

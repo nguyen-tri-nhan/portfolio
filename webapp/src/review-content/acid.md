@@ -1,7 +1,7 @@
 ---
 key: "ACID"
 title: "Thuộc Tính ACID"
-crumb: "4. Database › Transactions"
+crumb: "10. Database › Transactions"
 ---
 
 ACID đảm bảo transaction DB được xử lý đáng tin cậy: Atomicity (tất cả hoặc không), Consistency (trạng thái hợp lệ), Isolation (ẩn concurrent), Durability (tồn tại sau crash).

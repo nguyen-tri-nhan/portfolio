@@ -1,7 +1,7 @@
 ---
 key: "REST vs gRPC"
 title: "REST vs gRPC"
-crumb: "5. Microservices › Service Communication"
+crumb: "11. Microservices › Service Communication"
 ---
 
 REST dùng HTTP/1.1 + JSON (dễ đọc, hỗ trợ rộng); gRPC dùng HTTP/2 + Protobuf (binary, strongly typed, nhanh hơn, hỗ trợ streaming).

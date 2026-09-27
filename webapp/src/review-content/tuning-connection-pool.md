@@ -1,7 +1,7 @@
 ---
 key: "Tuning Connection Pool"
 title: "Tuning Connection Pool cho High Concurrency"
-crumb: "7. System Design › High Concurrency"
+crumb: "13. System Design › High Concurrency"
 ---
 
 Dưới high concurrency, kết nối DB trở thành bottleneck. Pool quá nhỏ → thread chờ (latency spike); pool quá lớn → DB quá tải (query chậm cho tất cả). Cân bằng là then chốt.

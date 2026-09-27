@@ -1,7 +1,7 @@
 ---
 key: "Bulkhead & Isolation"
 title: "Bulkhead Pattern"
-crumb: "7. System Design › High Concurrency"
+crumb: "13. System Design › High Concurrency"
 ---
 
 Bulkhead cô lập component với resource pool riêng để bão hòa hoặc failure ở một component không cascade sang component khác — đặt tên theo vách ngăn tàu thủy ngăn một khoang bị ngập không làm chìm cả tàu.

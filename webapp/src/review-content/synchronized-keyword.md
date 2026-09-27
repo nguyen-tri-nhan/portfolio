@@ -1,7 +1,7 @@
 ---
 key: "synchronized keyword"
 title: "Từ Khóa synchronized"
-crumb: "2. Concurrency › Synchronization"
+crumb: "6. Concurrency › Synchronization"
 ---
 
 Từ khóa <code>synchronized</code> lấy intrinsic lock của object, đảm bảo mutual exclusion và thiết lập quan hệ happens-before cho memory visibility.
@@ -10,7 +10,7 @@ Từ khóa <code>synchronized</code> lấy intrinsic lock của object, đảm b
 
 - Reentrant: thread đang giữ lock có thể re-enter cùng synchronized block mà không tự deadlock.
 - Synchronized block giải phóng lock khi có exception — an toàn khỏi việc giữ lock vĩnh cửu.
-- Hiệu năng: biased locking (đường dẫn đơn thread nhanh) → lightweight lock (CAS) → heavyweight (OS mutex).
+- Hiệu năng: khi không tranh chấp, HotSpot lấy lock bằng một thao tác CAS (lightweight locking); khi có tranh chấp, lock được "phình" thành monitor đầy đủ và thread phải chờ có thể bị park. Biased locking — tối ưu cũ cho trường hợp chỉ một thread dùng lock — đã bị tắt mặc định và deprecate từ JDK 15 (JEP 374), đừng dựa vào nó khi giải thích hiệu năng.
 - Double-checked locking yêu cầu <code>volatile</code> trên field để hoạt động đúng (Java 5+).
 - Đừng bao giờ synchronize trên literal <code>String</code> hoặc integer autoboxed — chúng có thể được intern/share.
 

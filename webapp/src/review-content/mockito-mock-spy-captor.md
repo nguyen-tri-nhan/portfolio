@@ -1,7 +1,7 @@
 ---
 key: "Mockito (Mock / Spy / Captor)"
 title: "Mockito: Mock, Spy, Captor"
-crumb: "9. Testing › Mocking"
+crumb: "14. Testing › Mocking"
 ---
 
 Mockito cung cấp ba loại test double: Mock (kiểm soát hoàn toàn), Spy (fake một phần bọc object thật) và ArgumentCaptor (capture argument để assertion).

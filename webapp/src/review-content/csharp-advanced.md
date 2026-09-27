@@ -1,7 +1,7 @@
 ---
 key: csharp-advanced
 title: "C# Advanced — Generics, Delegates, Events & Pattern Matching"
-crumb: "16. .NET > C# Nâng Cao"
+crumb: "21. .NET > C# Nâng Cao"
 ---
 
 C# có nhiều tính năng language-level không có trong Java: Delegate type-safe, Events pub/sub, Expression trees cho LINQ-to-SQL, Pattern matching mạnh hơn Java, và Extension methods. Generics C# tương tự Java nhưng không có type erasure — runtime giữ type info đầy đủ.

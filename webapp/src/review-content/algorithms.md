@@ -1,7 +1,7 @@
 ---
 key: "Algorithms"
 title: "Thuật Toán Load Balancing"
-crumb: "7. System Design › Load Balancing"
+crumb: "13. System Design › Load Balancing"
 ---
 
 Thuật toán load balancing xác định cách phân phối request đến — từ round-robin đơn giản đến least-connections tiên tiến và consistent hashing.

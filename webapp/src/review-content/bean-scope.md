@@ -1,7 +1,7 @@
 ---
 key: "Bean Scope"
 title: "Phạm Vi Bean (Bean Scope)"
-crumb: "3. Spring Ecosystem › Spring Core"
+crumb: "7. Spring Ecosystem › Spring Core"
 ---
 
 Bean scope xác định Spring tạo bao nhiêu instance và thời gian sống của chúng — singleton (mặc định), prototype, request, session và application scope.

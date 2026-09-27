@@ -1,7 +1,7 @@
 ---
 key: kotlin-coroutines-advanced
 title: "Coroutines Nâng Cao — Exception & Cancellation"
-crumb: "13. Kotlin > Coroutines"
+crumb: "3. Kotlin > Coroutines"
 ---
 
 Xử lý ngoại lệ và hủy bỏ coroutine đúng cách là chìa khóa để viết concurrent code an toàn — Kotlin cung cấp `CoroutineExceptionHandler`, `SupervisorJob`, và cancellation protocol riêng.

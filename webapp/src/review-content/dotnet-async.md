@@ -1,7 +1,7 @@
 ---
 key: dotnet-async
 title: "async/await & Task — .NET Concurrency"
-crumb: "16. .NET > Async & Concurrency"
+crumb: "21. .NET > Async & Concurrency"
 ---
 
 .NET async model dùng `Task`/`Task<T>` — tương đương Java `CompletableFuture` — nhưng với `async/await` là first-class syntax nên code đọc như synchronous. `CancellationToken` là tính năng không có equivalent tự nhiên trong Java, cho phép cancel in-flight async operation một cách cooperative.

@@ -1,7 +1,7 @@
 ---
 key: "Entity Lifecycle"
 title: "Vòng Đời JPA Entity"
-crumb: "4. Database › JPA / Hibernate"
+crumb: "10. Database › JPA / Hibernate"
 ---
 
 JPA entity chuyển qua các trạng thái: Transient → Persistent → Detached → Removed, với Hibernate theo dõi entity managed (persistent) để auto-flush.

@@ -1,7 +1,7 @@
 ---
 key: "AtomicInteger"
 title: "AtomicInteger"
-crumb: "2. Concurrency › Atomic Classes"
+crumb: "6. Concurrency › Atomic Classes"
 ---
 
 <code>AtomicInteger</code> bọc giá trị <code>int</code> và cung cấp thao tác atomic lock-free qua CAS, an toàn cho concurrent increment/decrement mà không cần synchronization.
@@ -11,7 +11,7 @@ crumb: "2. Concurrency › Atomic Classes"
 - <code>incrementAndGet()</code>: tăng và trả về giá trị mới. <code>getAndIncrement()</code>: trả về cũ, rồi tăng.
 - <code>compareAndSet(expected, update)</code>: cập nhật atomic nếu hiện tại == expected.
 - <code>updateAndGet(fn)</code> / <code>accumulateAndGet(x, fn)</code>: áp dụng function atomic (Java 8+).
-- Được hỗ trợ bởi CAS của <code>sun.misc.Unsafe</code> — gọi trực tiếp lệnh CPU atomic.
+- Cài đặt trong JDK dùng <code>jdk.internal.misc.Unsafe</code> (ví dụ <code>getAndIncrement()</code> gọi <code>U.getAndAddInt(this, VALUE, 1)</code>); JIT thay các lời gọi này bằng lệnh atomic của CPU. <code>sun.misc.Unsafe</code> là API nội bộ cũ — code ứng dụng cần thao tác atomic trên field nên dùng <code>VarHandle</code>.
 - Non-blocking: thread không sleep khi thất bại, chúng retry — tốt cho low-contention, kém cho high.
 
 ## Ví Dụ Code
@@ -86,7 +86,7 @@ Dùng AtomicInteger cho sequence generator, rate counter và connection pool siz
 <details>
 <summary><strong>getAndIncrement() đảm bảo atomicity bằng cách nào?</strong></summary>
 
-**A:** Dùng **CAS loop**: đọc value hiện tại v → tính v+1 → `compareAndSet(v, v+1)`; nếu fail (thread khác thay đổi) → retry. Map xuống CPU atomic instruction (`LOCK XADD` trên x86), không cần OS lock/context switch. JDK 9+ dùng `VarHandle.getAndAdd()` với ACQUIRE/RELEASE memory ordering đảm bảo visibility.
+**A:** Trong source JDK, `getAndIncrement()` gọi `U.getAndAddInt(this, VALUE, 1)` của `jdk.internal.misc.Unsafe`. Về ngữ nghĩa đó là một CAS loop: đọc giá trị hiện tại v (volatile read) → `compareAndSet(v, v+1)` → thất bại thì đọc lại và thử tiếp. Trên CPU có lệnh fetch-and-add (x86: lệnh `XADD` với tiền tố `LOCK`), JIT dùng intrinsic nên không cần vòng lặp. Không có lock của OS, không context switch; thao tác có memory semantics như đọc + ghi `volatile` nên kết quả luôn hiển thị với thread khác.
 
 </details>
 

@@ -1,7 +1,7 @@
 ---
 key: "Token Bucket"
 title: "Thuật Toán Token Bucket"
-crumb: "7. System Design › Rate Limiting"
+crumb: "13. System Design › Rate Limiting"
 ---
 
 Token Bucket thêm token vào bucket với tốc độ cố định; mỗi request tiêu thụ một token — khi bucket trống, request bị từ chối. Cho phép bursting có kiểm soát.

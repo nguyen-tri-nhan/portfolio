@@ -1,7 +1,7 @@
 ---
 key: "CI/CD"
 title: "CI/CD"
-crumb: "8. Cloud & DevOps"
+crumb: "15. Cloud & DevOps"
 ---
 
 CI/CD tự động hóa build, test và deploy code change — Continuous Integration merge và test thường xuyên; Continuous Delivery/Deployment tự động hóa con đường đến production.
@@ -18,29 +18,56 @@ CI/CD tự động hóa build, test và deploy code change — Continuous Integr
 
 *GitHub Actions CI/CD pipeline*
 
-```bash
-# GitHub Actions CI/CD pipeline
+```yaml
+# .github/workflows/ci-cd.yml
 name: CI/CD
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:          # PR: chỉ build + test, không push image, không deploy
+
+permissions:
+  contents: read
+
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-java@v4
-      with: {java-version: '21', distribution: 'temurin'}
-    - uses: actions/cache@v4
-      with: {path: ~/.m2, key: "${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}"}
-    - run: mvn verify  # compile + test + integration test
-    - run: mvn package -DskipTests
-    - name: Build & push Docker image
-      run: |
-        docker build -t myrepo/app:${{ github.sha }} .
-        docker push myrepo/app:${{ github.sha }}
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven                     # cache ~/.m2 theo hash của pom.xml
+      - run: mvn -B verify                 # compile + unit test + integration test + package jar
+
+      - name: Log in to registry
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ vars.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Build & push image (tag = commit SHA)
+        if: github.event_name == 'push'
+        run: |
+          docker build -t ${{ vars.REGISTRY }}/app:${{ github.sha }} .
+          docker push ${{ vars.REGISTRY }}/app:${{ github.sha }}
+
   deploy:
     needs: test-and-build
-    if: github.ref == 'refs/heads/main'
-    run: kubectl set image deployment/app app=myrepo/app:${{ github.sha }}
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production               # có thể bật "required reviewers" = cổng duyệt thủ công
+    steps:
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+      - name: Roll out new image
+        run: |
+          kubectl set image deployment/app app=${{ vars.REGISTRY }}/app:${{ github.sha }}
+          kubectl rollout status deployment/app --timeout=180s
 ```
 
 ## Ứng Dụng Thực Tế

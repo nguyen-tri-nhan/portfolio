@@ -1,7 +1,7 @@
 ---
 key: "When to Use NoSQL"
 title: "Khi Nào Dùng NoSQL"
-crumb: "4. Database › NoSQL"
+crumb: "10. Database › NoSQL"
 ---
 
 Chọn NoSQL khi cần horizontal scale lớn, schema linh hoạt hay data model chuyên biệt (graph, time-series) mà bảng quan hệ model kém.

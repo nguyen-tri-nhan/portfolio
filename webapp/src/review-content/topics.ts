@@ -162,6 +162,24 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
             "file": "jvm-flags-cheatsheet"
           }
         ]
+      },
+      {
+        "name": "Java Language Essentials",
+        "file": "java-generics",
+        "subs": [
+          {
+            "name": "Generics",
+            "file": "java-generics"
+          },
+          {
+            "name": "String & String Pool",
+            "file": "string-immutability"
+          },
+          {
+            "name": "equals & hashCode",
+            "file": "equals-hashcode-contract"
+          }
+        ]
       }
     ]
   },
@@ -596,6 +614,10 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
           {
             "name": "Actuator",
             "file": "actuator"
+          },
+          {
+            "name": "Spring Boot 4 Migration",
+            "file": "spring-boot-4-migration"
           }
         ]
       },
@@ -652,6 +674,11 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
             "file": "cross-cutting-concerns"
           }
         ]
+      },
+      {
+        "name": "Transaction Management",
+        "file": "transactional-deep-dive",
+        "subs": []
       }
     ]
   },
@@ -808,6 +835,20 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
             "file": "hexagonal-architecture"
           }
         ]
+      },
+      {
+        "name": "Design Principles",
+        "file": "solid-principles",
+        "subs": [
+          {
+            "name": "SOLID",
+            "file": "solid-principles"
+          },
+          {
+            "name": "Clean Code & Code Review",
+            "file": "clean-code-code-review"
+          }
+        ]
       }
     ]
   },
@@ -952,6 +993,11 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
             "file": "connection-pool-hikaricp"
           }
         ]
+      },
+      {
+        "name": "Schema Migration (Flyway)",
+        "file": "flyway-migration",
+        "subs": []
       }
     ]
   },
@@ -1448,6 +1494,20 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
         "name": "Service Deployment",
         "file": "service-deployment",
         "subs": []
+      },
+      {
+        "name": "Git",
+        "file": "git-fundamentals",
+        "subs": [
+          {
+            "name": "Git Fundamentals",
+            "file": "git-fundamentals"
+          },
+          {
+            "name": "Rebase vs Merge",
+            "file": "git-rebase-vs-merge"
+          }
+        ]
       }
     ]
   },
@@ -1578,6 +1638,20 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
           {
             "name": "WebSocket & SSE",
             "file": "websocket-sse"
+          }
+        ]
+      },
+      {
+        "name": "Networking & HTTP",
+        "file": "networking-dns-tcp-tls",
+        "subs": [
+          {
+            "name": "DNS, TCP, TLS",
+            "file": "networking-dns-tcp-tls"
+          },
+          {
+            "name": "HTTP Fundamentals",
+            "file": "http-fundamentals"
           }
         ]
       }
@@ -1771,5 +1845,30 @@ export const REVIEW_TOPICS: ReviewCategory[] = [
         "subs": []
       }
     ]
+  },
+  {
+    "title": "24. Data Structures & Algorithms",
+    "icon": "🧮",
+    "topics": [
+      {
+        "name": "Fundamentals",
+        "file": "big-o-complexity",
+        "subs": [
+          {
+            "name": "Big-O Complexity",
+            "file": "big-o-complexity"
+          },
+          {
+            "name": "Core Data Structures",
+            "file": "core-data-structures"
+          }
+        ]
+      },
+      {
+        "name": "Algorithm Patterns",
+        "file": "algorithm-patterns",
+        "subs": []
+      }
+    ]
   }
-];;
+];

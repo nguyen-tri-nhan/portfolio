@@ -1,7 +1,7 @@
 ---
 key: "Docker"
 title: "Docker"
-crumb: "8. Cloud & DevOps"
+crumb: "15. Cloud & DevOps"
 ---
 
 Docker đóng gói ứng dụng và dependency vào container portable chạy nhất quán qua các môi trường, dùng image (snapshot bất biến) và container (instance đang chạy).
@@ -21,7 +21,7 @@ Docker đóng gói ứng dụng và dependency vào container portable chạy nh
 ```bash
 # ── Multi-stage Dockerfile: order-service (Spring Boot 3, Java 21) ──
 
-# Stage 1: BUILD — Maven + full JDK (~600 MB); never shipped to prod
+# Stage 1: BUILD — Maven + full JDK; never shipped to prod
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
@@ -34,7 +34,7 @@ COPY src ./src
 # -DskipTests: tests run as a separate CI step, not inside Docker build
 RUN mvn package -DskipTests -q
 
-# Stage 2: RUNTIME — Alpine JRE only (~120 MB); minimal attack surface
+# Stage 2: RUNTIME — JRE only; smaller image, minimal attack surface
 FROM eclipse-temurin:21.0.3_9-jre-alpine AS runtime
 WORKDIR /app
 
@@ -46,19 +46,21 @@ USER appuser
 # Only the fat-jar from the build stage — no source, no Maven cache
 COPY --from=build --chown=appuser:appgroup /app/target/order-service-*.jar app.jar
 
-# HEALTHCHECK mirrors K8s liveness probe; both target Spring Actuator
+# HEALTHCHECK chỉ đặt health status (starting/healthy/unhealthy) và phát event health_status.
+# Docker KHÔNG tự restart container unhealthy — restart policy (on-failure...) chỉ chạy khi container THOÁT.
+# Trên Kubernetes, sức khỏe container do liveness/readiness/startup probe trong Pod spec quyết định.
 HEALTHCHECK --interval=30s --timeout=5s --retries=3   CMD curl -sf http://localhost:8080/actuator/health/liveness || exit 1
 
 EXPOSE 8080
 
 # -XX:+UseContainerSupport  → JVM reads cgroup memory limit, not host RAM
 # -XX:MaxRAMPercentage=75   → leaves 25 % headroom for OS + off-heap memory
-ENTRYPOINT ["java",   "-XX:+UseContainerSupport",   "-XX:MaxRAMPercentage=75.0",   "-Djava.security.egd=file:/dev/./urandom",   "-jar", "app.jar"]
+ENTRYPOINT ["java",   "-XX:+UseContainerSupport",   "-XX:MaxRAMPercentage=75.0",   "-jar", "app.jar"]
 ```
 
 ## Ứng Dụng Thực Tế
 
-Luôn dùng multi-stage build để giữ runtime image nhỏ (Alpine JRE ~100MB vs Maven build image ~500MB). Chạy với non-root user trong production. Đặt <code>-XX:+UseContainerSupport</code> để JVM tôn trọng giới hạn memory container.
+Luôn dùng multi-stage build để giữ runtime image nhỏ — image cuối chỉ có JRE + jar, không có Maven, JDK và ~/.m2 (kiểm tra dung lượng thật bằng <code>docker image ls</code> / <code>docker image history</code>). Chạy với non-root user trong production. Đặt <code>-XX:+UseContainerSupport</code> để JVM tôn trọng giới hạn memory container.
 
 ## Câu Hỏi Phỏng Vấn
 

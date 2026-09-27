@@ -1,7 +1,7 @@
 ---
 key: "N+1 Problem"
 title: "Vấn Đề N+1 Query"
-crumb: "4. Database › JPA / Hibernate"
+crumb: "10. Database › JPA / Hibernate"
 ---
 
 N+1 xảy ra khi fetch N entity cha trigger N query bổ sung (một mỗi entity) để tải lazy association — tránh được với JOIN FETCH hoặc batch fetching.

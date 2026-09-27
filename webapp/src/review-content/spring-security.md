@@ -1,7 +1,7 @@
 ---
 key: "Spring Security"
 title: "Spring Security"
-crumb: "3. Spring Ecosystem"
+crumb: "7. Spring Ecosystem"
 ---
 
 Spring Security cung cấp authentication (bạn là ai?) và authorization (bạn được làm gì?) qua filter chain chặn mọi HTTP request trước khi đến controller.

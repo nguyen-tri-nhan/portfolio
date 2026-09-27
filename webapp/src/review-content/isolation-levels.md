@@ -1,7 +1,7 @@
 ---
 key: "Isolation Levels"
 title: "Isolation Level"
-crumb: "4. Database › Transactions"
+crumb: "10. Database › Transactions"
 ---
 
 Isolation level đánh đổi consistency lấy concurrency — isolation cao hơn ngăn nhiều anomaly hơn nhưng giảm throughput qua locking tăng hoặc MVCC overhead.

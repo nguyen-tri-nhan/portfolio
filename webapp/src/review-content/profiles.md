@@ -1,7 +1,7 @@
 ---
 key: "Profiles"
 title: "Spring Profiles"
-crumb: "3. Spring Ecosystem › Spring Boot"
+crumb: "7. Spring Ecosystem › Spring Boot"
 ---
 
 Profile cho phép các bean và cấu hình khác nhau hoạt động trong các môi trường khác nhau (dev, staging, prod), được kiểm soát qua <code>spring.profiles.active</code>.

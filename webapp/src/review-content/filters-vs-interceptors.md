@@ -1,7 +1,7 @@
 ---
 key: "Filters vs Interceptors"
 title: "Filter vs Interceptor"
-crumb: "3. Spring Ecosystem › Spring MVC"
+crumb: "7. Spring Ecosystem › Spring MVC"
 ---
 
 Filter là Servlet-level (trước/sau toàn bộ Spring context); Interceptor là Spring MVC-level (xung quanh handler execution), có quyền truy cập handler và model.

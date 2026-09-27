@@ -1,7 +1,7 @@
 ---
 key: ruby-rails
 title: "Ruby on Rails — Web Framework"
-crumb: "21. Ruby > Ruby on Rails"
+crumb: "22. Ruby > Ruby on Rails"
 ---
 
 Ruby on Rails (Rails) là web framework theo "Convention over Configuration" — follow convention thì không cần config, Rails tự biết. Active Record pattern: model class map trực tiếp vào DB table, không cần define mapping. Java dev sẽ thấy Rails "magic" nhiều hơn Spring — ít boilerplate, nhưng cần hiểu convention để debug khi sai.

@@ -1,7 +1,7 @@
 ---
 key: "Authentication vs Authorization"
 title: "Authentication vs Authorization"
-crumb: "3. Spring Ecosystem › Spring Security"
+crumb: "7. Spring Ecosystem › Spring Security"
 ---
 
 Authentication xác minh danh tính ("bạn là ai?"); Authorization xác định quyền ("bạn được phép làm gì?") — authentication phải thành công trước authorization.

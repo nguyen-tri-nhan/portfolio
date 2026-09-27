@@ -1,7 +1,7 @@
 ---
 key: kotlin-scope-functions
 title: "Scope Functions: let, run, with, apply, also"
-crumb: "13. Kotlin > Kotlin Features"
+crumb: "3. Kotlin > Kotlin Features"
 ---
 
 Scope functions thực thi một block code trong context của một object — khác biệt chính là cách tham chiếu context object (`this` vs `it`) và giá trị trả về (object itself vs kết quả lambda).

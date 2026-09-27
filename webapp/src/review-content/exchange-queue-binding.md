@@ -1,7 +1,7 @@
 ---
 key: "Exchange / Queue / Binding"
 title: "Exchange, Queue & Binding"
-crumb: "6. Messaging › RabbitMQ"
+crumb: "12. Messaging › RabbitMQ"
 ---
 
 Trong RabbitMQ, producer gửi đến Exchange (không trực tiếp vào queue); Exchange route đến Queue qua Binding dùng routing key và rule.

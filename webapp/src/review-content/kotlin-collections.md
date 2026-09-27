@@ -1,7 +1,7 @@
 ---
 key: kotlin-collections
 title: "Collections & Sequences trong Kotlin"
-crumb: "13. Kotlin > Collections & DSL"
+crumb: "3. Kotlin > Collections & DSL"
 ---
 
 Kotlin phân biệt rõ immutable (`List`, `Set`, `Map`) và mutable (`MutableList`, `MutableSet`, `MutableMap`) collections, đồng thời cung cấp `Sequence` cho xử lý lazy evaluation hiệu quả trên tập dữ liệu lớn.

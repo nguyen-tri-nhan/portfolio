@@ -1,7 +1,7 @@
 ---
 key: "Consistent Hashing"
 title: "Consistent Hashing"
-crumb: "7. System Design › Load Balancing"
+crumb: "13. System Design › Load Balancing"
 ---
 
 Consistent hashing map key lên node trên vòng tròn ảo, giảm thiểu remap key khi node được thêm hoặc xóa — thiết yếu cho distributed cache và sharding.

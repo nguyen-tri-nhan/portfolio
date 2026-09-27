@@ -1,7 +1,7 @@
 ---
 key: "Spring Boot"
 title: "Spring Boot"
-crumb: "3. Spring Ecosystem"
+crumb: "7. Spring Ecosystem"
 ---
 
 Spring Boot loại bỏ boilerplate bằng cách cung cấp auto-configuration theo quan điểm, embedded server và starter dependency — cho phép chạy app production-ready từ method main() thông thường.

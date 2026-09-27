@@ -1,7 +1,7 @@
 ---
 key: python-fastapi
 title: FastAPI — Async Web Framework
-crumb: 14. Python > Async & Web
+crumb: 4. Python > Async & Web
 ---
 
 FastAPI là modern Python web framework xây dựng trên asyncio và Pydantic — tự động generate OpenAPI docs, validation qua type hints, và dependency injection tương tự Spring nhưng nhẹ và idiomatic hơn.

@@ -1,7 +1,7 @@
 ---
 key: "Eviction Policies"
 title: "Chính Sách Eviction Cache"
-crumb: "7. System Design › Caching"
+crumb: "13. System Design › Caching"
 ---
 
 Eviction policy xác định entry cache nào bị xóa khi cache đầy — LRU (Least Recently Used) phổ biến nhất; LFU và TTL-based phục vụ access pattern khác nhau.

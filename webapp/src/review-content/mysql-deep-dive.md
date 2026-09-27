@@ -1,7 +1,7 @@
 ---
 key: "MySQL Deep Dive"
 title: "MySQL — Kiến Thức Chuyên Sâu"
-crumb: "4. Database"
+crumb: "10. Database"
 ---
 
 Kiến thức MySQL chuyên sâu: InnoDB engine internals, đọc EXPLAIN plan, phân tích slow query, và cấu hình connection pool — tất cả đều quan trọng cho Java backend engineer làm việc với MySQL production.

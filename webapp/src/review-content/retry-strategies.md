@@ -1,7 +1,7 @@
 ---
 key: "Retry Strategies"
 title: "Chiến Lược Retry"
-crumb: "6. Messaging › Common Concepts"
+crumb: "12. Messaging › Common Concepts"
 ---
 
 Chiến lược retry tự động thử lại xử lý message thất bại với backoff có thể cấu hình, ngăn transient failure gây mất message vĩnh viễn.

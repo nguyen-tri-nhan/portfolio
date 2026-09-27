@@ -1,7 +1,7 @@
 ---
 key: python-type-hints
 title: Python Type Hints & Static Typing
-crumb: 14. Python > Python Cơ Bản
+crumb: 4. Python > Python Cơ Bản
 ---
 
 Type hints (PEP 484) cho phép annotate kiểu dữ liệu trong Python — không được enforce tại runtime mặc định, nhưng giúp IDE, mypy và các tool khác phát hiện lỗi sớm, tương tự generics trong Java.

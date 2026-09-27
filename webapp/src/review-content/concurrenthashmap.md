@@ -13,6 +13,7 @@ ConcurrentHashMap cung cấp thao tác map thread-safe mà không cần đồng 
 - <code>putIfAbsent</code>, <code>computeIfAbsent</code>, <code>merge</code>, <code>compute</code> là thao tác atomic.
 - <strong>Không cho phép null key hoặc null value</strong> (ném NullPointerException).
 - <code>size()</code> là xấp xỉ; dùng <code>mappingCount()</code> cho map lớn.
+- Cẩn thận với <code>computeIfAbsent</code>/<code>compute</code>/<code>merge</code>: hàm tính chạy atomic (gọi đúng một lần nếu key chưa có), nhưng Javadoc yêu cầu nó "short and simple" vì update khác vào cùng vùng map bị chặn trong lúc chờ, và "must not modify this map" — gọi đệ quy vào chính map có thể ném <code>IllegalStateException</code> (recursive update). Đừng gọi DB/HTTP bên trong hàm tính.
 - So với <code>Collections.synchronizedMap()</code>: synchronized bọc toàn bộ map với một lock — concurrency thấp hơn.
 
 ## Ví Dụ Code

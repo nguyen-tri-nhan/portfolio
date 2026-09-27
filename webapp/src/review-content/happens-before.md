@@ -1,7 +1,7 @@
 ---
 key: "happens-before"
 title: "happens-before"
-crumb: "2. Concurrency › Java Memory Model"
+crumb: "6. Concurrency › Java Memory Model"
 ---
 
 happens-before là đảm bảo JMM rằng nếu action A happens-before B, thì ghi của A hiển thị với B và B thấy tất cả hiệu ứng của A.

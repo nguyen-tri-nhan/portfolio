@@ -1,7 +1,7 @@
 ---
 key: ruby-concurrency
 title: "Ruby Concurrency — Threads, GIL & Fibers"
-crumb: "21. Ruby > Concurrency"
+crumb: "22. Ruby > Concurrency"
 ---
 
 Ruby concurrency bị ảnh hưởng lớn bởi GIL (Global Interpreter Lock) trong MRI — chỉ 1 thread chạy Ruby code tại một thời điểm. IO-bound: thread vẫn hiệu quả (GIL release khi IO wait). CPU-bound: phải dùng processes. Fibers là lightweight coroutine — cooperative multitasking không cần OS thread. Ractors (Ruby 3+) là actor-based parallelism không có GIL.

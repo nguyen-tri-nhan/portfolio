@@ -1,7 +1,7 @@
 ---
 key: ruby-oop
 title: "Ruby OOP — Classes, Modules & Mixins"
-crumb: "21. Ruby > OOP & Modules"
+crumb: "22. Ruby > OOP & Modules"
 ---
 
 Ruby OOP giống Java ở class-based inheritance, nhưng khác ở chỗ không có interface — thay bằng Modules (mixins). Module trong Ruby giải quyết multiple inheritance mà Java dùng interface: `include` module vào class để "mixin" behavior. Duck typing thay polymorphism qua interface.

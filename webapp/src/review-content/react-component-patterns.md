@@ -1,7 +1,7 @@
 ---
 key: react-component-patterns
 title: Component Design Patterns
-crumb: 15. ReactJS > Patterns & Performance
+crumb: 5. ReactJS > Patterns & Performance
 ---
 
 Các pattern tổ chức component giúp tái sử dụng logic và UI linh hoạt — Compound Component cho API tự nhiên, HOC cho cross-cutting concern, Render Props và Custom Hook cho logic sharing.

@@ -1,7 +1,7 @@
 ---
 key: "Database Scaling"
 title: "Database Scaling"
-crumb: "7. System Design"
+crumb: "13. System Design"
 ---
 
 Chiến lược database scaling bao gồm read replica (horizontal read scale), sharding (horizontal write scale) và CQRS (tách biệt read/write model) để xử lý tải cao.

@@ -1,7 +1,7 @@
 ---
 key: "Slow Query Log"
 title: "Slow Query Log"
-crumb: "4. Database › MySQL Deep Dive"
+crumb: "10. Database › MySQL Deep Dive"
 ---
 
 MySQL slow query log ghi lại query vượt ngưỡng thời gian cấu hình. Đây là cách đáng tin cậy nhất để xác định bottleneck hiệu năng thực từ traffic production, khác với benchmark tổng hợp.

@@ -1,7 +1,7 @@
 ---
 key: "Performance Testing"
 title: "Performance Testing"
-crumb: "9. Testing"
+crumb: "14. Testing"
 ---
 
 Performance testing kiểm tra yêu cầu latency và throughput dưới tải, dùng tool như k6, Gatling hoặc JMeter để tìm bottleneck trước khi production traffic làm điều đó.

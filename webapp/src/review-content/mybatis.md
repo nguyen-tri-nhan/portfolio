@@ -1,7 +1,7 @@
 ---
 key: "MyBatis"
 title: "Tổng Quan MyBatis"
-crumb: "4. Database"
+crumb: "10. Database"
 ---
 
 MyBatis là persistence framework ánh xạ Java interface method sang SQL statement qua XML hoặc annotation. Khác với JPA/Hibernate, MyBatis giữ SQL tường minh — toàn quyền kiểm soát query trong khi tự động xử lý parameter binding và result mapping.

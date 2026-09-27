@@ -1,7 +1,7 @@
 ---
 key: "Eureka / Consul"
 title: "Eureka & Consul"
-crumb: "5. Microservices › Service Discovery"
+crumb: "11. Microservices › Service Discovery"
 ---
 
 Eureka (Netflix) và Consul (HashiCorp) là service registry phổ biến; Eureka ưu tiên availability, Consul cung cấp health check phong phú hơn, DNS interface và key-value store.

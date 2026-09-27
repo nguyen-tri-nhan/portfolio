@@ -29,13 +29,13 @@ Tổng quan lịch sử phát hành Java từ Java 7 đến nay, tập trung và
 | Java 16 | Mar 2021 | ❌ | Records (final), Pattern instanceof (final) |
 | **Java 17** | Sep 2021 | ✅ | Sealed Classes (final), strong encapsulation |
 | Java 18 | Mar 2022 | ❌ | UTF-8 default, Simple Web Server |
-| Java 19 | Sep 2022 | ❌ | Virtual Threads (preview), Structured Concurrency |
+| Java 19 | Sep 2022 | ❌ | Virtual Threads (preview), Structured Concurrency (incubator) |
 | Java 20 | Mar 2023 | ❌ | Virtual Threads (second preview) |
 | **Java 21** | Sep 2023 | ✅ | **Virtual Threads (final)**, Sequenced Collections, Record Patterns |
 | Java 22 | Mar 2024 | ❌ | Unnamed Variables `_`, FFM API (final) |
-| Java 23 | Sep 2024 | ❌ | Stream Gatherers (preview), Markdown Javadoc |
-| Java 24 | Mar 2025 | ❌ | Stream Gatherers (final), Scoped Values (final) |
-| **Java 25** | Sep 2025 | ✅ | Primitive Patterns, Module Imports |
+| Java 23 | Sep 2024 | ❌ | Markdown Javadoc, ZGC generational mặc định, String Templates bị rút |
+| Java 24 | Mar 2025 | ❌ | Stream Gatherers (final), hết pinning virtual thread với `synchronized` |
+| **Java 25** | Sep 2025 | ✅ | Scoped Values (final), Flexible Constructor Bodies, Module Imports, Compact Source Files |
 
 ## LTS Strategy
 
@@ -77,8 +77,10 @@ timeline
         Java 21 (2023) : Virtual Threads final
                        : Sequenced Collections
     section Modern Era
-        Java 22-24 (2024-2025) : Stream Gatherers, Scoped Values
-                               : Structured Concurrency final
+        Java 22-24 (2024-2025) : FFM API, Stream Gatherers final
+                               : Hết pinning với synchronized
+        Java 25 (2025) : Scoped Values final
+                       : Structured Concurrency vẫn preview
 ```
 
 ## Câu Hỏi Phỏng Vấn

@@ -1,7 +1,7 @@
 ---
 key: "Contract Testing"
 title: "Contract Testing"
-crumb: "9. Testing"
+crumb: "14. Testing"
 ---
 
 Contract testing kiểm tra thỏa thuận API consumer-provider một cách độc lập, phát hiện breaking change trước khi deploy mà không cần cả hai service chạy đồng thời.

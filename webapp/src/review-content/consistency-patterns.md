@@ -1,7 +1,7 @@
 ---
 key: "Consistency Patterns"
 title: "Consistency Pattern"
-crumb: "7. System Design"
+crumb: "13. System Design"
 ---
 
 Consistency pattern xác định dữ liệu cần cập nhật đến mức nào qua các node hệ thống phân tán — từ linearizability nghiêm ngặt đến eventual consistency với các trade-off khác nhau.

@@ -9,7 +9,7 @@ JVM quản lý bộ nhớ (Heap, Stack, Metaspace), tải class động, thực 
 ## Điểm Chính
 
 - Vùng nhớ JVM: Heap (object), Stack (frame), Metaspace (class metadata), Code Cache (JIT compiled code), PC Register.
-- Class loading: Bootstrap → Extension → Application ClassLoader (mô hình parent delegation).
+- Class loading: Bootstrap → Platform → Application ClassLoader (mô hình parent delegation). Từ Java 9, Platform ClassLoader thay cho Extension ClassLoader.
 - JIT compiler tối ưu hotspot: diễn giải bytecode rồi biên dịch đường dẫn nóng thành native code.
 - GC quản lý heap; kích hoạt các pause stop-the-world với độ dài khác nhau tùy thuật toán.
 - <code>-Xms</code>/<code>-Xmx</code> đặt heap ban đầu/tối đa; <code>-XX:MetaspaceSize</code> đặt ngưỡng metaspace.
@@ -29,7 +29,8 @@ JVM quản lý bộ nhớ (Heap, Stack, Metaspace), tải class động, thực 
 // STACK (per thread): frames for each method call
 //   └─ local variables, operand stack, return address
 //
-// METASPACE (native memory): class metadata, bytecode, interned strings (Java 8+)
+// METASPACE (native memory, Java 8+): class metadata, method bytecode
+//   (interned String và static field KHÔNG ở đây — chúng nằm trên heap, JEP 122)
 //
 // CODE CACHE: JIT-compiled native code for hot methods
 // ============================================================
@@ -73,20 +74,20 @@ Chỉnh <code>-Xmx</code> dựa trên giới hạn bộ nhớ container (để l
 <details>
 <summary><strong>Các vùng nhớ chính của JVM là gì?</strong></summary>
 
-**A:** Heap (Young + Old Gen — shared giữa threads, GC managed), Method Area / Metaspace (class metadata, static fields, constants — ngoài Heap từ Java 8), Stack (mỗi thread có riêng — stack frame per method call, local variables, operand stack), PC Register (địa chỉ instruction hiện tại per thread), Native Method Stack (cho JNI calls). OutOfMemoryError có thể xảy ra ở Heap, Metaspace, hoặc Stack (StackOverflowError).
+**A:** Heap (Young + Old Gen — shared giữa threads, GC managed), Method Area / Metaspace (class metadata, bytecode, constant pool — native memory từ Java 8; static field và interned String nằm trên heap theo JEP 122), Stack (mỗi thread có riêng — stack frame per method call, local variables, operand stack), PC Register (địa chỉ instruction hiện tại per thread), Native Method Stack (cho JNI calls). OutOfMemoryError có thể xảy ra ở Heap, Metaspace, hoặc khi không tạo được native thread mới; tràn stack của thread là `StackOverflowError` (một Error khác, không phải OOM).
 
 </details>
 
 <details>
 <summary><strong>JIT Compiler là gì và nó tối ưu code thế nào?</strong></summary>
 
-**A:** JIT (Just-In-Time) Compiler biên dịch bytecode thành native machine code tại runtime — khác với interpreted execution từng instruction. JVM theo dõi "hot methods" (gọi nhiều lần) và compile chúng với C1 (client compiler, nhanh) rồi C2 (server compiler, optimize sâu hơn). Các tối ưu tiêu biểu: method inlining (inline body của method nhỏ vào caller), loop unrolling, escape analysis (object không escape method → cấp phát trên stack thay vì heap). `-XX:+PrintCompilation` để xem những gì đang được JIT-compile.
+**A:** JIT (Just-In-Time) Compiler biên dịch bytecode thành native machine code tại runtime — khác với interpreted execution từng instruction. JVM theo dõi "hot methods" (gọi nhiều lần) và compile chúng với C1 (client compiler, nhanh) rồi C2 (server compiler, optimize sâu hơn). Các tối ưu tiêu biểu: method inlining (inline body của method nhỏ vào caller), loop unrolling, escape analysis (object không thoát khỏi method → scalar replacement: bỏ hẳn việc cấp phát, các field thành biến cục bộ; và lock elision). Tài liệu HotSpot ghi rõ C2 không thay heap allocation bằng stack allocation. `-XX:+PrintCompilation` để xem những gì đang được JIT-compile.
 
 </details>
 
 <details>
 <summary><strong>Class Loading trong JVM hoạt động thế nào?</strong></summary>
 
-**A:** Ba bước: Loading (đọc .class file → tạo Class object), Linking (Verification → Preparation → Resolution), Initialization (chạy static initializer). Parent delegation model: ClassLoader con luôn delegate cho parent trước — Bootstrap → Extension → Application → Custom. Mục đích: bảo mật (không thể override java.lang.String), isolation (module system). Dùng custom ClassLoader cho hot-reload và plugin isolation.
+**A:** Ba bước: Loading (đọc .class file → tạo Class object), Linking (Verification → Preparation → Resolution), Initialization (chạy static initializer). Parent delegation model: ClassLoader con luôn delegate cho parent trước — Bootstrap → Platform (trước Java 9 là Extension) → Application → Custom. Mục đích: bảo mật (không thể override java.lang.String), isolation (module system). Dùng custom ClassLoader cho hot-reload và plugin isolation.
 
 </details>

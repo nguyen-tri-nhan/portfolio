@@ -1,7 +1,7 @@
 ---
 key: "Joins"
 title: "SQL Joins"
-crumb: "4. Database › SQL"
+crumb: "10. Database › SQL"
 ---
 
 JOIN kết hợp hàng từ nhiều bảng dựa trên cột liên quan — hiểu từng loại là quan trọng để viết query đúng.

@@ -11,8 +11,9 @@ EKS (Elastic Kubernetes Service) là managed Kubernetes của AWS — AWS quản
 - **Control plane**: AWS managed, multi-AZ, auto-patched. Bạn không SSH vào đây.
 - **Node groups**: EC2 instances chạy pods — Managed Node Group (AWS quản lý update), Self-managed, hoặc Fargate (serverless, không có node).
 - **IRSA** (IAM Roles for Service Accounts): cấp AWS permissions cho pod cụ thể — không dùng Node IAM role cho tất cả.
+- **EKS Pod Identity**: cách mới hơn để gán IAM role cho service account — theo AWS docs đơn giản hơn IRSA vì không cần OIDC identity provider, trust policy dùng chung principal <code>pods.eks.amazonaws.com</code>, cần cài Pod Identity Agent (DaemonSet). Chưa hỗ trợ pod chạy trên Fargate.
 - **VPC CNI**: pod nhận IP trực tiếp từ VPC subnet — pod có thể communicate với RDS, ElastiCache trong cùng VPC.
-- **ALB Ingress Controller**: tạo AWS ALB từ Ingress resource — thay thế nginx trong EKS.
+- **AWS Load Balancer Controller** (tên cũ: ALB Ingress Controller): tạo AWS ALB từ Ingress resource (<code>ingressClassName: alb</code>) — thay cho một Ingress controller chạy trong cluster.
 - **EBS CSI Driver**: cần cài thêm để PersistentVolume dùng EBS.
 
 ## Ví Dụ Code
@@ -26,7 +27,8 @@ module "eks" {
   version = "~> 20.0"
 
   cluster_name    = "prod-cluster"
-  cluster_version = "1.29"
+  cluster_version = "1.35"   # chọn version còn standard support: aws eks describe-cluster-versions
+                              # (1.29 đã hết cả extended support — không tạo cluster mới được nữa)
 
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnet_ids  # nodes chạy trong private subnet
@@ -167,13 +169,13 @@ kind: Ingress
 metadata:
   name: order-ingress
   annotations:
-    kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip            # route đến pod IP trực tiếp
     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:...  # ACM certificate
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
     alb.ingress.kubernetes.io/group.name: prod-apps      # share ALB giữa nhiều Ingress
 spec:
+  ingressClassName: alb        # thay cho annotation kubernetes.io/ingress.class (deprecated)
   rules:
     - host: api.example.com
       http:
@@ -234,6 +236,6 @@ Dùng IRSA thay vì Node IAM role — Node role cấp permission cho tất cả 
 <details>
 <summary><strong>VPC CNI trong EKS khác networking của K8s thông thường thế nào?</strong></summary>
 
-**A:** Kubernetes mặc định dùng overlay network (flannel, calico) — pod IP là virtual, không visible trong VPC. **VPC CNI**: pod nhận IP trực tiếp từ VPC subnet — pod IP là real VPC IP. Ưu điểm: pod communicate trực tiếp với RDS, ElastiCache, Lambda trong cùng VPC (không qua NAT), Security Group có thể apply trực tiếp cho pod (Security Groups for Pods feature). Nhược điểm: mỗi EC2 instance chỉ có giới hạn số secondary IP (phụ thuộc instance type) → giới hạn số pod per node. Ví dụ: `t3.medium` có tối đa 6 ENI × 6 IP = 36 pod per node. Giải pháp: dùng instance type lớn hơn, hoặc bật prefix delegation để tăng IPs per ENI.
+**A:** Kubernetes mặc định dùng overlay network (flannel, calico) — pod IP là virtual, không visible trong VPC. **VPC CNI**: pod nhận IP trực tiếp từ VPC subnet — pod IP là real VPC IP. Ưu điểm: pod communicate trực tiếp với RDS, ElastiCache, Lambda trong cùng VPC (không qua NAT), Security Group có thể apply trực tiếp cho pod (Security Groups for Pods feature). Nhược điểm: mỗi EC2 instance chỉ có giới hạn số secondary IP (phụ thuộc instance type) → giới hạn số pod per node. Công thức mặc định (EKS docs): `maxPods = số ENI × (số IPv4 mỗi ENI − 1) + 2` (+2 cho VPC CNI và kube-proxy chạy hostNetwork); managed node group còn áp trần 110 pod (instance < 30 vCPU) hoặc 250. Tra số ENI/IP của một instance type: `aws ec2 describe-instance-types --instance-types t3.medium --query 'InstanceTypes[].NetworkInfo.[MaximumNetworkInterfaces,Ipv4AddressesPerInterface]'`. Giải pháp: dùng instance type lớn hơn, hoặc bật prefix delegation để tăng IPs per ENI.
 
 </details>

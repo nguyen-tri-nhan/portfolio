@@ -1,7 +1,7 @@
 ---
 key: "JWT"
 title: "JWT (JSON Web Token)"
-crumb: "3. Spring Ecosystem › Spring Security"
+crumb: "7. Spring Ecosystem › Spring Security"
 ---
 
 JWT là định dạng token compact, self-contained cho stateless authentication — payload JSON đã ký mà client đưa vào header Authorization.

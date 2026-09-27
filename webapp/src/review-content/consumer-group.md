@@ -1,7 +1,7 @@
 ---
 key: "Consumer Group"
 title: "Kafka Consumer Group"
-crumb: "6. Messaging › Kafka"
+crumb: "12. Messaging › Kafka"
 ---
 
 Consumer group cho phép nhiều consumer đọc từ topic song song, với mỗi partition được gán cho đúng một consumer trong group, cho phép horizontal scaling của consumption.

@@ -9,7 +9,7 @@ Hệ thống ClassLoader tải, liên kết (verify/prepare/resolve) và khởi 
 ## Điểm Chính
 
 - <strong>Bootstrap ClassLoader</strong>: tải các class JDK core (<code>java.lang.*</code>) từ chính JDK.
-- <strong>Platform/Extension ClassLoader</strong>: tải các module extension JDK.
+- <strong>Platform ClassLoader</strong> (Java 9+, thay cho Extension ClassLoader): tải các class nền tảng Java SE/JDK không do Bootstrap tải.
 - <strong>Application ClassLoader</strong>: tải các class ứng dụng từ classpath.
 - Parent delegation: con hỏi cha trước; chỉ tự tải nếu cha không tìm thấy — ngăn thay thế độc hại các class core.
 - Class được tải lazily khi lần đầu sử dụng, không phải lúc khởi động.

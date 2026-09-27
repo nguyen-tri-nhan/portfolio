@@ -1,7 +1,7 @@
 ---
 key: kotlin-data-class
 title: "Data Class trong Kotlin"
-crumb: "13. Kotlin > Kotlin Cơ Bản"
+crumb: "3. Kotlin > Kotlin Cơ Bản"
 ---
 
 Data class tự động sinh `equals()`, `hashCode()`, `toString()`, `copy()`, và các hàm `componentN()` dựa trên các thuộc tính khai báo trong primary constructor.

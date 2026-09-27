@@ -1,7 +1,7 @@
 ---
 key: python-gil
 title: Python GIL — Global Interpreter Lock
-crumb: 14. Python > Python Internals
+crumb: 4. Python > Python Internals
 ---
 
 GIL (Global Interpreter Lock) là mutex trong CPython cho phép chỉ một thread thực thi Python bytecode tại một thời điểm — ảnh hưởng lớn đến concurrency model và là điểm khác biệt cốt lõi với Java's true multi-threading.

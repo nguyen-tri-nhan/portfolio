@@ -1,18 +1,20 @@
 ---
 key: "CompletableFuture"
 title: "CompletableFuture"
-crumb: "2. Concurrency › Thread Pool"
+crumb: "6. Concurrency › Thread Pool"
 ---
 
 <code>CompletableFuture</code> là API async non-blocking, composable hỗ trợ chaining (<code>thenApply</code>), combining (<code>thenCombine</code>) và xử lý lỗi (<code>exceptionally</code>).
 
 ## Điểm Chính
 
-- <code>supplyAsync(supplier)</code>: chạy trên ForkJoinPool hoặc executor cho trước, trả về kết quả.
+- <code>supplyAsync(supplier)</code>: chạy trên executor truyền vào; nếu không truyền thì dùng <code>ForkJoinPool.commonPool()</code> (Javadoc: nếu commonPool có parallelism &lt; 2 thì tạo thread mới cho mỗi task).
 - <code>thenApply(fn)</code>: biến đổi kết quả đồng bộ. <code>thenApplyAsync(fn)</code>: biến đổi trên thread khác.
 - <code>thenCombine(other, fn)</code>: kết hợp hai future. <code>allOf(futures...)</code>: chờ tất cả.
 - <code>exceptionally(fn)</code>: phục hồi từ lỗi. <code>handle(fn)</code>: xử lý cả kết quả và lỗi.
 - KHÔNG ném checked exception — bọc trong <code>CompletionException</code>.
+- <code>cancel(true)</code> chỉ hoàn thành future bằng <code>CancellationException</code> — task đang chạy <strong>không</strong> bị interrupt. Javadoc: tham số <code>mayInterruptIfRunning</code> "has no effect in this implementation because interrupts are not used to control processing". Muốn dừng thật thì task phải tự kiểm tra cờ hủy.
+- Timeout (Java 9+): <code>orTimeout(t, unit)</code> hoàn thành bằng <code>TimeoutException</code>; <code>completeOnTimeout(value, t, unit)</code> trả về giá trị mặc định. Cả hai cũng không dừng task bên dưới.
 
 ## Ví Dụ Code
 
@@ -78,6 +80,15 @@ public class OrderCheckoutOrchestrator {
             .thenApply(v -> futures.stream()
                 .map(CompletableFuture::join)   // join: like get() but throws unchecked
                 .toList());
+    }
+
+    // ---- Pattern 5: timeout + fallback (Java 9+) ----
+    public CompletableFuture<PriceQuote> quoteWithTimeout(Order order) {
+        return CompletableFuture
+            .supplyAsync(() -> pricingClient.quote(order), ioExecutor)
+            .completeOnTimeout(PriceQuote.cached(order), 800, TimeUnit.MILLISECONDS);
+        // Lưu ý: sau 800ms future nhận giá trị cached, nhưng lời gọi pricingClient
+        // vẫn chạy tiếp trên ioExecutor — nên HTTP client cũng phải có timeout riêng.
     }
 
     // ---- Pattern 4: anyOf — first to complete wins (race) ----

@@ -1,7 +1,7 @@
 ---
 key: "Integration Test"
 title: "Integration Testing"
-crumb: "9. Testing"
+crumb: "14. Testing"
 ---
 
 Integration test kiểm tra nhiều component hoạt động cùng nhau — test real database query, Spring wiring, HTTP layer và transaction behavior mà unit test không thể bắt được.
@@ -16,7 +16,7 @@ Integration test kiểm tra nhiều component hoạt động cùng nhau — test
 
 ## Ví Dụ Code
 
-*@SpringBootTest + MockMvc: full CRUD flow với JWT, TestContainers, @MockBean EmailService*
+*@SpringBootTest + MockMvc: full CRUD flow với JWT, TestContainers, @MockitoBean EmailService*
 
 ```java
 // ── @SpringBootTest: full context + MockMvc CRUD flow ───────────────────────
@@ -40,7 +40,8 @@ class OrderApiIntegrationTest {
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
     @Autowired OrderRepository orderRepository;
-    @MockBean  EmailService emailService;   // avoid real email in tests
+    @MockitoBean EmailService emailService; // avoid real email in tests
+                                            // (@MockBean: deprecated in Boot 3.4, removed in Boot 4)
 
     private String jwtToken;
 
@@ -108,7 +109,7 @@ class OrderApiIntegrationTest {
 
 ## Ứng Dụng Thực Tế
 
-Dùng slice test để tăng tốc: @DataJpaTest cho repo, @WebMvcTest cho controller, chỉ @SpringBootTest đầy đủ cho end-to-end path. Spring cache context — đừng phá nó bằng @MockBean quá nhiều.
+Dùng slice test để tăng tốc: @DataJpaTest cho repo, @WebMvcTest cho controller, chỉ @SpringBootTest đầy đủ cho end-to-end path. Spring cache context — đừng phá nó bằng quá nhiều tổ hợp @MockitoBean khác nhau (mỗi tổ hợp mock khác nhau = một context mới). Từ Spring Boot 3.4, <code>@MockBean</code>/<code>@SpyBean</code> bị deprecated và đã bị loại bỏ ở Boot 4 — dùng <code>@MockitoBean</code>/<code>@MockitoSpyBean</code> (package <code>org.springframework.test.context.bean.override.mockito</code>).
 
 ## Câu Hỏi Phỏng Vấn
 

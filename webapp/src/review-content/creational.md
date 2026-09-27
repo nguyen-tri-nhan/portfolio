@@ -1,7 +1,7 @@
 ---
 key: "Creational"
 title: "Creational Patterns"
-crumb: "10. Design Patterns"
+crumb: "9. Design Patterns"
 ---
 
 Creational pattern trừu tượng hóa và kiểm soát việc tạo object — Singleton, Factory Method, Builder, Prototype — tách client khỏi class cụ thể.

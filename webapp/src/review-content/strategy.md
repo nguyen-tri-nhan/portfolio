@@ -1,7 +1,7 @@
 ---
 key: "Strategy"
 title: "Strategy Pattern"
-crumb: "10. Design Patterns › Behavioral"
+crumb: "9. Design Patterns › Behavioral"
 ---
 
 Strategy encapsulate thuật toán đằng sau interface và làm chúng có thể thay thế lúc runtime — loại bỏ khối if-else/switch lớn và cho phép Open/Closed Principle.

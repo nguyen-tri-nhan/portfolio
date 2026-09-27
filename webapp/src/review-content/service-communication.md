@@ -1,7 +1,7 @@
 ---
 key: "Service Communication"
 title: "Giao Tiếp Service"
-crumb: "5. Microservices"
+crumb: "11. Microservices"
 ---
 
 Microservice giao tiếp đồng bộ (REST, gRPC) hoặc bất đồng bộ (messaging) — chọn pattern đúng ảnh hưởng đến coupling, latency và resilience.

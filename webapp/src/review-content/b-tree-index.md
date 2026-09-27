@@ -1,7 +1,7 @@
 ---
 key: "B-Tree Index"
 title: "B-Tree Index"
-crumb: "4. Database › Indexing"
+crumb: "10. Database › Indexing"
 ---
 
 B-Tree (balanced tree) là cấu trúc index mặc định trong hầu hết DB, hỗ trợ equality và range query với O(log n) lookup bằng cách giữ key đã sắp xếp trên các page cân bằng.

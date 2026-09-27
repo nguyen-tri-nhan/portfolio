@@ -1,7 +1,7 @@
 ---
 key: "Networking & Volumes"
 title: "Docker Networking & Volumes"
-crumb: "8. Cloud & DevOps › Docker"
+crumb: "15. Cloud & DevOps › Docker"
 ---
 
 Docker networking kết nối container; volume lưu trữ dữ liệu ngoài container — hiểu cả hai thiết yếu để chạy stateful service và ứng dụng multi-container.
@@ -20,7 +20,7 @@ Docker networking kết nối container; volume lưu trữ dữ liệu ngoài co
 
 ```bash
 # ── docker-compose.yml: order-service + postgres + redis (local dev stack) ──
-version: '3.9'
+# (Không cần khai báo top-level `version:` — Compose Specification coi nó là obsolete và in cảnh báo)
 
 services:
   order-service:

@@ -1,7 +1,7 @@
 ---
 key: "Idempotency / Deduplication"
 title: "Idempotency & Deduplication"
-crumb: "6. Messaging › Common Concepts"
+crumb: "12. Messaging › Common Concepts"
 ---
 
 Idempotency đảm bảo xử lý cùng message nhiều lần tạo ra kết quả giống như xử lý một lần — thiết yếu cho đảm bảo at-least-once delivery.

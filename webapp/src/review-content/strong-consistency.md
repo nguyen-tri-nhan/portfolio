@@ -1,7 +1,7 @@
 ---
 key: "Strong Consistency"
 title: "Strong Consistency"
-crumb: "7. System Design › Consistency Patterns"
+crumb: "13. System Design › Consistency Patterns"
 ---
 
 Strong consistency (linearizability) đảm bảo mọi read thấy write gần nhất — như thể thao tác thực thi tuần tự trên một node, với chi phí latency cao hơn và availability thấp hơn.

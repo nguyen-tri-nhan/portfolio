@@ -1,7 +1,7 @@
 ---
 key: kotlin-extension-functions
 title: "Extension Functions trong Kotlin"
-crumb: "13. Kotlin > Kotlin Features"
+crumb: "3. Kotlin > Kotlin Features"
 ---
 
 Extension function cho phép thêm method vào class hiện có mà không cần kế thừa hay sửa source code — giải quyết nhu cầu utility function mà Java phải dùng static helper class.

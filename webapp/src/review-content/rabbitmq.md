@@ -1,7 +1,7 @@
 ---
 key: "RabbitMQ"
 title: "RabbitMQ"
-crumb: "6. Messaging"
+crumb: "12. Messaging"
 ---
 
 RabbitMQ là message broker implement AMQP, dùng Exchange để route message đến Queue qua Binding linh hoạt — đơn giản hơn Kafka cho task queue và routing.

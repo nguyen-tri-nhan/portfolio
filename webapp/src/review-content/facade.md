@@ -1,7 +1,7 @@
 ---
 key: "Facade"
 title: "Facade Pattern"
-crumb: "10. Design Patterns › Structural"
+crumb: "9. Design Patterns › Structural"
 ---
 
 Facade cung cấp interface đơn giản, hướng use-case cho subsystem phức tạp, ẩn độ phức tạp nội bộ và giảm coupling.

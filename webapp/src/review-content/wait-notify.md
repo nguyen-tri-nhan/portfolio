@@ -1,7 +1,7 @@
 ---
 key: "wait / notify"
 title: "wait / notify"
-crumb: "2. Concurrency › Synchronization"
+crumb: "6. Concurrency › Synchronization"
 ---
 
 <code>Object.wait()</code> giải phóng lock và treo thread; <code>notify()</code>/<code>notifyAll()</code> đánh thức thread đang chờ — cùng nhau chúng implement phối hợp producer-consumer.

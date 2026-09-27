@@ -1,7 +1,7 @@
 ---
 key: "States: CLOSED → OPEN → HALF_OPEN"
 title: "Trạng Thái Circuit Breaker"
-crumb: "5. Microservices › Circuit Breaker"
+crumb: "11. Microservices › Circuit Breaker"
 ---
 
 Circuit breaker có ba trạng thái — CLOSED (cho traffic qua), OPEN (chặn traffic), HALF_OPEN (kiểm tra phục hồi) — tự động hóa phát hiện lỗi và phục hồi.

@@ -1,7 +1,7 @@
 ---
 key: "Composite Index"
 title: "Composite Index"
-crumb: "4. Database › Indexing"
+crumb: "10. Database › Indexing"
 ---
 
 Composite index (nhiều cột) bao gồm nhiều cột theo thứ tự định nghĩa, theo leftmost prefix rule — hiệu quả khi query lọc trên cột đầu.

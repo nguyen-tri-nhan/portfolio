@@ -1,7 +1,7 @@
 ---
 key: dotnet-concurrency
 title: ".NET Concurrency — Thread, TPL & Synchronization"
-crumb: "16. .NET > Concurrency"
+crumb: "21. .NET > Concurrency"
 ---
 
 .NET concurrency model: `Thread` cho OS thread trực tiếp, `ThreadPool` cho reusable thread pool, `Task` (TPL) cho high-level async abstraction. Không có GIL như Ruby — true parallelism. Java dev sẽ thấy quen: `Thread` ↔ `Thread`, `ThreadPool` ↔ `ExecutorService`, `Task` ↔ `CompletableFuture`, `SemaphoreSlim` ↔ `Semaphore`.

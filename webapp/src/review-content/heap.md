@@ -13,7 +13,7 @@ Heap là vùng dữ liệu runtime nơi tất cả các object instance và arra
 - Minor GC: dọn Young Gen (nhanh, thường xuyên). Major/Full GC: dọn Old Gen (chậm, tốn kém).
 - Cấp phát object nhanh: bump-pointer allocation trong Eden gần như không tốn chi phí.
 - <code>OutOfMemoryError: Java heap space</code> — heap cạn kiệt; tăng <code>-Xmx</code> hoặc sửa memory leak.
-- Dùng <code>jmap -heap</code> hoặc VisualVM để kiểm tra heap usage trực tiếp.
+- Dùng <code>jcmd &lt;pid&gt; GC.heap_info</code> (hoặc <code>jhsdb jmap --heap --pid &lt;pid&gt;</code>) hoặc VisualVM để kiểm tra heap usage. <code>jmap -heap</code> không còn chạy từ JDK 9 (JDK 21 báo "Use jhsdb jmap instead").
 
 ## Ví Dụ Code
 
@@ -94,6 +94,6 @@ Trong môi trường container, đặt <code>-XX:+UseContainerSupport</code> (m�
 <details>
 <summary><strong>Tại sao Object được tạo trên Heap chứ không phải Stack?</strong></summary>
 
-**A:** Stack frame bị destroy khi method return — object tồn tại lâu hơn vòng đời method cần sống trên Heap để có thể share giữa các method và thread. JVM Escape Analysis có thể quyết định cấp phát object trên Stack nếu object không "escape" ra ngoài method — đây là optimization hiếm, không thể rely on. Primitive types và references (không phải object chúng trỏ vào) được lưu trên Stack.
+**A:** Stack frame bị destroy khi method return — object tồn tại lâu hơn vòng đời method cần sống trên Heap để có thể share giữa các method và thread. JIT (C2) có escape analysis: object không "thoát" khỏi method có thể được scalar replacement — không cấp phát gì cả, các field thành biến cục bộ. Tài liệu HotSpot ghi rõ nó không thay heap allocation bằng stack allocation. Không nên dựa vào tối ưu này khi thiết kế. Primitive types và references (không phải object chúng trỏ vào) được lưu trên Stack.
 
 </details>

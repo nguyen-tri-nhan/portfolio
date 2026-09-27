@@ -63,7 +63,7 @@ public class ProductService {
 
     // FIX: Caffeine cache with size bound and TTL
     private static final Cache<String, Product> PRODUCT_CACHE = Caffeine.newBuilder()
-        .maximumSize(10_000)                    // LRU eviction at 10K entries
+        .maximumSize(10_000)                    // size bound; Caffeine evicts by Window TinyLFU, not plain LRU
         .expireAfterWrite(30, TimeUnit.MINUTES) // stale data auto-removed
         .recordStats()                          // hit rate monitoring
         .build();

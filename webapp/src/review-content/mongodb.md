@@ -1,7 +1,7 @@
 ---
 key: "MongoDB"
 title: "MongoDB"
-crumb: "4. Database › NoSQL"
+crumb: "10. Database › NoSQL"
 ---
 
 MongoDB là document database lưu BSON (binary JSON) document, cho phép schema linh hoạt, embedded document và horizontal sharding cho khối lượng ghi cao.

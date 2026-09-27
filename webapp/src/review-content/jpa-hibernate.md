@@ -1,7 +1,7 @@
 ---
 key: "JPA / Hibernate"
 title: "JPA / Hibernate"
-crumb: "4. Database"
+crumb: "10. Database"
 ---
 
 JPA là đặc tả Java persistence API; Hibernate là implementation phổ biến nhất — map Java object sang relational table với các tính năng ORM như lazy loading, caching và lifecycle management.

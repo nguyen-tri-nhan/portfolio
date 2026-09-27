@@ -1,7 +1,7 @@
 ---
 key: "Sharding"
 title: "Database Sharding"
-crumb: "7. System Design › Database Scaling"
+crumb: "13. System Design › Database Scaling"
 ---
 
 Sharding phân vùng dữ liệu qua nhiều database instance (shard) để mỗi shard giữ một phần dữ liệu — cho phép horizontal write scaling vượt quá khả năng một node.

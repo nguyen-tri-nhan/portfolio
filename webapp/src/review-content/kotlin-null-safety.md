@@ -1,7 +1,7 @@
 ---
 key: kotlin-null-safety
 title: "Null Safety trong Kotlin"
-crumb: "13. Kotlin > Kotlin Cơ Bản"
+crumb: "3. Kotlin > Kotlin Cơ Bản"
 ---
 
 Kotlin tích hợp null safety vào hệ thống kiểu, phân biệt rõ ràng nullable (`String?`) và non-null (`String`) để loại bỏ `NullPointerException` tại compile time thay vì runtime.

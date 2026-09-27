@@ -1,7 +1,7 @@
 ---
 key: "InnoDB & MVCC"
 title: "InnoDB & MVCC"
-crumb: "4. Database › MySQL Deep Dive"
+crumb: "10. Database › MySQL Deep Dive"
 ---
 
 InnoDB tổ chức data trong clustered index (row lưu theo thứ tự PK trên disk), dùng MVCC cho read đồng thời mà không block writer, và duy trì redo/undo log cho crash recovery và read consistency.

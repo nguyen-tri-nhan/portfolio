@@ -1,7 +1,7 @@
 ---
 key: python-data-types
 title: Python Data Types
-crumb: 14. Python > Python Cơ Bản
+crumb: 4. Python > Python Cơ Bản
 ---
 
 Python có hệ thống kiểu dữ liệu động với built-in types phong phú — int, float, str, bool là scalar; list, tuple, dict, set là collection với đặc tính mutability khác nhau.

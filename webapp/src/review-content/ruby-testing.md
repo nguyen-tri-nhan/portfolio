@@ -1,7 +1,7 @@
 ---
 key: ruby-testing
 title: "Ruby Testing — RSpec, FactoryBot & Capybara"
-crumb: "21. Ruby > Testing"
+crumb: "22. Ruby > Testing"
 ---
 
 RSpec là de facto standard test framework trong Ruby/Rails — DSL đẹp nhất trong web testing, ảnh hưởng nhiều framework khác (Jasmine, Jest). FactoryBot thay fixtures cho test data. Capybara cho integration/E2E test. VCR cho record/replay HTTP. Tương tự Java: RSpec ↔ JUnit 5 + Mockito, FactoryBot ↔ EasyRandom/Instancio, Capybara ↔ Selenium + Spring MockMvc.

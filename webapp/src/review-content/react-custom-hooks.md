@@ -1,7 +1,7 @@
 ---
 key: react-custom-hooks
 title: Custom Hooks
-crumb: 15. ReactJS > React Hooks
+crumb: 5. ReactJS > React Hooks
 ---
 
 Custom hook là function bắt đầu bằng `use` chứa logic stateful tái sử dụng — tách business logic ra khỏi UI component, giúp code testable và composable hơn.

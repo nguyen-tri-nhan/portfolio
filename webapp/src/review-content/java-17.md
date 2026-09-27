@@ -12,8 +12,8 @@ Java 17 (Sep 2021) là LTS được adopt rộng rãi nhất hiện nay. Spring 
 - **Pattern Matching for Switch (preview)** — switch theo type pattern
 - **Strong Encapsulation** — không còn `--illegal-access`, internal JDK APIs bị block hoàn toàn
 - Foreign Function & Memory API (incubating) — thay thế JNI
-- **Removed**: Applet API (deprecated Java 9), RMI Activation System
-- **Deprecated**: Security Manager (removed Java 17)
+- **Removed**: RMI Activation (JEP 407), experimental AOT/JIT compiler Graal (JEP 410)
+- **Deprecated for removal** (chưa bị gỡ ở Java 17): Applet API (JEP 398), Security Manager (JEP 411 — sau đó bị vô hiệu hóa vĩnh viễn ở Java 24, JEP 486)
 
 ## Ví Dụ Code
 
@@ -120,7 +120,7 @@ int roll = rng.nextInt(1, 7);  // dice roll
 
 Kết hợp với Records và Pattern Matching tạo ra pattern functional-style error handling tương tự `Result` type trong Rust/Kotlin.
 
-**Spring Boot 3 yêu cầu Java 17** — đây là lý do chính nhiều team upgrade. Spring Framework 6, Jakarta EE 9+ đều require Java 17.
+**Spring Boot 3 yêu cầu Java 17** — đây là lý do chính nhiều team upgrade. Spring Framework 6 yêu cầu Java 17 và chuyển sang namespace `jakarta.*` (Jakarta EE 9+) — bản thân Jakarta EE 9/10 không bắt buộc Java 17, yêu cầu Java 17 đến từ Spring.
 
 **Strong Encapsulation** là pain point lớn nhất khi upgrade từ Java 11 → 17. Nhiều thư viện (Hibernate, byte-buddy, CGLIB) phải update để tránh dùng internal API.
 
@@ -143,6 +143,6 @@ Kết hợp với Records và Pattern Matching tạo ra pattern functional-style
 <details>
 <summary><strong>Upgrade từ Java 11 lên Java 17 cần chú ý gì?</strong></summary>
 
-**A:** (1) **Strong Encapsulation**: check `--illegal-access` warnings trong Java 11 → fix trước khi lên 17. Dùng `jdeps --jdk-internals` để tìm vi phạm. (2) **Security Manager removed**: nếu đang dùng SecurityManager → cần alternative. (3) Libraries: update Spring Boot 2.7+, Hibernate 5.6+, CGLIB, byte-buddy phiên bản support Java 17. (4) Tool chain: Maven 3.8+, Gradle 7.3+, IDE update. (5) Docker image: đổi sang `eclipse-temurin:17-jre-alpine`. Thường upgrade này ít breaking hơn Java 8→11 vì không có JPMS shock.
+**A:** (1) **Strong Encapsulation**: check `--illegal-access` warnings trong Java 11 → fix trước khi lên 17. Dùng `jdeps --jdk-internals` để tìm vi phạm. (2) **Security Manager deprecated for removal** (JEP 411): Java 17 vẫn chạy nhưng in cảnh báo; từ Java 24 thì không bật được nữa → nếu đang dùng SecurityManager, lên kế hoạch thay thế ngay (sandbox ở tầng container/OS). (3) Libraries: update Spring Boot 2.7+, Hibernate 5.6+, CGLIB, byte-buddy phiên bản support Java 17. (4) Tool chain: Maven 3.8+, Gradle 7.3+, IDE update. (5) Docker image: đổi sang `eclipse-temurin:17-jre-alpine`. Thường upgrade này ít breaking hơn Java 8→11 vì không có JPMS shock.
 
 </details>

@@ -1,7 +1,7 @@
 ---
 key: "CQRS"
 title: "CQRS (Command Query Responsibility Segregation)"
-crumb: "7. System Design › Database Scaling"
+crumb: "13. System Design › Database Scaling"
 ---
 
 CQRS tách biệt write model (Command) khỏi read model (Query), cho phép mỗi cái được tối ưu, scale và thậm chí lưu trữ khác nhau — thường kết hợp với Event Sourcing.

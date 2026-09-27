@@ -1,7 +1,7 @@
 ---
 key: ruby-vs-java
 title: "Ruby vs Java — So Sánh Cho Java Dev"
-crumb: "21. Ruby > Ruby vs Java"
+crumb: "22. Ruby > Ruby vs Java"
 ---
 
 Ruby và Java đều OOP nhưng ở hai thái cực: Java — static typing, verbose, compile-time safety; Ruby — dynamic typing, concise, runtime flexibility. Java dev thường bị "sốc văn hóa" khi sang Ruby: không có type, không có compiler error, nhưng code ngắn hơn 3-5x và iterative development nhanh hơn nhiều.

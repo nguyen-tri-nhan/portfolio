@@ -1,7 +1,7 @@
 ---
 key: "Read Replica"
 title: "Read Replica"
-crumb: "7. System Design › Database Scaling"
+crumb: "13. System Design › Database Scaling"
 ---
 
 Read replica là bản copy bất đồng bộ của primary DB, chấp nhận query read-only — cho phép tải read được offload khỏi primary cho horizontal read scaling.

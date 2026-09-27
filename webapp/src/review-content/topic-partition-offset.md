@@ -1,7 +1,7 @@
 ---
 key: "Topic / Partition / Offset"
 title: "Topic, Partition, Offset"
-crumb: "6. Messaging › Kafka"
+crumb: "12. Messaging › Kafka"
 ---
 
 Topic là luồng logic được chia thành Partition (đơn vị parallelism + thứ tự); Offset xác định vị trí của mỗi message trong partition — nền tảng của delivery model Kafka.

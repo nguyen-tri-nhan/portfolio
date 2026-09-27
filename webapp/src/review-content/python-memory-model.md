@@ -1,7 +1,7 @@
 ---
 key: python-memory-model
 title: Python Memory Model — Reference Counting & GC
-crumb: 14. Python > Python Internals
+crumb: 4. Python > Python Internals
 ---
 
 Python dùng reference counting làm cơ chế GC chính, bổ sung cyclic garbage collector để handle circular reference — khác với JVM's tracing GC, và hiểu rõ model này giúp tránh memory leak và optimize performance.

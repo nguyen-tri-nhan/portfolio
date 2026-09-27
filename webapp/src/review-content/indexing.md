@@ -1,7 +1,7 @@
 ---
 key: "Indexing"
 title: "Database Indexing"
-crumb: "4. Database"
+crumb: "10. Database"
 ---
 
 Index là cấu trúc dữ liệu (thường là B-Tree) tăng tốc truy xuất dữ liệu với chi phí write overhead và storage, biến đổi full table scan thành lookup nhanh.

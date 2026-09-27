@@ -1,7 +1,7 @@
 ---
 key: "Race Condition"
 title: "Race Condition"
-crumb: "2. Concurrency"
+crumb: "6. Concurrency"
 ---
 
 Race condition xảy ra khi tính đúng đắn của chương trình phụ thuộc vào thời điểm tương đối của các thread, dẫn đến bug không xác định khó tái tạo.

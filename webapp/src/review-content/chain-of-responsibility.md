@@ -1,7 +1,7 @@
 ---
 key: "Chain of Responsibility"
 title: "Chain of Responsibility"
-crumb: "10. Design Patterns › Behavioral"
+crumb: "9. Design Patterns › Behavioral"
 ---
 
 Chain of Responsibility truyền request qua handler chain; mỗi handler xử lý nó hoặc chuyển cho cái tiếp theo — tách sender khỏi receiver và cho phép cấu thành chain động.

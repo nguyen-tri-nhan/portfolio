@@ -1,7 +1,7 @@
 ---
 key: "Covering Index"
 title: "Covering Index"
-crumb: "4. Database › Indexing"
+crumb: "10. Database › Indexing"
 ---
 
 Covering index chứa tất cả cột cần thiết cho query, cho phép DB trả lời hoàn toàn từ index mà không cần truy cập table heap — tối đa hóa hiệu năng đọc.

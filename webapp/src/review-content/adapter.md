@@ -1,7 +1,7 @@
 ---
 key: "Adapter"
 title: "Adapter Pattern"
-crumb: "10. Design Patterns › Structural"
+crumb: "9. Design Patterns › Structural"
 ---
 
 Adapter chuyển đổi một interface sang interface khác mà client mong đợi, cho phép interface không tương thích hoạt động cùng nhau mà không cần sửa code hiện có.

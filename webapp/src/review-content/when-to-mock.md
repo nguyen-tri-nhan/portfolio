@@ -1,7 +1,7 @@
 ---
 key: "When to Mock"
 title: "Khi Nào Nên Mock"
-crumb: "9. Testing › Mocking"
+crumb: "14. Testing › Mocking"
 ---
 
 Mock external infrastructure (DB, HTTP, messaging); ĐỪNG mock value object, domain logic hoặc class đang test — over-mocking tạo ra test brittle pass ngay cả khi code bị hỏng.

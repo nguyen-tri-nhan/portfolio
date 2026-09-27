@@ -1,7 +1,7 @@
 ---
 key: python-generators
 title: Python Generators & yield
-crumb: 14. Python > Advanced Python
+crumb: 4. Python > Advanced Python
 ---
 
 Generator là hàm dùng `yield` để trả về giá trị từng phần, lazy — không tính toàn bộ kết quả ngay, tiết kiệm memory đáng kể khi xử lý large dataset hoặc infinite sequence.
